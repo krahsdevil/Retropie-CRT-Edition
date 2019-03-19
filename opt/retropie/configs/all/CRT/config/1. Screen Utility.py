@@ -158,6 +158,8 @@ def rotate_frontend():
 				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmameh_launching.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1')
 			if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
 				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mameh_launching.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1')
+			if os.path.exists('/opt/retropie/configs/psx/launching.png'):
+				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxh_launching.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1')
 			os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_H.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
 			modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme)
 		if opt[1][2] == 90:
@@ -173,6 +175,8 @@ def rotate_frontend():
 				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev1_launching.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1')
 			if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
 				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev1_launching.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1')
+			if os.path.exists('/opt/retropie/configs/psx/launching.png'):
+				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv1_launching.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1')
 			os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V1.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
 			modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
 		if opt[1][2] == -90:
@@ -188,6 +192,8 @@ def rotate_frontend():
 				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev3_launching.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1')
 			if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
 				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev3_launching.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1')
+			if os.path.exists('/opt/retropie/configs/psx/launching.png'):
+				os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv3_launching.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1')
 			os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V3.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
 			modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
 
