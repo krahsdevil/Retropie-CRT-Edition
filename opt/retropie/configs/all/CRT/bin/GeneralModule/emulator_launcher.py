@@ -168,7 +168,7 @@ if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or e
 	logging.info("INFO: Esperando a retroarch o que runconmmand termine")
 	while True:
 		output = commands.getoutput('ps -A')
-		if 'retroarch' in output or os.path.exists('/tmp/lchtmp'):
+		if 'retroarch' in output or 'mupen' in output or os.path.exists('/tmp/lchtmp'):
 			if 'retroarch' in output:
 				logging.info("INFO: Detectado retroarch en los procesos activos")
 			if os.path.exists('/tmp/lchtmp'):
@@ -199,10 +199,11 @@ if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or e
 		logging.info("ERROR: Esperando a que Retroarch inicie para forzar el cierre y salir")
 		while True:
 			output = commands.getoutput('ps -A')
-			if 'retroarch' in output:
+			if 'retroarch' in output or 'mupen' in output:
 				break
 		logging.info("ERROR: Cerrando el proceso de Retroarch")
 		os.system('killall retroarch > /dev/null 2>&1')
+		os.system('pkill -9 -f "mupen" > /dev/null 2>&1')
 	logging.info("INFO: Esperando a que el subproceso de Runcommand finalice")
 	runcommand_process.wait()
 	logging.info("INFO: Cerrando Pygame")
