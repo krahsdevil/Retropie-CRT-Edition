@@ -1,0 +1,14 @@
+[Unit]
+Description=This service search for external USB with almost roms folder and load it on ES
+DefaultDependencies=no
+
+[Service]
+ExecStart=/usr/bin/python3 -u CRT-Automount.py
+WorkingDirectory=/opt/retropie/configs/all/CRT/bin/AutomountService
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=sysinit.target

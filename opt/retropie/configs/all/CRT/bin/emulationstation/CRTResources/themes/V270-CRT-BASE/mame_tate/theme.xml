@@ -1,0 +1,104 @@
+<theme>
+
+    <formatVersion>4</formatVersion>
+    <include>./../common.xml</include>	
+
+	<view name="system">
+
+	<sound name="bgsound"> <path>./system.ogg</path> </sound>
+	<!-- System Specific Images -->
+		<image name="logo">
+			<path>./logo.png</path>
+        </image>
+		
+		<image name="overlay" extra="true">
+			<path>./controller.png</path>
+		</image>
+	</view>
+
+	<view name="basic, detailed">
+	<!-- System Specific Images -->
+		<image name="logo">
+			<path>./logo.png</path>
+		</image>
+		
+		<image name="overlay" extra="true">
+			<path>./controller.png</path>
+		</image>
+	</view>
+	
+			<!-- Metadata -->
+
+	<view name="detailed">
+		<text name="md_lbl_releasedate">
+			<fontPath>./../common/fonts/Lato-Black.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<pos>0.43 0.17</pos>
+			<forceUppercase>1</forceUppercase>
+			<size>0 0</size>
+			<color>A0A0A0</color>
+		</text>
+		
+		<datetime name="md_releasedate">
+			<color>A0A0A0</color>
+			<forceUppercase>1</forceUppercase>
+			<fontPath>./../common/fonts/Lato-Regular.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<pos>0.62 0.17</pos>
+			<size>0 0</size>
+		</datetime>
+		
+		<text name="md_lbl_publisher">
+			<fontPath>./../common/fonts/Lato-Black.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<pos>0.43 0.20</pos>
+			<forceUppercase>1</forceUppercase>
+			<size>0 0</size>
+			<color>A0A0A0</color>
+		</text>
+		<text name="md_lbl_players">
+			<fontPath>./../common/fonts/Lato-Black.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<pos>0.43 0.23</pos>
+			<forceUppercase>1</forceUppercase>
+			<size>0 0</size>
+			<color>A0A0A0</color>
+		</text>
+
+		<text name="md_publisher">
+			<color>A0A0A0</color>
+			<forceUppercase>1</forceUppercase>
+			<fontPath>./../common/fonts/Lato-Regular.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<pos>0.64 0.20</pos>
+			<size>0 0</size>
+		</text>
+
+		<text name="md_genre">
+			<color>A0A0A0</color>
+			<forceUppercase>1</forceUppercase>
+			<fontPath>./../common/fonts/Lato-Black.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<pos>0.43 0.26</pos>
+			<size>0 0</size>
+		</text>
+		<text name="md_players">
+			<color>A0A0A0</color>
+			<forceUppercase>0</forceUppercase>
+			<fontPath>./../common/fonts/Lato-Regular.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<size>0 0</size>
+		</text>
+		<!-- Description -->
+		<text name="md_description">
+			<pos>0.43 0.315</pos>
+			<size>0.54 0.21</size>
+			<fontPath>./../common/fonts/Lato-Regular.ttf</fontPath>
+			<fontSize>0.02</fontSize>
+			<alignment>left</alignment>
+			<forceUppercase>0</forceUppercase>
+			<lineSpacing>1.6</lineSpacing>
+			<color>A0A0A0</color>
+		</text>
+	</view>
+</theme>

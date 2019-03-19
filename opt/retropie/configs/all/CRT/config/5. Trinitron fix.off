@@ -1,0 +1,220 @@
+#!/usr/bin/python
+# coding: utf-8
+#
+# Original idea/coded by Ironic/aTg (2017) for RGB-Pi recalbox
+# Retropie code/integration by -krahs- (2019)
+#
+# unlicense.org
+#
+# This script can be heavily optimized.
+
+import struct
+import os
+import os.path
+import sys
+import shutil
+import pygame
+import time
+import filecmp
+import subprocess
+from math import *
+
+from pygame.locals import *
+
+os.system('clear')
+
+x_screen = 0
+y_screen = 0
+
+def get_xy_screen():
+	global x_screen
+	global y_screen
+	process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
+	output = process.stdout.read()
+	for line in output.splitlines():
+		if 'x' in line and 'mode' in line:
+			ResMode = line
+			ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
+			x_screen = int(ResMode[1])
+			y_screen = int(ResMode[2])
+
+get_xy_screen()
+pygame.mixer.pre_init(44100, -16, 1, 512)
+pygame.init()
+pygame.display.init()
+pygame.mouse.set_visible(0)
+
+# VARIABLES
+state_up = 0
+state_down = 0
+state_left = 0
+state_right = 0
+threshold = 1000 # Analogic middle to debounce
+joystick = 0 # 0 is the 1sf joystick
+
+# FF files
+wait = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/wait.png')
+nojoy = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/nojoy.png')
+enabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/enabled.png')
+disabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/disabled.png')
+cancel = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/cancel.png')
+yes = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/yes.png')
+cancelenabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/cancelenabled.png')
+yesenabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/yesenabled.png')
+cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/cursor.wav")
+load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/trinitronfix/load.wav")
+
+# SET SCREEN
+fullscreen = pygame.display.set_mode((x_screen,y_screen), FULLSCREEN)
+fullscreen.fill((0,0,0))
+
+# PASTE PICTURE ON FULLSCREEN
+fullscreen.blit(wait, (119,80))
+pygame.display.flip()
+time.sleep(1)
+
+AppliedFix = filecmp.cmp('/opt/retropie/configs/all/CRT/Resolutions/base_systems.cfg', '/opt/retropie/configs/all/CRT/Resolutions/base_systems_fix.cfg') 
+if AppliedFix == True:
+	Frame = enabled
+else:
+	Frame = disabled
+fullscreen.blit(Frame, (119,80))
+fullscreen.blit(yes, (119,115))
+pygame.display.flip()
+
+y = 0
+
+try:
+	with open("/dev/input/js%s" % joystick, "rb") as f:
+	#with open("/dev/input/js0", "rb") as f:
+
+		runing = 1
+		while runing:
+
+			a = f.read(8)
+			t, value, code, index = struct.unpack("<ihbb", a) # 4 bytes, 2 bytes, 1 byte, 1 byte
+			#print("t: {:10d} ms, value: {:6d}, code: {:1d}, index: {:1d}".format(t, value, code, index))
+
+			timing50nofix = 'hdmi_timings=450 1 50 33 90 270 1 1 1 30 0 0 0 50 0 9600000 1'
+			timing50fix = 'hdmi_timings= 450 1 50 23 90 270 1 1 1 30 0 0 0 50 0 9600000 1'
+			timing60nofix = 'hdmi_timings=450 1 50 33 90 240 1 10 1 15 0 0 0 60 0 9600000 1'
+			timing60fix = 'hdmi_timings=450 1 50 23 90 240 1 10 1 15 0 0 0 60 0 9600000 1'
+
+			#button
+			if code == 1 and value == 1:
+				if y < 1:
+					load.play()
+					fullscreen.blit(yesenabled, (119,115))
+					pygame.display.flip()
+					time.sleep(1)
+					if AppliedFix == True:
+						# Renaming files with NOFIX data
+						#os.system('mount -o remount,rw /boot')
+						#os.system('mount -o remount,rw /')
+						#conftxt = open('/boot/config.txt', 'r')
+						#contents = conftxt.readlines()
+						#conftxt.close()
+
+						#contents[0] = str(timing50nofix) + '\n'
+						#if contents[0] == str(timing50fix) + '\n':
+						#	contents[0] = str(timing50nofix) + '\n'
+
+						#if contents[0] == str(timing60fix) + '\n':
+						#	contents[0] = str(timing60nofix) + '\n'
+
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/amiga_games_nofix.txt /opt/retropie/configs/all/CRT/Resolutions/amiga_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/advmame_games_nofix.txt /opt/retropie/configs/all/CRT/Resolutions/advmame_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/fbalpha_games_nofix.txt /opt/retropie/configs/all/CRT/Resolutions/fbalpha_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/mame078_games_nofix.txt /opt/retropie/configs/all/CRT/Resolutions/mame078_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/mame0139_games_nofix.txt /opt/retropie/configs/all/CRT/Resolutions/mame0139_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/mame037b5_games_nofix.txt /opt/retropie/configs/all/CRT/Resolutions/mame037b5_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/base_systems_nofix.cfg /opt/retropie/configs/all/CRT/Resolutions/base_systems.cfg')
+
+						#conftxt = open('/tmp/config.txt', 'w')
+						#contents = "".join(contents)
+						#conftxt.write(contents)
+						#conftxt.close()
+						#os.system('sudo cp /tmp/config.txt /boot/config.txt')
+						#os.remove('/tmp/config.txt')
+						#os.system('sudo reboot')
+						#pygame.quit()
+					if AppliedFix == False:
+						# Renaming files with FIXED data
+						#os.system('mount -o remount,rw /boot')
+						#os.system('mount -o remount,rw /')
+						#conftxt = open('/boot/config.txt', 'r')
+						#contents = conftxt.readlines()
+						#conftxt.close()
+
+						#contents[0] = str(timing50fix) + '\n'
+						#if contents[0] == str(timing50nofix) + '\n':
+						#	contents[0] = str(timing50fix) + '\n'
+
+						#if contents[0] == str(timing60nofix) + '\n':
+						#	contents[0] = str(timing60fix) + '\n'
+							
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/amiga_games_fix.txt /opt/retropie/configs/all/CRT/Resolutions/amiga_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/advmame_games_fix.txt /opt/retropie/configs/all/CRT/Resolutions/advmame_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/fbalpha_games_fix.txt /opt/retropie/configs/all/CRT/Resolutions/fbalpha_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/mame078_games_fix.txt /opt/retropie/configs/all/CRT/Resolutions/mame078_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/mame0139_games_fix.txt /opt/retropie/configs/all/CRT/Resolutions/mame0139_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/mame037b5_games_fix.txt /opt/retropie/configs/all/CRT/Resolutions/mame037b5_games.txt')
+						os.system('cp /opt/retropie/configs/all/CRT/Resolutions/base_systems_fix.cfg /opt/retropie/configs/all/CRT/Resolutions/base_systems.cfg')
+
+						#if not os.path.exists('/tmp/config.txt'):
+						#	os.mknod('/tmp/config.txt')
+
+						#conftxt = open('/tmp/config.txt', 'w')
+						#contents = "".join(contents)
+						#conftxt.write(contents)
+						#conftxt.close()
+						#os.system('sudo cp /tmp/config.txt /boot/config.txt')
+						#os.remove('/tmp/config.txt')
+						#os.system('sudo reboot')
+						#pygame.quit()
+
+				if y == 1:
+					load.play()
+					fullscreen.blit(cancelenabled, (119,115))
+					pygame.display.flip()
+					time.sleep(1)
+					break
+
+
+			#down
+			if code == 2 and index % 2 == 1:
+				if value > 30000:
+					if state_down == 0:
+						state_down = value
+						if y < 1:
+							y = y + 1
+							cursor.play()
+							fullscreen.blit(cancel, (119,115))
+							pygame.display.flip()
+				elif value < threshold:
+					state_down = 0
+
+			#up
+			if code == 2 and index % 2 == 1:
+				if value < -30000:
+					if state_up == 0:
+						state_up = value
+						if y > 0:
+							y = y - 1
+							cursor.play()
+							fullscreen.blit(yes, (119,115))
+							pygame.display.flip()
+				elif value < threshold:
+					state_up = 0
+
+except IOError:
+	fullscreen.blit(nojoy, (119,80))
+	pygame.display.flip()
+	time.sleep(5)
+	pygame.display.quit()
+	pygame.quit()
+	sys.exit()
+	
+pygame.display.quit()
+pygame.quit()
+sys.exit()

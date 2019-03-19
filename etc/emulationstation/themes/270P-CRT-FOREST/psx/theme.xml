@@ -1,0 +1,22 @@
+<theme>
+    <formatVersion>4</formatVersion>
+
+    <include>./../crt.xml</include>
+
+    <!-- MAIN SYSTEM VIEW -->
+    <view name="system">
+      <image name="logo">
+        <path>./logo.png</path>
+      </image>
+
+      <image name="controller" extra="true">
+        <path>./controller.png</path>
+      </image>
+    </view>
+
+    <view name="basic, detailed">
+      <image name="logo">
+        <path>./logo.png</path>
+      </image>
+    </view>
+</theme>
