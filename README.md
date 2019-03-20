@@ -1,4 +1,7 @@
 # Retropie CRT Edition
+
+![img](https://github.com/krahsdevil/crt-for-retropie/blob/d398fe53a9e550c6aca72b926ea8c8a312aed028/logo.png?raw=true)
+
 Adding support to Retropie 4.4 for custom 15khz resolutions and some cool utilities like USB Automount or easy TATE mode changing.
 
 This software works with RGB-Pi and all standard (RGB) vga666 GPIO adapters (or based on like pi2scart).
