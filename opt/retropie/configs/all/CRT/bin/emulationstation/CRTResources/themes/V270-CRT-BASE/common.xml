@@ -122,8 +122,9 @@ based on:		"carbon" by eric hettervik
 		<image name="logo">			
 			<!-- Left Aligned at Top -->
 			<origin>0 0.5</origin>
-			<pos>0.03 0.0775</pos>
-			<size>0 0.12</size>
+			<pos>0.03 0.0900</pos>
+			<maxSize>0.445 0.12</maxSize>
+
 		</image>
 		
 		<image name="overlay" extra="true">
