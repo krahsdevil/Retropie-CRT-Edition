@@ -44,29 +44,42 @@ hdmi_timings=450 1 50 32 94 270 1 12 5 26 0 0 0 50 0 9600000 1
 #uncomment to overclock the arm. 700 MHz is the default.
 #arm_freq=800
 
-# Uncomment some or all of these to enable the optional hardware interfaces
-#dtparam=i2c_arm=on
-#dtparam=i2s=on
-#dtparam=spi=on
+# force all optional hardware interfaces off
+dtparam=i2c_arm=off
+dtparam=i2s=off
+dtparam=spi=off
+enable_uart=0
 
 # Uncomment this to enable the lirc-rpi module
 #dtoverlay=lirc-rpi
 
 # Additional overlays and parameters are documented /boot/overlays/README
 
-# Enable audio (loads snd_bcm2835)
-dtparam=audio=on
+# Memory configuration
 gpu_mem_256=128
 gpu_mem_512=256
 gpu_mem_1024=256
-overscan_scale=1
 
-# RGB-Pi
-dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2
-dtoverlay=rgb-pi
+# Enable audio (loads snd_bcm2835)
+dtparam=audio=on
+#disable_audio_dither=1 # Disables dithering. Try this if you experience issues with white noise on the audio jack. 
+#audio_pwm_mode=0
+#audio_pwm_mode=2 # enables the sigma-delta oversampled PWM with ~16-bit resolution
+audio_pwm_mode=3
+
+# 15Khz using GPIO
+overscan_scale=1
+framebuffer_depth=24
 enable_dpi_lcd=1
 display_default_lcd=1
-dpi_output_format=6
 dpi_group=2
 dpi_mode=87
-audio_pwm_mode=0
+
+# RGB-Pi
+#dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2
+#dtoverlay=rgb-pi
+#dpi_output_format=6
+
+# VGA666 / pi2SCART
+dtoverlay=vga666
+
