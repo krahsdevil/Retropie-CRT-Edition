@@ -716,6 +716,15 @@ elif emulator == "testing_ports":
 #    ANY OTHER EMULATOR NOT SUPPORTED                                               #
 #####################################################################################
 
+elif emulator == "videoplayer":
+	emulatorWFQ = emulator + "50"
+	launch_joy2key('kcub1', 'kcuf1', 'kcuu1', 'kcud1', '0x20', '0x71', '0x6b', '0x6a', '0x6d', '0x6e')
+	crt_open_screen_from_timings_cfg(emulatorWFQ,timings_full_path)
+	commandline = 'omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/SFSquareHeadExtendedMOD.ttf" %s  > /dev/null 2>&1' % rom_full_path
+	os.system(commandline)
+	os.system('sudo killall joy2key.py')
+	es_restore_screen()
+
 else:
 	infos = "System not supported [%s]" % emulator
 	infos2 = ""

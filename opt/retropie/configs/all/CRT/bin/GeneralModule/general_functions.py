@@ -138,6 +138,21 @@ def es_restore_screen():
 	os.system("fbset -depth 8 && fbset -depth 24")
 	#os.system('fbset -xres %s -yres %s'%(t1,t6))
 
+def launch_joy2key(left, right, up, down, a, b, x, y, start, select):
+    # get the first joystick device (if not already set)
+	JOY2KEY_DEV = "none"
+	JOY2KEY_PATH = "/opt/retropie/configs/all/CRT/bin/VideoPlayer/joy2key.py"
+	JOY2KEY_VAR = commands.getoutput('$__joy2key_dev')
+	if os.path.exists (JOY2KEY_VAR):
+		JOY2KEY_DEV = JOY2KEY_VAR
+	else:
+		JOY2KEY_DEV = "/dev/input/jsX"
+	output = commands.getoutput('ps -A')
+	if os.path.exists (JOY2KEY_PATH) and JOY2KEY_DEV != "none" and not 'joy2key.py' in output:
+		joy2key_command = "\"%s\" \"%s\" %s %s %s %s %s %s %s %s %s %s" % (JOY2KEY_PATH,JOY2KEY_DEV,left, right,up,down,a,b,x,y,start,select)
+		process = subprocess.Popen(joy2key_command, shell=True)
+		return process
+
 def splash():
 
 	if 'vga666' in open('/boot/config.txt').read():

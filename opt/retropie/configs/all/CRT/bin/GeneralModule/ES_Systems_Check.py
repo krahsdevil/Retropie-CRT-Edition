@@ -34,6 +34,7 @@ XMLStringFBATate = "  <system>\n    <name>fba-tate</name>\n    <fullname>Final B
 
 XMLStringCRT = "  <system>\n    <name>1CRT</name>\n    <fullname>CRT Utilities</fullname>\n    <path>/opt/retropie/configs/all/CRT/config</path>\n    <extension>.py</extension>\n    <command>python %%ROM%%</command>\n    <platform />\n    <theme>crt</theme>\n  </system>\n"
 
+XMLStringVideoPlayer = "  <system>\n    <name>videoplayer</name>\n    <fullname>Video Player</fullname>\n    <path>/home/pi/RetroPie/roms/videos</path>\n    <extension>.mkv .avi .mp4 .mpg .MKV .AVI .MP4 .MPG</extension>\n    <command>python /opt/retropie/configs/all/CRT/bin/GeneralModule/emulator_launcher.py %ROM% videoplayer dummy</command>\n    <platform>videoplayer</platform>\n    <theme>videoplayer</theme>\n  </system>\n"
 
 from general_functions import *
 import xml.etree.ElementTree as ET
@@ -59,6 +60,7 @@ SYSTEMS = {
     "mame-advmame-tate": { "core": "mame-advmame", "check": False, "xml": XMLStringAdvMAMETate },
     "fba-tate": { "core": "fba", "check": False, "xml": XMLStringFBATate },
     "1CRT": { "core": "", "check": False, "xml": XMLStringCRT },
+    "videoplayer": { "core": "videoplayer", "check": False, "xml": XMLStringVideoPlayer },
     "retropie": { "core": "", "check": False, "xml": None },
 }
 
