@@ -62,9 +62,9 @@ gpu_mem_1024=256
 
 # Enable audio (loads snd_bcm2835)
 dtparam=audio=on
-#disable_audio_dither=1 # Disables dithering. Try this if you experience issues with white noise on the audio jack. 
-#audio_pwm_mode=0
-#audio_pwm_mode=2 # enables the sigma-delta oversampled PWM with ~16-bit resolution
+#Set disable_audio_dither to 1 and uncomment line if you experience issues with white noise on the audio jack.
+#disable_audio_dither=1
+#Set audio_pwm_mode to 0/2/3/; 2 enables the sigma-delta oversampled PWM with ~16-bit resolution
 audio_pwm_mode=3
 
 # 15Khz using GPIO
@@ -77,9 +77,8 @@ dpi_mode=87
 
 # RGB-Pi
 #dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2
-#dtoverlay=rgb-pi
 #dpi_output_format=6
 
-# VGA666 / pi2SCART
+#Set dtoverlay to vga666 or rgb-pi; vga666 for generic adapters and pi2scart
 dtoverlay=vga666
 
