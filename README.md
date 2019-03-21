@@ -7,21 +7,21 @@ Adding support to Retropie 4.4 for custom 15khz resolutions and some cool utilit
 This software works with RGB-Pi and all standard (RGB) vga666 GPIO adapters (or based on like pi2scart).
 Boot, configure controls on ES and go to 'Screen Utilies' under 'CRT Config' for choosing your adapter (RGB-Pi > VGA666 > PI2SCART)
 
-Maybe some professional monitors like SONY PVM, BVM or DTV could face some resolucion problems, most of TV or monitors seems to work great with super-resolutions.
+Maybe some professional monitors like SONY PVM, BVM or DTV could face some resolution problems, most of TV or monitors seems to work great with super-resolutions.
 
 You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 
 ## Changelog
 
-#### Beta 2.3:
+#### Beta 2.3 (First Public Release):
 ```
 - Fix PSX TATE 'Launching images'
 - Fix N64 allowed emulator process
-- Fix Help Systems/Games image in SNES-MINI Theme (By DSkywalk)
+- Fix Help Systems/Games images in SNES-MINI Theme (By DSkywalk)
 - Added Spectrum Game 'Justin and The Lost Abbey' from Dantoine Studio (By DSkywalk)
 - Updated retroarch core CAPRICE32 4.5 with CPR support (By DSkywalk)
 ```
-#### Beta 2.2 (First Public Release):
+#### Beta 2.2:
 ```
 - CRT system over Retropie 4.4 updatable
 - Support for RPi2B/3B/3B+
