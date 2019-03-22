@@ -1,0 +1,58 @@
+<theme>
+    <formatVersion>4</formatVersion>
+
+    <include>./../crt.xml</include>
+
+    <!-- MAIN SYSTEM VIEW -->
+    <view name="system">
+      <image name="logo">
+        <path>./logo.png</path>
+      </image>
+
+      <image name="controller" extra="true">
+        <path>./controller.png</path>
+      </image>
+
+      <image name="band1" extra="true">
+        <color>FFFFFF</color>
+      </image>
+
+      <image name="band2" extra="true">
+        <color>f6c35b</color>
+      </image>
+
+      <image name="band3" extra="true">
+        <color>9e8546</color>
+      </image>
+
+      <image name="band4" extra="true">
+        <color>403217</color>
+      </image>
+    </view>
+
+    <!-- BASIC VIEW -->
+    <view name="basic">
+      <image name="logo">
+        <path>./logo.png</path>
+      </image>
+      
+      <textlist name="gamelist">
+        <selectorColor>cc9900</selectorColor>
+      </textlist>
+    </view>
+
+    <!-- DETAILED VIEW -->
+    <view name="detailed">
+      <image name="logo">
+        <path>./logo.png</path>
+      </image>
+      
+      <image name="bg_meta_color" extra="true">
+        <color>cc9900</color>
+      </image>
+      
+      <textlist name="gamelist">
+        <selectorColor>cc9900</selectorColor>
+      </textlist>
+    </view>
+</theme>
