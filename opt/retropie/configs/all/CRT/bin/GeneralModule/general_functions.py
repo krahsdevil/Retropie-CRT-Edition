@@ -633,7 +633,10 @@ def modificarLinea(archivo,buscar,reemplazar):
 					else:
 						all_lines_moded = "%s%s\n" % (all_lines_moded,line)
 		with open(archivo, 'w') as file:
-			file.write(all_lines_moded)
+			if all_lines_moded == "none":
+				file.write('')
+			else:
+				file.write(all_lines_moded)
 	else:
 		# This one replace a line
 		with open(archivo, "r") as f:
@@ -770,6 +773,27 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 	amiga = [False, "amiberry", False, "lr-puae"] 
 	# amiga_valid, True or False: if finds any amiga compatible emulator instaled, "none": Emulator found
 	amiga_valid = [False, "none"]
+	################################################################################################
+	# SCUMMVM PATHS AND INFO                                                                       #
+	# VARIABLE CONTAINS:                                                                           #
+	#   0) True or False if detected scummvm (standard) or not in emulators.cfg                    #
+	#   1) First scummvm emulator supported: scummvm (Quoted name recognized on RETROPIE)          #
+	#   2) True or False if detected scummvm-sdl1 (SDL1) or not in emulators.cfg                   #
+	#   3) Second scummvm emulator supported: scummvm-sdl1 (Quoted name recognized on RETROPIE)    #
+	################################################################################################
+	scummvm = [False, "scummvm", False, "scummvm-sdl1"] 
+	# scummvm_valid, True or False: if finds any scummvm compatible emulator instaled, "none": Emulator found
+	scummvm_valid = [False, "none"]
+	################################################################################################
+	# DOSBOX PATHS AND INFO                                                                        #
+	# VARIABLE CONTAINS:                                                                           #
+	#   0) True or False if detected dosbox (standard) or not in emulators.cfg                     #
+	#   1) First dosbox emulator supported: dosbox                                                 #
+	################################################################################################
+	dosbox = [False, "dosbox"] 
+	# scummvm_valid, True or False: if finds any scummvm compatible emulator instaled, "none": Emulator found
+	dosbox_valid = [False, "none"]
+
 	# default_valid, True or False: if finds any libretro core, "none": Emulator found
 	default_valid = [False, "none"]	
 
@@ -794,10 +818,10 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 		logging.info("ERROR: Saliendo de la aplicacion")
 		sys.exit()
 	################################################################################################
-	# Open emulators.cfg and read lines for RGB-Pi integration                                     #
+	# Open emulators.cfg and read lines for CRT integration                                        #
 	# RETROPIE use command line defined on each emulators.cfg located in emulator's config folder  #
 	# These command lines are added by RETROPIE when a new emulator is installed, we can manage    #
-	# changing this configuration forcing for example, default emulator/core for best RGB-Pi       #
+	# changing this configuration forcing for example, default emulator/core for best CRT          #
 	# experience.                                                                                  #
 	# This part will get default emulator/core and available of emulators.cfg in a variable        #
 	################################################################################################
@@ -830,6 +854,24 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 					logging.info("INFO: Emulador por defecto (%s) detectado como emulador NO valido para amiga" % linecheck[2])
 					amiga_valid[0] = False
 					amiga_valid[1] = "none"
+				if linecheck[2].replace('"','') == scummvm[1] or linecheck[2].replace('"','') == scummvm[3]:
+					logging.info("INFO: Emulador por defecto (%s) detectado como emulador valido para scummvm" % linecheck[2])
+					scummvm_valid[0] = True
+					scummvm_valid[1] = linecheck[2]
+				else:
+					logging.info("INFO: Emulador por defecto (%s) detectado como emulador NO valido para scummvm" % linecheck[2])
+					scummvm_valid[0] = False
+					scummvm_valid[1] = "none"
+					
+				if linecheck[2].replace('"','') == dosbox[1]:
+					logging.info("INFO: Emulador por defecto (%s) detectado como emulador valido para dosbox" % linecheck[2])
+					dosbox_valid[0] = True
+					dosbox_valid[1] = linecheck[2]
+				else:
+					logging.info("INFO: Emulador por defecto (%s) detectado como emulador NO valido para dosbox" % linecheck[2])
+					dosbox_valid[0] = False
+					dosbox_valid[1] = "none"
+					
 				if not 'lr-' in line:
 					logging.info("INFO: Emulador por defecto (%s) detectado como emulador generico libretro NO valido" % linecheck[2])
 					default_valid[0] = False
@@ -863,6 +905,21 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 					logging.info("INFO: Encontrado emulador instalado (%s) compatible con amiga" % amiga[3])
 					amiga[2] = True
 				################################################################################################
+				# Check for scummvm supported emulators                                                        #
+				################################################################################################
+				if scummvm[1] == coreid:
+					logging.info("INFO: Encontrado emulador instalado (%s) compatible con scummvm" % scummvm[1])
+					scummvm[0] = True
+				if scummvm[3] == coreid:
+					logging.info("INFO: Encontrado emulador instalado (%s) compatible con scummvm" % scummvm[3])
+					scummvm[2] = True
+				################################################################################################
+				# Check for dosbox supported emulators                                                        #
+				################################################################################################
+				if dosbox[1] == coreid:
+					logging.info("INFO: Encontrado emulador instalado (%s) compatible con dosbox" % dosbox[1])
+					dosbox[0] = True
+				################################################################################################
 				# Any case, if not a Libretro core leave command line as it is                                 #
 				################################################################################################
 				if not 'lr-' in coreid:
@@ -882,7 +939,7 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 				#     c) Append specific RGB retroarch.cfg config file.                                        #
 				#                                                                                              #
 				# *Retroarch config files priorities for defined options:                                      #
-				#    1)RGB-Pi Retroarch -> 2)CUSTOM Retroach (in core config folder) -> 3) GLOBAL Retroarch    #
+				#    1)CRT Retroarch -> 2)CUSTOM Retroach (in core config folder) -> 3) GLOBAL Retroarch       #
 				#  As regular RETROPIE instalation, users can add their custom option is CUSTOM retroarch.cfg  #
 				# *CORE options are CUSTOM files from RGB integration defined on RGB retroarch.cfg             #
 				################################################################################################
@@ -938,7 +995,7 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 			infos = "Install a supported version of advmame" 
 			infos2 = ""
 			something_is_bad(infos,infos2)
-			logging.info("No hay instalado ningun emulador advmame compatible con RGB-Pi")
+			logging.info("No hay instalado ningun emulador advmame compatible con CRT")
 			logging.info("Saliendo de la aplicacion")
 			sys.exit()
 		else:
@@ -962,11 +1019,11 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 			infos = "Install a supported version of amiga" 
 			infos2 = ""
 			something_is_bad(infos,infos2)
-			logging.info("No hay instalado ningun emulador amiga compatible con RGB-Pi")
+			logging.info("No hay instalado ningun emulador amiga compatible con CRT")
 			logging.info("Saliendo de la aplicacion")
 			sys.exit()
 		elif amiga_valid[0] == False and amiga[2] == True:
-			logging.info("Emulador por defecto para amiga NO soportado por RGB-Pi")
+			logging.info("Emulador por defecto para amiga NO soportado por CRT")
 			logging.info("Detectado (%s), estableciendo emulador como predeterminado" % amiga[1])
 			default_moded = "default = %s" % amiga[3]
 			logging.info("Guardando configuracion de emulador por defecto en variable:")
@@ -976,6 +1033,43 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 		elif amiga_valid[0] == False and amiga[0] == True:
 			default_moded = "default = %s" % amiga[1]
 			amiga_valid[1] = amiga[1]
+			check_changes = 1
+
+	#####################################################################################################################
+	# SPECIFIC FOR SCUMMVM                                                                                              #
+	# Check current default emulator for scummvm after emulators.cfg review:                                            #
+	#  1.- If not compatible version as default and there is any compatible, function will close later the launcher     #
+	#####################################################################################################################
+	elif emulator == "scummvm":
+		logging.info("Analizando emuladores para scummvm")
+		if scummvm_valid[0] == False and scummvm[0] == False and scummvm[2] == False:
+			infos = "Install a supported version of scummvm" 
+			infos2 = ""
+			something_is_bad(infos,infos2)
+			logging.info("No hay instalado ningun emulador scummvm compatible con CRT")
+			logging.info("Saliendo de la aplicacion")
+			sys.exit()
+		if scummvm_valid[0] == False and (scummvm[0] == True or scummvm[2] == True):
+			logging.info("Existe una version compatible de emulador para scummvm pero no es la seleccionada")
+			default_moded = ""
+			check_changes = 1
+	#####################################################################################################################
+	# SPECIFIC FOR DOSBOX                                                                                               #
+	# Check current default emulator for dosbox after emulators.cfg review:                                             #
+	#  1.- If not compatible version as default and there is any compatible, function will close later the launcher     #
+	#####################################################################################################################
+	elif emulator == "pc":
+		logging.info("Analizando emuladores para dosbox")
+		if dosbox_valid[0] == False and dosbox[0] == False and dosbox[2] == False:
+			infos = "Install a supported version of dosbox" 
+			infos2 = ""
+			something_is_bad(infos,infos2)
+			logging.info("No hay instalado ningun emulador dosbox compatible con CRT")
+			logging.info("Saliendo de la aplicacion")
+			sys.exit()
+		if dosbox_valid[0] == False and (dosbox[0] == True or dosbox[2] == True):
+			logging.info("Existe una version compatible de emulador para dosbox pero no es la seleccionada")
+			default_moded = ""
 			check_changes = 1
 	#################################################################################################################
 	# FOR ALL CONSOLES, HANDLED, MAME LIBRETRO AND FBA LIBRETRO                                                     #
@@ -1058,6 +1152,18 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 			modificarLinea(custom_emulator_file,CustEmuLineGame[0],"")
 		# Check current Retroarch Version
 		Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/retroarcharcade.cfg")
+	elif emulator == "scummvm":
+		if CustEmuLineGame[1] != "none":
+			if CustEmuLineGame[1].replace('"','') != scummvm[1] and CustEmuLineGame[1].replace('"','') != scummvm[3]:
+				logging.info("INFO: Emulador especifico scummvm para este juego (%s) no es ninguno de los soportados (%s o %s)" % (CustEmuLineGame[1], scummvm[1], scummvm[3]))
+				logging.info("INFO: Eliminando linea en %s para juego %s" % (custom_emulator_file, CustEmuLineGame[0]))
+				modificarLinea(custom_emulator_file,CustEmuLineGame[0],"")
+	elif emulator == "pc":
+		if CustEmuLineGame[1] != "none":
+			if CustEmuLineGame[1].replace('"','') != dosbox[1]:
+				logging.info("INFO: Emulador especifico dosbox para este juego (%s) no es ninguno de los soportados (%s)" % (CustEmuLineGame[1], dosbox[1]))
+				logging.info("INFO: Eliminando linea en %s para juego %s" % (custom_emulator_file, CustEmuLineGame[0]))
+				modificarLinea(custom_emulator_file,CustEmuLineGame[0],"")
 	elif emulator == "mame-advmame":
 		returnedDB[0] = advmameDB
 		returnedDB[1] = "mame-advmame"
@@ -1153,7 +1259,7 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 
 #################################################################################################################
 #  This function will check if retroarch is lower than v1.7.5 because of there is a significative change witch  #
-# 'customview' number that affects to RGB-Pi.                                                                   #
+# 'customview' number that affects to CRT.                                                                   #
 #################################################################################################################
 def Check_RetroArch_Version(configfile):
 	RetroarchPath = "/opt/retropie/emulators/retroarch/bin/retroarch"
@@ -1218,6 +1324,13 @@ def second_check_runcommand_emulator_init(emulator,rom_full_path,emulatorcfg,pat
 	
 	amiga = [False, "amiberry", False, "lr-puae"] 
 	amiga_valid = [False, "none"]
+
+	scummvm = [False, "scummvm", False, "scummvm-sdl1"] 
+	scummvm_valid = [False, "none"]
+
+	dosbox = [False, "dosbox"] 
+	dosbox_valid = [False, "none"]
+
 	
 	default_valid = [False, "none"]
 	KillEmulator = [False, "none"]
@@ -1254,6 +1367,19 @@ def second_check_runcommand_emulator_init(emulator,rom_full_path,emulatorcfg,pat
 				else:
 					amiga_valid[0] = False
 					amiga_valid[1] = "none"
+				if linecheck[2].replace('"','') == scummvm[1] or linecheck[2].replace('"','') == scummvm[3]:
+					scummvm_valid[0] = True
+					scummvm_valid[1] = linecheck[2]
+				else:
+					scummvm_valid[0] = False
+					scummvm_valid[1] = "none"
+					
+				if linecheck[2].replace('"','') == dosbox[1]:
+					dosbox_valid[0] = True
+					dosbox_valid[1] = linecheck[2]
+				else:
+					dosbox_valid[0] = False
+					dosbox_valid[1] = "none"
 				if not 'lr-' in line:
 					default_valid[0] = False
 				else:
@@ -1271,15 +1397,35 @@ def second_check_runcommand_emulator_init(emulator,rom_full_path,emulatorcfg,pat
 					amiga[0] = True
 				if amiga[3] in coreid:
 					amiga[2] = True
+				if scummvm[1] == coreid:
+					scummvm[0] = True
+				if scummvm[3] == coreid:
+					scummvm[2] = True
+				if dosbox[1] == coreid:
+					dosbox[0] = True
 				if 'lr-' in coreid:
 					found_Lr_core = True
 	if emulator == "mame-advmame":
 		if advmame_valid[1] != advmame[2]:
 			default_moded = "default = %s" % (advmame[2])
 			check_changes = 1
-
+	elif emulator == "scummvm":
+		if scummvm_valid[0] == False and scummvm[0] == False and scummvm[2] == False:
+			logging.info("NO Existe una version compatible de emulador para scummvm instalada")
+			default_moded = ""
+			check_changes = 1
+		elif scummvm_valid[0] == False and (scummvm[0] == True or scummvm[2] == True):
+			logging.info("Existe una version compatible de emulador para scummvm pero no es la seleccionada")
+			default_moded = ""
+			check_changes = 1
+	elif emulator == "pc":
+		if dosbox_valid[0] == False and dosbox[0] == False and dosbox[2] == False:
+			default_moded = ""
+			check_changes = 1
+		elif dosbox_valid[0] == False and (dosbox[0] == True or dosbox[2] == True):
+			default_moded = ""
+			check_changes = 1
 	elif emulator == "amiga":
-
 		if amiga_valid[0] == True:
 			PreselectedCore = PreselectedCore.replace('-a1200','').replace('-a500','').strip('"')
 			SelectedCore = amiga_valid[1].replace('-a1200','').replace('-a500','').strip('"')
@@ -1300,7 +1446,6 @@ def second_check_runcommand_emulator_init(emulator,rom_full_path,emulatorcfg,pat
 				default_moded == "default = %s" % (amiga[1])
 				amiga_valid[1] = amiga[1]
 				check_changes = 1
-
 	elif emulator == "arcade":
 		if default_valid[0] != True and advmame_valid[0] != True:
 			if found_Lr_core == True or advmame[0] == True:
@@ -1338,6 +1483,23 @@ def second_check_runcommand_emulator_init(emulator,rom_full_path,emulatorcfg,pat
 				else:
 					KillEmulator[0] = False
 					KillEmulator[1] = "none"
+
+		elif emulator == "scummvm":
+			if CustEmuLineGame[1].replace('"','') != scummvm[1] and CustEmuLineGame[1].replace('"','') != scummvm[3]:
+				logging.info("INFO: Emulador especifico scummvm para este juego (%s) no es ninguno de los soportados (%s o %s)" % (CustEmuLineGame[1], scummvm[1], scummvm[3]))
+				logging.info("INFO: Eliminando linea en %s para juego %s" % (custom_emulator_file, CustEmuLineGame[0]))
+				modificarLinea(custom_emulator_file,CustEmuLineGame[0],"")
+				KillEmulator[0] = True
+				KillEmulator[1] = "core_compatible_game"
+			else:
+				default_moded = CustEmuLineGame[1]
+		elif emulator == "pc":
+			if CustEmuLineGame[1].replace('"','') != dosbox[1]:
+				modificarLinea(custom_emulator_file,CustEmuLineGame[0],"")
+				KillEmulator[0] = True
+				KillEmulator[1] = "core_compatible_game"
+			else:
+				default_moded = CustEmuLineGame[1]
 		elif emulator == "arcade":
 			if 'lr-mame' in default_moded:
 				if not 'lr-' in CustEmuLineGame[1]:

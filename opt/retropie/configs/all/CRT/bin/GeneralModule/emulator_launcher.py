@@ -151,7 +151,7 @@ if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or e
 	if freq == 50:
 		emulatorWFQ = emulator + "50"
 		logging.info("INFO: Detectada seleccion a 50hz, modificada variable de nombre de emulador con etiqueta de frecuencia (emulatorWFQ): %s" % emulatorWFQ)
-	logging.info("INFO: Chequeando si RGB-Pi Netplay está habilitado")
+	logging.info("INFO: Chequeando si CRT Netplay está habilitado")
 	easy = easynetplay()
 	logging.info("INFO: Variable de estado de Netplay (easy): %s" % easy)
 	logging.info("INFO: Iniciando primer check de emulador")
@@ -213,7 +213,7 @@ if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or e
 	es_restore_screen()
 	logging.info("INFO: Resolucion restaurada")
 	if (Wrong_Emulator[0] == True or Wrong_Videomode == True) and RuncommandClosed != True:
-		logging.info("ERROR: Detectado un cierre forzado por RGB-Pi:")
+		logging.info("ERROR: Detectado un cierre forzado por CRT:")
 		logging.info("ERROR: Wrong_Emulator = %s, Wrong_Videomode = %s, RuncommandClosed = %s" % (Wrong_Emulator,Wrong_Videomode,RuncommandClosed))
 		if Wrong_Emulator[0] == True:
 			logging.info("ERROR: Mensaje en pantalla por cambio de emulador no permitido")
@@ -298,7 +298,7 @@ elif emulator == "sg-1000" or emulator == "fds" or emulator == "pcengine" or emu
 	sys.exit()
 
 ###################################################################################
-#       RETROARCH HANDHELD CONSOLE EMULATORS WITH RGB-PI BEZEL SUPPORT MOD        #
+#       RETROARCH HANDHELD CONSOLE EMULATORS WITH CRT BEZEL SUPPORT MOD           #
 ###################################################################################
 #                                                                                 #
 #    1) ATARI LYNX                                                                #
@@ -571,39 +571,95 @@ elif emulator == "arcade" or emulator == "mame-advmame" or emulator == "mame-lib
 #####################################################################################
 #                                                                                   #
 #    1) SCUMMVM                                                                     #
-#    2) DOSBox ('pc' in Retropie, was 'dos' in RGB-Pi)                              #
+#    2) DOSBox ('pc' in Retropie)                                                   #
 #                                                                                   #
 #####################################################################################
 elif emulator == "scummvm" or emulator == "pc":
-
-	# Encuentra el directorio 
-	lengdir = len(rom_full_path) - len(game_name) - 2
-	romr = "-p"+str(rom_full_path)
-	romdir = romr[0:lengdir]
-
-	# Encuentra el nombre
-	lengname = len(game_name) - 4
-	romname = game_name[0:lengname]
-
+	emulatorWFQ = emulator
+	logging.info("INFO: Chequeando si CRT Netplay está habilitado")
+	easy = easynetplay()
+	logging.info("INFO: Variable de estado de Netplay (easy): %s" % easy)
+	logging.info("INFO: Iniciando primer check de emulador")
+	logging.info("INFO: Llamada a la funcion change_retropie_runcommand_emulator_init(easy,emulator,emulatorWFQ,ra_cfg_path,game_name) con los siguientes parametros:")
+	logging.info("INFO: %s,%s,%s,%s,%s" % (easy,emulator,emulatorWFQ,ra_cfg_path,game_name))
+	change_retropie_runcommand_emulator_init(easy,emulator,emulatorWFQ,ra_cfg_path,game_name)
+	logging.info("INFO: Preparando linea de comandos para lanzar runcommand:")
 	commandline = "/opt/retropie/supplementary/runcommand/runcommand.sh 0 _SYS_ %s \"%s\"" % (emulator,rom_full_path)
-	runcommand_process = subprocess.Popen(commandline, shell=True)
-
+	commandline_paused = "touch /tmp/lchtmp && sleep 1 && /opt/retropie/supplementary/runcommand/runcommand.sh 0 _SYS_ %s \"%s\"" % (emulator,rom_full_path)
+	if '+start' in game_name.lower():
+		logging.info("INFO: Entrando a utilidad de configuracion para %s (%s)" % (emulator, game_name))
+		logging.info("INFO: touch /tmp/lchtmp && sleep 1 && /opt/retropie/supplementary/runcommand/runcommand.sh 0 _SYS_ %s \"%s\"" % (emulator,rom_full_path))
+		runcommand_process = subprocess.Popen(commandline_paused, shell=True)
+	else:
+		logging.info("INFO: /opt/retropie/supplementary/runcommand/runcommand.sh 0 _SYS_ %s \"%s\"" % (emulator,rom_full_path))
+		runcommand_process = subprocess.Popen(commandline, shell=True)
+	logging.info("INFO: Subproceso lanzado")
+	logging.info("INFO: Esperando a %s o que runconmmand termine" %emulator)
 	while True:
 		output = commands.getoutput('ps -A')
-		if 'scummvm' in output or 'dosbox' in output or os.path.exists('/tmp/lchtmp'):
-			# Exits if main emulator is launched
+		if 'scummvm' in output or 'dosbox' in output or 'retroarch' in output or os.path.exists('/tmp/lchtmp'):
+			if 'retroarch' in output:
+				logging.info("INFO: Detectado retroarch en los procesos activos")
+			if 'scummvm' in output:
+				logging.info("INFO: Detectado scummvm en los procesos activos")
+			if 'dosbox' in output:
+				logging.info("INFO: Detectado dosbox en los procesos activos")
+			if os.path.exists('/tmp/lchtmp'):
+				logging.info("INFO: Detectado trigger file /tmp/lchtmp")
+			logging.info("INFO: Ocultando pantalla")
 			splash_info("black")
+			logging.info("INFO: Lanzando cambio de frecuencia de monitor:")
+			logging.info("INFO: crt_open_screen_raw(%s,%s)" % (emulator,timings_full_path))
 			crt_open_screen_raw(emulator,timings_full_path)
+			logging.info("INFO: Frecuencia cambiada, saliendo del bucle de espera")
 			break
 		poll = runcommand_process.poll()
 		if poll != None:
+			logging.info("INFO: Detectado el cierre de runcommand (poll = %s)" % poll)
 			# Exits if runcommand finish unexpectedly or by user
 			RuncommandClosed = True
+			logging.info("INFO: Establecida variable de deteccion de cierre de runcommand (RuncommnadClose = %s)" % RuncommandClosed)
+			logging.info("INFO: Saliendo del bucle de espera")
 			break
-
+	logging.info("INFO: Iniciando segundo check de Emulador")
+	Wrong_Emulator = second_check_runcommand_emulator_init(emulator,rom_full_path,emulatorWFQ,ra_cfg_path,"unknown")
+	logging.info("INFO: Devueltos los siguientes valores para Wrong_Emulator: %s, %s" % (Wrong_Emulator[0],Wrong_Emulator[1]))
+	logging.info("INFO: Iniciando check de cambios de resolucion de retropie")
+	Wrong_Videomode = check_videomodes()
+	logging.info("INFO: Devueltos los siguientes valores para Wrong_Videomode: %s" % Wrong_Videomode)
+	if (Wrong_Emulator[0] == True or Wrong_Videomode == True) and RuncommandClosed != True:
+		logging.info("ERROR: Detectado cambio de emulador o resolucion no permitido")
+		logging.info("ERROR: Esperando a que Retroarch inicie para forzar el cierre y salir")
+		while True:
+			output = commands.getoutput('ps -A')
+			if 'retroarch' in output or 'dosbox' in output or 'scummvm' in output:
+				break
+		logging.info("ERROR: Cerrando el proceso de %s" % emulator)
+		os.system('killall retroarch > /dev/null 2>&1')
+		os.system('killall "dosbox" > /dev/null 2>&1')
+		os.system('killall "scummvm" > /dev/null 2>&1')
+	logging.info("INFO: Esperando a que el subproceso de Runcommand finalice")
 	runcommand_process.wait()
+	logging.info("INFO: Cerrando Pygame")
+	pygame.quit()
 	# Restore ES resolution from 1st line of /boot/config.txt
+	logging.info("INFO: Restaurando resolucion base")
 	es_restore_screen()
+	logging.info("INFO: Resolucion restaurada")
+	if (Wrong_Emulator[0] == True or Wrong_Videomode == True) and RuncommandClosed != True:
+		logging.info("ERROR: Detectado un cierre forzado por CRT:")
+		logging.info("ERROR: Wrong_Emulator = %s, Wrong_Videomode = %s, RuncommandClosed = %s" % (Wrong_Emulator,Wrong_Videomode,RuncommandClosed))
+		if Wrong_Emulator[0] == True:
+			logging.info("ERROR: Mensaje en pantalla por cambio de emulador no permitido")
+			infos = "You didn't choose wisely..."
+			infos2 = "Try with other core/emulator"
+			something_is_bad(infos,infos2)
+		if Wrong_Videomode == True:
+			logging.info("ERROR: Mensaje en pantalla por cambio de resolucion no permitido")
+			infos = "You didn't choose wisely..."
+			infos2 = "Don't let Retropie play with my resolutions!"
+			something_is_bad(infos,infos2)
+	logging.info("INFO: Saliendo de la aplicacion")
 	sys.exit()
 
 #####################################################################################
