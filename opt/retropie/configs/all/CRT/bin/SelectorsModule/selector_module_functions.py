@@ -481,4 +481,77 @@ def selector_encapsulate():
 					cursor.play()
 					fullscreen.blit(ff60, ff60Pos)
 					pygame.display.flip()
+def selector_allvideos():
+	get_xy_screen()
+	pygame.mixer.pre_init(44100, -16, 1, 512)
+	pygame.init()
+	pygame.display.init()
+	pygame.mouse.set_visible(0)
+	
+	get_retropie_joy_map()
+	
+	# FF files
+	option1 = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/videoplayer/allvideos/option1.png')
+	option1Pos = option1.get_rect()
+	option1Pos.center = ((x_screen/2), (y_screen/2))
+	option2 = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/videoplayer/allvideos/option2.png')
+	option2Pos = option2.get_rect()
+	option2Pos.center = ((x_screen/2), (y_screen/2))
+	option1_ena = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/videoplayer/allvideos/option1_ena.png')
+	option1_enaPos = option1_ena.get_rect()
+	option1_enaPos.center = ((x_screen/2), (y_screen/2))
+	option2_ena = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/videoplayer/allvideos/option2_ena.png')
+	option2_enaPos = option2_ena.get_rect()
+	option2_enaPos.center = ((x_screen/2), (y_screen/2))
+	cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/videoplayer/allvideos/cursor.wav")
+	load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/videoplayer/allvideos/load.wav")
 
+	# SET SCREEN
+	fullscreen = pygame.display.set_mode((x_screen,y_screen), FULLSCREEN)
+	fullscreen.fill(black)
+
+	# PASTE PICTURE ON FULLSCREEN
+	fullscreen.blit(option1, option1Pos)
+	pygame.display.flip()
+	y = 0
+	y_slide = 0
+
+
+	while True:
+		for event in pygame.event.get():
+			action = check_joy_event(event)
+			#button
+			if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
+				if y < 1:
+					load.play()
+					fullscreen.blit(option1_ena, option1_enaPos)
+					pygame.display.flip()
+					time.sleep(1)
+					pygame.display.quit()
+					pygame.quit()
+					return False
+
+				if y == 1:
+					load.play()
+					fullscreen.blit(option2_ena, option2_enaPos)
+					pygame.display.flip()
+					time.sleep(1)
+					pygame.display.quit()
+					pygame.quit()
+					return True
+
+			#down
+			elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
+				if y < 1:
+					y = y + 1
+					cursor.play()
+					fullscreen.blit(option2, option2Pos)
+					pygame.display.flip()
+
+			#up
+			elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
+				if y > 0:
+					y = y - 1
+					cursor.play()
+					fullscreen.blit(option1, option1Pos)
+					pygame.display.flip()

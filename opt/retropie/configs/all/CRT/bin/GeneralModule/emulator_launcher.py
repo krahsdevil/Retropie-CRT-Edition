@@ -16,6 +16,7 @@ import shutil
 import pygame
 import time
 import logging
+import glob
 
 import subprocess
 import commands
@@ -768,19 +769,58 @@ elif emulator == "testing_ports":
 	pass
 	os.system('rm /tmp/lchtmp > /dev/null 2>&1')
 	sys.exit()
-#####################################################################################
-#    ANY OTHER EMULATOR NOT SUPPORTED                                               #
-#####################################################################################
 
+#####################################################################################
+#    VIDEOPLAYER                                                                    #
+#####################################################################################
 elif emulator == "videoplayer":
 	emulatorWFQ = emulator + "50"
+	video_path = os.path.dirname(rom_full_path)
+	VideoPosition = 0
+	video_ext = ['avi', 'mkv', 'mp4', 'mpg', 'AVI', 'MKV', 'MP4', 'MPG']
+	videos = []
+	for extension in video_ext:
+		videos = videos + glob.glob(("%s/*.%s")%(video_path,extension))
+	videos = sorted(videos)
+	for srchvideo in videos:
+		if srchvideo == rom_full_path:
+			break
+		else:
+			VideoPosition += 1
+	counter = 0
+	for srchvideo in videos:
+		counter += 1
+	if counter <= 1:
+		PlayAllVideos = False
+	else:
+		PlayAllVideos = selector_allvideos()
 	launch_joy2key('kcub1', 'kcuf1', 'kcuu1', 'kcud1', '0x20', '0x71', '0x6b', '0x6a', '0x6d', '0x6e')
 	crt_open_screen_from_timings_cfg(emulatorWFQ,timings_full_path)
-	commandline = 'omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/SFSquareHeadExtendedMOD.ttf" %s  > /dev/null 2>&1' % rom_full_path
-	os.system(commandline)
+	commandline = 'omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/SFSquareHeadExtendedMOD.ttf" \"%s\" > /dev/null 2>&1' % videos[VideoPosition]
+	runcommand_process = subprocess.Popen(commandline, shell=True)
+	while True:
+		poll = runcommand_process.poll()
+		if poll != None:
+			returncoded = runcommand_process.returncode
+			if returncoded == 3:
+				break
+			else:
+				if PlayAllVideos == True:
+					VideoPosition += 1
+					try:
+						videos[VideoPosition]
+						runcommand_process = subprocess.Popen('omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/SFSquareHeadExtendedMOD.ttf" \"%s\" > /dev/null 2>&1' % videos[VideoPosition], shell=True)
+					except:
+						break
+				else:
+					break
+	os.system('echo %s >> /tmp/proces' % returncoded)
 	os.system('sudo killall joy2key.py')
 	es_restore_screen()
 
+#####################################################################################
+#    ANY OTHER EMULATOR NOT SUPPORTED                                               #
+#####################################################################################
 else:
 	infos = "System not supported [%s]" % emulator
 	infos2 = ""
