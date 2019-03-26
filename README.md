@@ -21,6 +21,7 @@ You can find original RGB-Pi project for recalbox [here](https://github.com/mort
   - BASE/FLAT/FOREST issues showing game info like 'last played'
   - BASE/FLAT/FOREST added custom-collections
 - Added basic Video Player (omxplayer) - Place videos at '/roms/videos/' folder
+- MSX Emulation, Libretro core lr-bluemsx pre-installed 
 ```
 #### Beta 2.3 (First Public Release):
 ```
