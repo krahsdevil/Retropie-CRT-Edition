@@ -12,7 +12,16 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 
 ## Changelog
-
+#### Beta 2.4:
+```
+- Some Internal code optimization and cleaned boot config file (By DSkywalk)
+- Fix black screen and exit on DosBox & ScummVM launcher
+- Solved some issues with themes
+  - TATE theme added 'last played', 'all games', 'favourites'
+  - BASE/FLAT/FOREST issues showing game info like 'last played'
+  - BASE/FLAT/FOREST added custom-collections
+- Added basic Video Player (omxplayer) - Place videos at '/roms/videos/' folder
+```
 #### Beta 2.3 (First Public Release):
 ```
 - Fix PSX TATE 'Launching images'
