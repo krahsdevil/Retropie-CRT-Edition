@@ -1,0 +1,15 @@
+[Unit]
+Description=This service play background music with emulationstionation
+DefaultDependencies=no
+
+[Service]
+ExecStart=sudo rm /home/pi/DisableMusic
+ExecStart=/opt/retropie/configs/all/CRT/bin/BackGroundMusic/BGM.py &
+WorkingDirectory=/opt/retropie/configs/all/CRT/bin/BackGroundMusic
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=sysinit.target

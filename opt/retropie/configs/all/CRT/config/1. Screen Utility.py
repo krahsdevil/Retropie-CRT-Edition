@@ -26,6 +26,8 @@ from selector_module_functions import check_joy_event
 
 os.system('clear')
 
+ServiceRunning = False
+ServiceExist = False
 x_screen = 0
 y_screen = 0
 x_margin = 0
@@ -108,6 +110,7 @@ y_slide = 0
 JoyAutoconfigPath = "/opt/retropie/configs/all/retroarch/autoconfig/"
 VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
 EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
+MusicPath = "/opt/retropie/configs/music"
 
 # FUNCTIONS
 def text_print(txt, xcoord, ycoord, r, g, b, center):
@@ -141,7 +144,41 @@ def save():
 	modificarLinea(VideoUtilityCFG,'frontend_rotation','frontend_rotation %s'%opt[1][2])
 	modificarLinea(VideoUtilityCFG,'handheld_bezel','handheld_bezel %s'%opt[2][2])
 	modificarLinea(VideoUtilityCFG,'freq_selector','freq_selector %s'%opt[3][2])
+def Check_BackGround_Music():
+	global opt
+	global ServiceRunning
+	global ServiceExist
+	if not os.path.exists(MusicPath):
+		os.makedirs(MusicPath)
+		os.system('touch \"%s/place your background music here.txt\"' % MusicPath)
+	CheckService = commands.getoutput('systemctl list-units --all | grep \"BackGroundMusic.service\"')
+	if 'BackGroundMusic.service' in CheckService:
+		ServiceExist = True
+		if 'running' in CheckService:
+			ServiceRunning = True
+			opt[5][2] = "ON"
+		else:
+			ServiceRunning = False
+			opt[5][2] = "OFF"
+	else:
+		ServiceExist = False
+		ServiceRunning = False
+		opt[5][2] = "OFF"
+def InstallServiceBackGroundMusic():
+	global ServiceRunning
+	global ServiceExist
+	if ServiceExist == False:
+		if os.path.exists('/opt/retropie/configs/all/CRT/bin/BackGroundMusic/BackGroundMusic.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/BackGroundMusic/BGM.py'):
+			os.system('sudo cp /opt/retropie/configs/all/CRT/bin/BackGroundMusic/BackGroundMusic.service /etc/systemd/system/ > /dev/null 2>&1')
+	os.system('sudo systemctl enable BackGroundMusic.service > /dev/null 2>&1')
+	os.system('sudo systemctl start BackGroundMusic.service > /dev/null 2>&1')
+	Check_BackGround_Music()
 
+def DesInstallServiceBackGroundMusic():
+	if os.path.exists('/opt/retropie/configs/all/CRT/bin/BackGroundMusic/BackGroundMusic.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/BackGroundMusic/BGM.py'):
+		os.system('sudo systemctl stop BackGroundMusic.service > /dev/null 2>&1')
+		os.system('sudo systemctl disable BackGroundMusic.service > /dev/null 2>&1')
+	Check_BackGround_Music()
 def rotate_frontend():
 	if RotateFrontEnd == True:
 		os.system('rm /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate1 >> /dev/null 2>&1')
@@ -234,7 +271,7 @@ opt = [["1.GAMES ROTATION" , "Not PixelPerfect but playable on AdvMAME" , 0],
 	["3.HANDHELD BEZELS" , "CAUTION!!! Long use can damage the screen" , 0],
 	["4.FREQUENCY SELECTOR" , "Set Frequency at 50/60hz, Auto or Manual" , 0],
 	["5.VIDEO CONFIG>" , "Advanced Video Configuration"],
-	['none' , 'none'],
+	['6.BACKGROUND MUSIC' , 'Play your music with emulationstation', 0],
 	['none' , 'none'],
 	['none' , 'none'],
 	["<EXIT" , "Save and Exit"]]
@@ -297,6 +334,7 @@ def get_config():
 		opt[1][2] = 0
 		opt[1][3] = 0
 		modificarLinea(VideoUtilityCFG, 'theme_horizontal ', 'theme_horizontal %s'%CurTheme)
+	Check_BackGround_Music()
 
 
 
@@ -325,11 +363,11 @@ def draw_menu():
 	#list
 	for i in range(0,9):
 		option = y+y_slide
-		if (i+y_slide <= 4 or i+y_slide == 8) and RotateFrontEnd == False:
+		if (i+y_slide <= 5 or i+y_slide == 8) and RotateFrontEnd == False:
 			opt[8][0] = '<EXIT'
 			opt[8][1] = 'Save and Exit'
 			fullscreen.blit((myfont.render(opt[i+y_slide][0], 1, (165,165,255))), (list_x, (30+y_margin+LineMov)+i*Interline))
-		elif (i+y_slide <= 4 or i+y_slide == 8) and RotateFrontEnd == True:
+		elif (i+y_slide <= 5 or i+y_slide == 8) and RotateFrontEnd == True:
 			opt[8][0] = '<RESTART'
 			opt[8][1] = 'Restart FrontEnd for TATE Mode'
 			if i+y_slide == 1 or i+y_slide == 8:
@@ -353,7 +391,7 @@ def draw_menu():
 				else:
 					select = myfont.render(str(opt[3][2]), 1, (165,165,255))
 					fullscreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
-			elif i < 3:
+			elif i < 3 or i == 5:
 				strpor = myfont.render(str(opt[i][2]), 1, (165,165,255))
 				fullscreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
 		else:
@@ -370,7 +408,7 @@ def draw_menu():
 				else:
 					select = myfont.render(str(opt[3][2]), 1, (110,110,255))
 					fullscreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
-			elif i < 3:
+			elif i < 3 or i == 5:
 				strpor = myfont.render(str(opt[i][2]), 1, (110,110,255))
 				fullscreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
 
@@ -388,7 +426,7 @@ def draw_menu():
 	fullscreen.blit((myfont.render(opt[option][0], 1, (66,66,231))), (list_x, (30+y_margin+LineMov)+y*Interline))
 
 	# data redraw
-	if y < 4:
+	if y < 4 or y == 5:
 		if opt[3][2] == 0 and y == 3:
 			listrndr = myfont.render("MAN", 1, (66,66,231))
 			fullscreen.blit(listrndr, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+y*Interline))
@@ -435,6 +473,12 @@ def draw_menu():
 			draw_arrow_left()
 		if opt[3][2] == 100:
 			draw_arrow_left()
+	#option 6
+	if y == 5:
+		if opt[5][2] == "ON":
+			draw_arrow_left()
+		if opt[5][2] == "OFF":
+			draw_arrow_right()
 
 	#option 8
 	if y == 7 and opt[1][2] != opt[1][3]:
@@ -483,6 +527,8 @@ while True:
 				opt[3][2] = 60
 			elif y == 3 and opt[3][2] == 60:
 				opt[3][2] = 100
+			elif y == 5 and opt[5][2] == "OFF":
+				InstallServiceBackGroundMusic()
 		#left
 		elif action == 'LEFTKEYBOARD' or action == 'JOYHATLEFT' or action == 'AXISLEFT':
 			if y == 0 and opt[0][2] > -90 and opt[1][2] == 0:
@@ -498,6 +544,8 @@ while True:
 				opt[3][2] = 50
 			elif y == 3 and opt[3][2] == 50:
 				opt[3][2] = 0
+			elif y == 5 and opt[5][2] == "ON":
+				DesInstallServiceBackGroundMusic()
 		#up			
 		elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
 			if RotateFrontEnd == True:
@@ -507,7 +555,7 @@ while True:
 				if y == 0:
 					y = 8
 				elif y == 8:
-					y = 4
+					y = 5
 				elif y > 0:
 					y = y - 1
 		#down
@@ -516,7 +564,7 @@ while True:
 				if y == 1:
 					y = 8
 			else:
-				if y == 4:
+				if y == 5:
 					y = 8
 				elif y == 8:
 					y = 0
