@@ -14,7 +14,7 @@ You can find original RGB-Pi project for recalbox [here](https://github.com/mort
 ## Changelog
 #### Beta 2.4:
 ```
-- Some Internal code optimization and cleaned boot config file (By DSkywalk)
+- Internal code optimization and cleaned boot config file (By DSkywalk)
 - Fix black screen and exit on DosBox & ScummVM launcher
 - Solved some issues with themes
   - TATE theme added 'last played', 'all games', 'favourites'
