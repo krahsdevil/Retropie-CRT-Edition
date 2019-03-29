@@ -796,7 +796,7 @@ elif emulator == "videoplayer":
 		PlayAllVideos = selector_allvideos()
 	launch_joy2key('kcub1', 'kcuf1', 'kcuu1', 'kcud1', '0x20', '0x71', '0x6b', '0x6a', '0x6d', '0x6e')
 	crt_open_screen_from_timings_cfg(emulatorWFQ,timings_full_path)
-	commandline = 'omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/SFSquareHeadExtendedMOD.ttf" \"%s\" > /dev/null 2>&1' % videos[VideoPosition]
+	commandline = 'omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/Ubuntu_MOD_WIDE.ttf" \"%s\" > /dev/null 2>&1' % videos[VideoPosition]
 	runcommand_process = subprocess.Popen(commandline, shell=True)
 	while True:
 		poll = runcommand_process.poll()
@@ -809,7 +809,7 @@ elif emulator == "videoplayer":
 					VideoPosition += 1
 					try:
 						videos[VideoPosition]
-						runcommand_process = subprocess.Popen('omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/SFSquareHeadExtendedMOD.ttf" \"%s\" > /dev/null 2>&1' % videos[VideoPosition], shell=True)
+						runcommand_process = subprocess.Popen('omxplayer -b --align center --layer 10000 --font-size 72 --font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/Ubuntu_MOD_WIDE.ttf" \"%s\" > /dev/null 2>&1' % videos[VideoPosition], shell=True)
 					except:
 						break
 				else:
