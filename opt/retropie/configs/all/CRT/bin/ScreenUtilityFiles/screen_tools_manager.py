@@ -170,7 +170,7 @@ def quit_manager():
 		output = commands.getoutput('ps -A')
 		# Restart ES if it is running
 		if 'emulationstatio' in output:
-			os.system('sudo pkill -9 -f \"Screen Utility\"')
+			os.system('sudo pkill -9 -f \"Configuration Utility\"')
 			os.system("touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"")
 	elif OutputModeChange == True:
 		CurMode = 'none'
@@ -397,9 +397,9 @@ def draw_menu():
 	pygame.draw.rect(fullscreen, BlueDark, (20,y_margin,x_screen-40,(20+(Interline*9)+3+16+10)), 0)
 
 	#title and credits
-	title = myfont.render("CRT Video Config", 1, BlueLight)
+	title = myfont.render("Configuration Utility", 1, BlueLight)
 	fullscreen.blit(title, (32, y_margin+8))
-	text_print("v2.0", x_screen-62, y_margin+8, 110, 110, 255, False)
+	text_print("v2.1", x_screen-62, y_margin+8, 110, 110, 255, False)
 
 	#last options
 	#text_print('last rotation = ' + str(opt[4][3]), 0, 0, 255, 0, 0)

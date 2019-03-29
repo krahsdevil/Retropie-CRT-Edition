@@ -349,9 +349,9 @@ def draw_menu():
 	pygame.draw.rect(fullscreen, (66,66,231), (20,y_margin,x_screen-40,(20+(Interline*9)+3+16+10)), 0)
 
 	#title and credits
-	title = myfont.render("CRT Screen Utility", 1, (165,165,255))
+	title = myfont.render("Configuration Utility", 1, (165,165,255))
 	fullscreen.blit(title, (32, y_margin+8))
-	text_print("v2.0", x_screen-62, y_margin+8, 110, 110, 255, False)
+	text_print("v2.1", x_screen-62, y_margin+8, 110, 110, 255, False)
 
 	#last options
 	#text_print('last rotation = ' + str(opt[4][3]), 0, 0, 255, 0, 0)

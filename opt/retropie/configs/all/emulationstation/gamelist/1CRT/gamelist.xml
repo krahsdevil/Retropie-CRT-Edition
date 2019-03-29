@@ -11,9 +11,9 @@
 		<image>./icons/5. Trinitron FIX.png</image>
 	</game>
 	<game>
-		<path>./1. Screen Utility.py</path>
-		<name>1. Screen Utility</name>
-		<image>./icons/1. Screen Utility.png</image>
+		<path>./1. Configuration Utility.py</path>
+		<name>1. Configuration Utility</name>
+		<image>./icons/1. Configuration Utility.png</image>
 	</game>
 	<game>
 		<path>./3. Credits.py</path>
