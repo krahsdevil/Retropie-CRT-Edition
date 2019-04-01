@@ -54,7 +54,7 @@ else:
 	resolution = "ERROR"
 
 ###Overlay Config###
-overlay_enable = True # Enable or disable the overlay
+overlay_enable = False # Enable or disable the overlay
 overlay_fade_out = True # Change to "False" to have the overlay remain on the screen until an emulator/application is launched
 overlay_fade_out_time = 8 # Hide the overlay after X seconds
 overlay_pngview_location = '/opt/retropie/configs/all/CRT/bin/BackGroundMusic/pngview'
