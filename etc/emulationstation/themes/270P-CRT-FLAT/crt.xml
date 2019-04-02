@@ -105,7 +105,7 @@
     </view>
 
     <!-- DETAILED VIEW -->
-    <view name="detailed">
+    <view name="detailed, video">
       <image name="logo">
         <origin>0.5 0.5</origin>
         <maxSize>0.5 0.16</maxSize>
@@ -128,6 +128,16 @@
         <color>DDDDDD</color>
       </image>
 
+      
+      <image name="gamelist-matte" extra="true">
+        <path>./_assets/images/white.png</path>
+        <origin>1 0.5</origin>
+        <pos>1 0.512</pos>
+        <size>0.60 0.655</size>
+        <color>323a3cAA</color>
+      </image>
+      
+
       <textlist name="gamelist">
         <fontPath>./_assets/fonts/PetMe64.ttf</fontPath>
         <selectedColor>FFFFFF</selectedColor>
@@ -138,12 +148,6 @@
         <horizontalMargin>0.02</horizontalMargin>
         <forceUppercase>1</forceUppercase>
       </textlist>
-
-      <image name="md_image">
-        <origin>0.5 0.5</origin>
-        <pos>0.20 0.515</pos>
-        <maxSize>0.35 0.6</maxSize>
-      </image>
 
       <image name="bg_meta_color" extra="true">
         <path>./_assets/images/bg_color.png</path>
@@ -201,5 +205,21 @@
         <pos>0.020 0.94</pos>
         <fontSize>0.04</fontSize>
       </helpsystem>
+    </view>
+    <view name="detailed">
+      <image name="md_image">
+        <origin>0.5 0.5</origin>
+        <pos>0.20 0.515</pos>
+        <maxSize>0.35 0.6</maxSize>
+      </image>
+    </view>
+    <view name="video">
+      <video name="md_video">
+        <origin>0.5 0.5</origin>
+        <pos>0.20 0.515</pos>
+        <maxSize>0.35 0.6</maxSize>
+        <showSnapshotDelay>true</showSnapshotDelay>
+        <delay>1.5</delay>
+      </video>
     </view>
 </theme>

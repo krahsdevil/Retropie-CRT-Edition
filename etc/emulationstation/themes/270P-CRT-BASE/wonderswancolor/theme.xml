@@ -15,7 +15,7 @@
 		</image>
 	</view>
 
-	<view name="basic, detailed">
+	<view name="basic, detailed, video">
 		<!-- System Specific Images -->
 		<image name="logo">
 			<path>./logo-alt.png</path>
