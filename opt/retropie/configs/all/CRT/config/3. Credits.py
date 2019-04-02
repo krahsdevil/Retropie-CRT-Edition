@@ -27,16 +27,16 @@ x_screen = 0
 y_screen = 0
 
 def get_xy_screen():
-	global x_screen
-	global y_screen
-	process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
-	output = process.stdout.read()
-	for line in output.splitlines():
-		if 'x' in line and 'mode' in line:
-			ResMode = line
-			ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
-			x_screen = int(ResMode[1])
-			y_screen = int(ResMode[2])
+    global x_screen
+    global y_screen
+    process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
+    output = process.stdout.read()
+    for line in output.splitlines():
+        if 'x' in line and 'mode' in line:
+            ResMode = line
+            ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
+            x_screen = int(ResMode[1])
+            y_screen = int(ResMode[2])
 
 get_xy_screen()
 pygame.init()
