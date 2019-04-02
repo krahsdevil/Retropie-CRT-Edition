@@ -8,7 +8,7 @@ based on:		"carbon" by eric hettervik
 -->
 
 <theme>
-    <formatVersion>4</formatVersion>
+	<formatVersion>4</formatVersion>
 	
 	<!-- System View -->
 	<view name="system">	
@@ -54,7 +54,7 @@ based on:		"carbon" by eric hettervik
 
 
 	<!-- Game View - All -->
-    <view name="basic, detailed, video">
+	<view name="basic, detailed, video">
 		<!-- Page Layout -->
 		<image name="background" extra="true">		
 			<origin>0 0</origin>
@@ -167,94 +167,19 @@ based on:		"carbon" by eric hettervik
 
 	<!-- Game View - Detailed -->
 	<view name="detailed">
-		<!-- Metadata -->
-		<text name="md_lbl_players, md_lbl_genre, md_lbl_developer, md_lbl_publisher, md_lbl_releasedate">
-			<fontPath>./common/fonts/Lato-Black.ttf</fontPath>
-			<fontSize>0.023</fontSize>
-			<forceUppercase>1</forceUppercase>			
-			<size>0 0</size>
-		</text>
-		
-		<text name="md_players, md_genre, md_developer, md_publisher">
-			<fontPath>./common/fonts/Lato-Regular.ttf</fontPath>
-			<fontSize>0.023</fontSize>
-			<size>0 0</size>
-			<color>A0A0A0</color>
-		</text>
-		
-		<datetime name="md_releasedate">
-			<fontPath>./common/fonts/Lato-Regular.ttf</fontPath>
-			<fontSize>0.023</fontSize>
-			<color>A0A0A0</color>
-		</datetime>
-
-		
-		<!-- Description -->
-		<text name="md_description">
-			<fontPath>./common/fonts/Lato-Regular.ttf</fontPath>
-			<fontSize>0.023</fontSize>
-			<color>A0A0A0</color>
-		</text>
-		
-		<!-- Unused Metadata -->
-		<text name="md_lbl_favorite, md_favorite, md_lbl_rating, md_lbl_lastplayed, md_lbl_playcount, md_playcount">
-			<fontPath>./common/fonts/AdobeBlank.ttf</fontPath>
-		</text>
-		
-		<datetime name="md_lastplayed">
-			<fontPath>./common/fonts/AdobeBlank.ttf</fontPath>
-		</datetime>
-		
-		<rating name="md_rating">
-			<filledPath>./common/images/transparent.png</filledPath>
-			<unfilledPath>./common/images/transparent.png</unfilledPath>
-		</rating>
-	
-		<!-- Metadata -->			
-		<image name="meta-matte" extra="true">
-			<color>000000AA</color>
-		</image>
-		
-		<text name="md_lbl_players, md_lbl_genre, md_lbl_developer, md_lbl_publisher, md_lbl_releasedate">
-			<color>A0A0A0</color>
-		</text>
-		
-		<!-- Description -->
-		<image name="description-matte" extra="true">
-			<color>000000AA</color>
-		</image>
-
-		<!-- Game Image 600x600 -->
-		<image name="image-matte" extra="true">
-			<path>./common/images/white.png</path>
-			<origin>0.0 0.0</origin>
-			<pos>0.5343 0.16</pos>
-			<size>0.4357 0.7745</size>
-			<color>000000AA</color>
-		</image>
-		
 		<image name="md_image">
 			<origin>0.5 0.5</origin>
 			<pos>0.75215 0.55</pos>
 			<maxSize>0.388 0.6898</maxSize>
 		</image>
-		
-		<!-- Metadata - Unused -->
-		<text name="md_lbl_favorite, md_favorite, md_lbl_players, md_players, md_lbl_genre, md_genre, md_lbl_developer, md_developer, md_lbl_publisher, md_publisher, md_lbl_releasedate, md_description">
-			<fontPath>./common/fonts/AdobeBlank.ttf</fontPath>
-		</text>
-
-
-		
-		<datetime name="md_releasedate">
-			<fontPath>./common/fonts/AdobeBlank.ttf</fontPath>
-		</datetime>
-		
-		<!-- Game List -->
-		<image name="gamelist-matte" extra="true">
-			<size>0.486 0.7745</size>
-		</image>
-		
 	</view>
-	
+	<view name="video">
+		<video name="md_video">
+			<origin>0.5 0.5</origin>
+			<pos>0.75215 0.55</pos>
+			<maxSize>0.388 0.6898</maxSize>
+			<showSnapshotDelay>true</showSnapshotDelay>
+			<delay>1.5</delay>
+		</video>
+	</view>
 </theme>

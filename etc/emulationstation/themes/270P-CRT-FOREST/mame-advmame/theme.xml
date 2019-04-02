@@ -14,7 +14,7 @@
       </image>
     </view>
 
-    <view name="basic, detailed">
+    <view name="basic, detailed, video">
       <image name="logo">
         <path>./logo.png</path>
       </image>

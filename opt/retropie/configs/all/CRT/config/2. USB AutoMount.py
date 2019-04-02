@@ -30,16 +30,16 @@ x_screen = 0
 y_screen = 0
 
 def get_xy_screen():
-	global x_screen
-	global y_screen
-	process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
-	output = process.stdout.read()
-	for line in output.splitlines():
-		if 'x' in line and 'mode' in line:
-			ResMode = line
-			ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
-			x_screen = int(ResMode[1])
-			y_screen = int(ResMode[2])
+    global x_screen
+    global y_screen
+    process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
+    output = process.stdout.read()
+    for line in output.splitlines():
+        if 'x' in line and 'mode' in line:
+            ResMode = line
+            ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
+            x_screen = int(ResMode[1])
+            y_screen = int(ResMode[2])
 get_xy_screen()
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
@@ -80,31 +80,31 @@ cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSki
 load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/load.wav")
 os.system('clear')
 def InstallServiceAutomount():
-	if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.py'):
-		os.system('sudo cp /opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service /etc/systemd/system/CRT-Automount.service > /dev/null 2>&1')
-		os.system('sudo systemctl enable CRT-Automount.service > /dev/null 2>&1')
-		os.system('sudo systemctl start CRT-Automount.service > /dev/null 2>&1')
-	else:
-		pygame.display.quit()
-		pygame.quit()
-		sys.exit()
+    if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.py'):
+        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service /etc/systemd/system/CRT-Automount.service > /dev/null 2>&1')
+        os.system('sudo systemctl enable CRT-Automount.service > /dev/null 2>&1')
+        os.system('sudo systemctl start CRT-Automount.service > /dev/null 2>&1')
+    else:
+        pygame.display.quit()
+        pygame.quit()
+        sys.exit()
 
 def DesInstallServiceAutomount():
-	if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.py'):
-		os.system('sudo systemctl disable CRT-Automount.service > /dev/null 2>&1')
-		os.system('sudo systemctl stop CRT-Automount.service > /dev/null 2>&1')
-		os.system('sudo rm /etc/systemd/system/CRT-Automount.service > /dev/null 2>&1')
-		os.system("sudo umount -l /home/pi/RetroPie/roms > /dev/null 2>&1")
-		os.system("sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1")
-		os.system("sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1")
-		output = commands.getoutput('ps -A')
-		if 'emulationstatio' in output:
-			os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
-			os.system('clear')
-	else:
-		pygame.display.quit()
-		pygame.quit()
-		sys.exit()
+    if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.py'):
+        os.system('sudo systemctl disable CRT-Automount.service > /dev/null 2>&1')
+        os.system('sudo systemctl stop CRT-Automount.service > /dev/null 2>&1')
+        os.system('sudo rm /etc/systemd/system/CRT-Automount.service > /dev/null 2>&1')
+        os.system("sudo umount -l /home/pi/RetroPie/roms > /dev/null 2>&1")
+        os.system("sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1")
+        os.system("sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1")
+        output = commands.getoutput('ps -A')
+        if 'emulationstatio' in output:
+            os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
+            os.system('clear')
+    else:
+        pygame.display.quit()
+        pygame.quit()
+        sys.exit()
 
 
 # SET SCREEN
@@ -116,51 +116,51 @@ pygame.display.flip()
 time.sleep(1)
 CheckService = commands.getoutput('systemctl list-units --all | grep \"CRT-Automount.service\"')
 if 'CRT-Automount.service' in CheckService:
-	ServiceExist = True
-	if 'running' in CheckService:
-		ServiceRunning = True
-		if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/mounted.cfg'):
-			MountedFile = open('/opt/retropie/configs/all/CRT/bin/AutomountService/mounted.cfg', 'r')
-			MountedPaths = MountedFile.readlines()
-			#MountedPaths = MountedPaths.split(' ')
-			MountedFile.close()
-			Frame = enabled_wej
-			option1 = yes_wej
-			option1_ENA = yesenabled_wej
-			option2 = cancel_wej
-			option2_ENA = cancelenabled_wej
-			option3 = eject_wej
-			option3_ENA = ejectenabled_wej
-			MAXoptions = 2
-		else:
-			Frame = enabled
-			option1 = yes
-			option1_ENA = yesenabled
-			option2 = cancel
-			option2_ENA = cancelenabled
-			MAXoptions = 1
-	else:
-		ServiceRunning = False
-		Frame = disabled
-		option1 = yes
-		option1_ENA = yesenabled
-		option2 = cancel
-		option2_ENA = cancelenabled
-		MAXoptions = 1
+    ServiceExist = True
+    if 'running' in CheckService:
+        ServiceRunning = True
+        if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/mounted.cfg'):
+            MountedFile = open('/opt/retropie/configs/all/CRT/bin/AutomountService/mounted.cfg', 'r')
+            MountedPaths = MountedFile.readlines()
+            #MountedPaths = MountedPaths.split(' ')
+            MountedFile.close()
+            Frame = enabled_wej
+            option1 = yes_wej
+            option1_ENA = yesenabled_wej
+            option2 = cancel_wej
+            option2_ENA = cancelenabled_wej
+            option3 = eject_wej
+            option3_ENA = ejectenabled_wej
+            MAXoptions = 2
+        else:
+            Frame = enabled
+            option1 = yes
+            option1_ENA = yesenabled
+            option2 = cancel
+            option2_ENA = cancelenabled
+            MAXoptions = 1
+    else:
+        ServiceRunning = False
+        Frame = disabled
+        option1 = yes
+        option1_ENA = yesenabled
+        option2 = cancel
+        option2_ENA = cancelenabled
+        MAXoptions = 1
 else:
-	ServiceExist = False
-	ServiceRunning = False
-	Frame = disabled
-	option1 = yes
-	option1_ENA = yesenabled
-	option2 = cancel
-	option2_ENA = cancelenabled
-	MAXoptions = 1
+    ServiceExist = False
+    ServiceRunning = False
+    Frame = disabled
+    option1 = yes
+    option1_ENA = yesenabled
+    option2 = cancel
+    option2_ENA = cancelenabled
+    MAXoptions = 1
 
 def quit_moudule():
-	pygame.display.quit()
-	pygame.quit()
-	sys.exit()
+    pygame.display.quit()
+    pygame.quit()
+    sys.exit()
 
 fullscreen.blit(Frame, (119,80))
 fullscreen.blit(option1, (119,116))
@@ -170,62 +170,62 @@ y = 0
 
 
 while True:
-	for event in pygame.event.get():
-		action = check_joy_event(event)
-		#button
-		if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
-			if y < 1:
-				load.play()
-				fullscreen.blit(option1_ENA, (119,116))
-				pygame.display.flip()
-				time.sleep(1)
-				if ServiceRunning == True:
-					DesInstallServiceAutomount()
-				elif ServiceRunning == False:
-					InstallServiceAutomount()
-				quit_moudule()
+    for event in pygame.event.get():
+        action = check_joy_event(event)
+        #button
+        if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
+            if y < 1:
+                load.play()
+                fullscreen.blit(option1_ENA, (119,116))
+                pygame.display.flip()
+                time.sleep(1)
+                if ServiceRunning == True:
+                    DesInstallServiceAutomount()
+                elif ServiceRunning == False:
+                    InstallServiceAutomount()
+                quit_moudule()
 
-			if y == 1:
-				load.play()
-				fullscreen.blit(option2_ENA, (119,116))
-				pygame.display.flip()
-				time.sleep(1)
-				quit_moudule()
+            if y == 1:
+                load.play()
+                fullscreen.blit(option2_ENA, (119,116))
+                pygame.display.flip()
+                time.sleep(1)
+                quit_moudule()
 
-			if y == 2:
-				load.play()
-				fullscreen.blit(option3_ENA, (119,116))
-				pygame.display.flip()
-				time.sleep(1)
-				fullscreen.blit(extract, (119,80))
-				pygame.display.flip()
-				time.sleep(3)
-				os.system('sudo umount %s > /dev/null 2>&1' % MountedPaths[0])
-				while True:
-					if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg'):
-						break
-				quit_moudule()
+            if y == 2:
+                load.play()
+                fullscreen.blit(option3_ENA, (119,116))
+                pygame.display.flip()
+                time.sleep(1)
+                fullscreen.blit(extract, (119,80))
+                pygame.display.flip()
+                time.sleep(3)
+                os.system('sudo umount %s > /dev/null 2>&1' % MountedPaths[0])
+                while True:
+                    if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg'):
+                        break
+                quit_moudule()
 
-		#down
-		elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
-			if y < MAXoptions:
-				y = y + 1
-				cursor.play()
-				if y == 1:
-					fullscreen.blit(option2, (119,116))
-				elif y == 2:
-					fullscreen.blit(option3, (119,116))
-				pygame.display.flip()
+        #down
+        elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
+            if y < MAXoptions:
+                y = y + 1
+                cursor.play()
+                if y == 1:
+                    fullscreen.blit(option2, (119,116))
+                elif y == 2:
+                    fullscreen.blit(option3, (119,116))
+                pygame.display.flip()
 
-		#up
-		elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
-			if y > 0:
-				y = y - 1
-				cursor.play()
-				if y == 1:
-					fullscreen.blit(option2, (119,116))
-				elif y == 0:
-					fullscreen.blit(option1, (119,116))
-				pygame.display.flip()
+        #up
+        elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
+            if y > 0:
+                y = y - 1
+                cursor.play()
+                if y == 1:
+                    fullscreen.blit(option2, (119,116))
+                elif y == 0:
+                    fullscreen.blit(option1, (119,116))
+                pygame.display.flip()
 quit_moudule()
 
