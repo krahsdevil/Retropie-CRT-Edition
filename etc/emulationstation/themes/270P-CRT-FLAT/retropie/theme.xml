@@ -42,17 +42,17 @@
     </view>
 
     <!-- DETAILED VIEW -->
-    <view name="detailed">
+    <view name="detailed, video">
       <image name="logo">
         <path>./logo.png</path>
       </image>
       
       <image name="bg_meta_color" extra="true">
-        <color>cc0000</color>
+        <color>388301</color>
       </image>
       
       <textlist name="gamelist">
-        <selectorColor>cc0000</selectorColor>
+        <selectorColor>e1c400</selectorColor>
       </textlist>
     </view>
 </theme>

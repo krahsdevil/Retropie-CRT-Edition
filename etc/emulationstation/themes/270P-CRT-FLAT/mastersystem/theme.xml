@@ -42,7 +42,7 @@
     </view>
 
     <!-- DETAILED VIEW -->
-    <view name="detailed">
+    <view name="detailed, video">
       <image name="logo">
         <path>./logo.png</path>
       </image>
