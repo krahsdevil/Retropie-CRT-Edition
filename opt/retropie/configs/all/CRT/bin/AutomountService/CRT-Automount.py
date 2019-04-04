@@ -109,6 +109,9 @@ while True:
             if os.path.exists('%s/wswanc' % RomPaths):
                 if not os.path.exists('%s/wonderswancolor' % RomPaths):
                     os.rename("%s/wswanc" % RomPaths,"%s/wonderswancolor" % RomPaths)
+            if os.path.exists('%s/colecovision' % RomPaths):
+                if not os.path.exists('%s/coleco' % RomPaths):
+                    os.rename("%s/colecovision" % RomPaths,"%s/coleco" % RomPaths)
             if not os.path.exists(BiosPaths):
                 if os.path.exists('%s/BIOS' % USBMountPoing):
                     os.rename("%s/BIOS" % USBMountPoing,BiosPaths)
