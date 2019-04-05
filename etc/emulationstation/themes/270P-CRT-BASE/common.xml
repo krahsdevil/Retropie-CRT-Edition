@@ -24,7 +24,7 @@ based on:		"carbon" by eric hettervik
 		<image name="bottom" extra="true">
 			<path>./common/images/white.png</path>
 			<origin>0 1</origin>
-			<pos>0 1</pos>			
+			<pos>0 1</pos>
 			<size>1 0.0655</size>
 			<color>000000</color>
 		</image>
@@ -40,7 +40,7 @@ based on:		"carbon" by eric hettervik
 		<!-- System Specific Images -->
 		<image name="overlay" extra="true">
 			<origin>0.5 0.5</origin>
-			<pos>0.5 0.19</pos>			
+			<pos>0.5 0.19</pos>
 			<maxSize>0.5 0.325</maxSize>
 			<color>A0A0A0</color>
 		</image>
@@ -97,7 +97,7 @@ based on:		"carbon" by eric hettervik
 		</image>
 		
 		<!-- System Specific Images -->
-		<image name="logo">			
+		<image name="logo">
 			<!-- Left Aligned at Top -->
 			<origin>0 0.5</origin>
 			<pos>0.03 0.0775</pos>
@@ -116,8 +116,8 @@ based on:		"carbon" by eric hettervik
 		<image name="gamelist-matte" extra="true">
 			<path>./common/images/white.png</path>
 			<origin>0 0</origin>
-			<pos>0.02 0.16</pos>
-			<size>0.486 0.7745</size>
+			<pos>0.024 0.16</pos>
+			<size>0.482 0.7745</size>
 			<color>000000AA</color>
 		</image>
 		
