@@ -250,7 +250,7 @@ def video_config():
     save()
     #crt_open_screen_raw('test',timings_full_path)
     pygame.quit()
-    commandline = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_tools_manager.py"
+    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_tools_manager.py"
     os.system(commandline)
     #es_restore_screen()
     get_xy_screen()
