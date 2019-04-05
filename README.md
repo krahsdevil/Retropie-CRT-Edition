@@ -23,7 +23,7 @@ You can find original RGB-Pi project for recalbox [here](https://github.com/mort
 - Fixed Colecovision Emulator Launcher
 - Changed 'Genesis Plus GX' as default emulator for SEGA CD (compatible with CHD's)
 - Added 'Video View' to classic themes BASE/FLAT/FOREST and BASE Vertical
-- Other internal changes/optimizations[/list]
+- Other internal changes/optimizations
 ```
 #### Beta 2.4:
 ```
