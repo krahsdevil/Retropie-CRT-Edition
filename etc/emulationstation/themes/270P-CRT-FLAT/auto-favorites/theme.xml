@@ -37,7 +37,7 @@
       </image>
       
       <textlist name="gamelist">
-        <selectorColor>cc9900</selectorColor>
+        <selectorColor>ed010d</selectorColor>
       </textlist>
     </view>
 
@@ -48,11 +48,11 @@
       </image>
       
       <image name="bg_meta_color" extra="true">
-        <color>cc9900</color>
+        <color>ed010d</color>
       </image>
       
       <textlist name="gamelist">
-        <selectorColor>cc9900</selectorColor>
+        <selectorColor>ed010d</selectorColor>
       </textlist>
     </view>
 </theme>

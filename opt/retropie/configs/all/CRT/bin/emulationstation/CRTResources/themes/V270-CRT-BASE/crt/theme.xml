@@ -16,7 +16,7 @@
 		</image>
 	</view>
 
-	<view name="basic, detailed">
+	<view name="basic, detailed, video">
 	<!-- System Specific Images -->
 		<image name="logo">
 			<path>./logo.png</path>
@@ -27,7 +27,7 @@
 		</image>
 	</view>
 	
-	<view name="detailed">
+	<view name="detailed, video">
 		<image name="md_image">
 			<origin>0.5 0.5</origin>
 			<pos>0.5 0.35</pos>

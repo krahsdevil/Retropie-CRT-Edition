@@ -16,7 +16,7 @@
 		</image>
 	</view>
 
-	<view name="basic, detailed">
+	<view name="basic, detailed, video">
 	<!-- System Specific Images -->
 		<image name="logo">
 			<path>./logo.png</path>
@@ -29,7 +29,7 @@
 	
 			<!-- Metadata -->
 
-	<view name="detailed">
+	<view name="detailed, video">
 		<text name="md_lbl_releasedate">
 			<fontPath>./../common/fonts/Lato-Black.ttf</fontPath>
 			<fontSize>0.02</fontSize>
