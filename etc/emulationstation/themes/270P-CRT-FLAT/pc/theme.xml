@@ -14,19 +14,19 @@
       </image>
 
       <image name="band1" extra="true">
-        <color>ebebeb</color>
+        <color>818181</color>
       </image>
 
       <image name="band2" extra="true">
-        <color>d21c22</color>
+        <color>a91d22</color>
       </image>
 
       <image name="band3" extra="true">
-        <color>509f3b</color>
+        <color>7b267c</color>
       </image>
 
       <image name="band4" extra="true">
-        <color>182b9c</color>
+        <color>fecc06</color>
       </image>
     </view>
 
@@ -37,7 +37,7 @@
       </image>
       
       <textlist name="gamelist">
-        <selectorColor>cc0000</selectorColor>
+        <selectorColor>7b267c</selectorColor>
       </textlist>
     </view>
 
@@ -48,11 +48,11 @@
       </image>
       
       <image name="bg_meta_color" extra="true">
-        <color>cc0000</color>
+        <color>7b267c</color>
       </image>
       
       <textlist name="gamelist">
-        <selectorColor>cc0000</selectorColor>
+        <selectorColor>7b267c</selectorColor>
       </textlist>
     </view>
 </theme>

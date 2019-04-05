@@ -70,7 +70,7 @@ based on:		"carbon" by eric hettervik
 	</view>
 
 	<!-- Game View - All -->
-    <view name="basic, detailed">
+    <view name="basic, detailed, video">
 	<!-- Page Layout -->
 		<image name="background" extra="true">
 			<path>./common/images/binding_dark_v.png</path>		
@@ -179,7 +179,7 @@ based on:		"carbon" by eric hettervik
 
 
 	<!-- Game View - Detailed -->
-	<view name="detailed">
+	<view name="detailed, video">
 		<!-- Game List -->
 		<image name="gamelist-matte" extra="true">
 			<path>./common/images/white.png</path>
@@ -208,13 +208,23 @@ based on:		"carbon" by eric hettervik
 			<color>000000AA</color>
 		</image>
 		
+		<!-- Metadata -->
+	</view>
+	<view name="detailed">
 		<image name="md_image">
 			<origin>0 0.5</origin>
 			<pos>0.05 0.35</pos>
 			<size>0.35 0.35</size>
 		</image>
-
-		<!-- Metadata -->
 	</view>
-	
+	<view name="video">
+		<video name="md_video">
+			<origin>0 0.5</origin>
+			<pos>0.05 0.35</pos>
+			<size>0.35 0.35</size>
+			<showSnapshotNoVideo>true</showSnapshotNoVideo>
+			<showSnapshotDelay>true</showSnapshotDelay>
+			<delay>1.5</delay>
+		</video>
+	</view>
 </theme>

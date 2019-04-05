@@ -178,6 +178,7 @@ based on:		"carbon" by eric hettervik
 			<origin>0.5 0.5</origin>
 			<pos>0.75215 0.55</pos>
 			<maxSize>0.388 0.6898</maxSize>
+			<showSnapshotNoVideo>true</showSnapshotNoVideo>
 			<showSnapshotDelay>true</showSnapshotDelay>
 			<delay>1.5</delay>
 		</video>

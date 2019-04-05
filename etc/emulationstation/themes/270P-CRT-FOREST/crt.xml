@@ -203,6 +203,7 @@
         <origin>0.5 0.5</origin>
         <pos>0.20 0.515</pos>
         <maxSize>0.35 0.6</maxSize>
+        <showSnapshotNoVideo>true</showSnapshotNoVideo>
         <showSnapshotDelay>true</showSnapshotDelay>
         <delay>1.5</delay>
       </video>
