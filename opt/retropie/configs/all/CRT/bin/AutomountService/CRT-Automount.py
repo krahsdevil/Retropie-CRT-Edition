@@ -112,6 +112,9 @@ while True:
             if os.path.exists('%s/colecovision' % RomPaths):
                 if not os.path.exists('%s/coleco' % RomPaths):
                     os.rename("%s/colecovision" % RomPaths,"%s/coleco" % RomPaths)
+            if os.path.exists('%s/lynx' % RomPaths):
+                if not os.path.exists('%s/atarilynx' % RomPaths):
+                    os.rename("%s/lynx" % RomPaths,"%s/atarilynx" % RomPaths)
             if not os.path.exists(BiosPaths):
                 if os.path.exists('%s/BIOS' % USBMountPoing):
                     os.rename("%s/BIOS" % USBMountPoing,BiosPaths)

@@ -250,7 +250,7 @@ if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or e
 #                                                                                 #
 ###################################################################################
 
-elif emulator == "sg-1000" or emulator == "fds" or emulator == "pcengine" or emulator == "pcenginecd" or emulator == "neogeo" or emulator == "colecovision" or emulator == "amstradcpc" or emulator == "prboom" or emulator == "atari7800" or emulator == "vectrex" or emulator == "zxspectrum":
+elif emulator == "sg-1000" or emulator == "fds" or emulator == "pcengine" or emulator == "pcenginecd" or emulator == "neogeo" or emulator == "coleco" or emulator == "amstradcpc" or emulator == "prboom" or emulator == "atari7800" or emulator == "vectrex" or emulator == "zxspectrum":
     #RETROPIE Identifies pcenginecd as same system as pcengine. Here we make the translation pcenginecd -> pcengine
     if emulator == "pcenginecd":
         emulatorWFQ = "pcenginecd"
