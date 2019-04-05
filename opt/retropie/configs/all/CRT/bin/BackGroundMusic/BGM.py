@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 # Modified version of BGM script version 1.03 made by Livewire
 # BGM Overlay code added by madmodder123
 # Version 1.01 - Changed song_title.png to write to RAM instead of the SD Card (Thanks zerojay!)
