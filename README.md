@@ -12,19 +12,7 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 
 ## Changelog
-#### Beta 2.5:
-```
-- Changed 'Screent Utility' to 'Configuration Utility' (v2.1)
-- Added Music Background support for ES script by [madmodder123](https://github.com/madmodder123/retropie_music_overlay/)
-    - Enable/disable feature from 'Configuration Utility'
-    - Place songs at ./configs/music/ folder
-- Changed Video Player Font (font mod by -krahs-):
-    - Better visualization and better compatibility with other languages
-- Fixed Colecovision Emulator Launcher
-- Changed 'Genesis Plus GX' as default emulator for SEGA CD (compatible with CHD's)
-- Added 'Video View' to classic themes BASE/FLAT/FOREST and BASE Vertical
-- Other internal changes/optimizations
-```
+
 #### Beta 2.4:
 ```
 - Internal code optimization and cleaned boot config file (By DSkywalk)
