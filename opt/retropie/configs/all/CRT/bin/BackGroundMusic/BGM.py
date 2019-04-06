@@ -267,6 +267,7 @@ while True:
                     time.sleep(1); # Delay 1 second and check again.
                 #Turn up the music
                 #print "Emulator finished, resuming audio..."
+                time.sleep(1.5)
                 if not restart:
                     mixer.music.unpause() #resume
                     while volume < maxvolume:
