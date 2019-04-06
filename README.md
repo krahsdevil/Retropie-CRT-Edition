@@ -11,6 +11,7 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 
 You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 ## Changelog
+<<<<<<< HEAD
 #### Beta 2.5:
 ```
 - Changed 'Screent Utility' to 'Configuration Utility' (v2.1)
@@ -25,6 +26,8 @@ You can find original RGB-Pi project for recalbox [here](https://github.com/mort
 - Added 'Video View' to classic themes BASE/FLAT/FOREST and BASE Vertical
 - Other interna changes/optimizations
 ```
+=======
+>>>>>>> parent of 0309e65... Update README.md
 #### Beta 2.4:
 ```
 - Internal code optimization and cleaned boot config file (By DSkywalk)
