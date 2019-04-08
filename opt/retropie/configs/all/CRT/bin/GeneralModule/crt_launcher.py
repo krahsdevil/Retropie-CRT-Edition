@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys, optparse
 from launcher_module.libretro import libretro
+from launcher_module.bezel import bezel
 from launcher_module.utils import something_is_bad
 
 # FIXME: need work!
@@ -35,6 +36,8 @@ if __name__ == '__main__':
         sSystem = sys.argv[2]
         if sSystem in libretro.get_system_list():
             libretro(sys.argv[1], sys.argv[2], sys.argv[3])
+        elif sSystem in bezel.get_system_list():
+            bezel(sys.argv[1], sys.argv[2], sys.argv[3])
         else:
             something_is_bad("ERROR - no emulator available for this system!", "")
     except (IndexError):

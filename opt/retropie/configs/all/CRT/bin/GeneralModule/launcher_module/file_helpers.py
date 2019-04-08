@@ -23,6 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import hashlib
 
 def remove_line(p_sFile, p_sRemoveMask):
     if not os.path.isfile(p_sFile):
@@ -34,9 +35,10 @@ def remove_line(p_sFile, p_sRemoveMask):
             if p_sRemoveMask not in line:
                 f.write(line) # valid line
         f.truncate() # remove everything after the last write
+        return True
 
 def modify_line(p_sFile, p_sLineToFind, p_sNewLine, p_bEndLine = True):
-    if not os.path.isfile(p_sFile):
+    if  not os.path.isfile(p_sFile):
         return
     with open(p_sFile, "r+") as f:
         new_file = f.readlines()
@@ -48,6 +50,33 @@ def modify_line(p_sFile, p_sLineToFind, p_sNewLine, p_bEndLine = True):
                     line += "\n"
             f.write(line) # new line
         f.truncate() # remove everything after the last write
+        return True
+
+def add_line(p_sFile, p_sNewLine, p_bEndLine = True):
+    if not os.path.isfile(p_sFile):
+        return
+    with open(p_sFile, "a") as f:
+        line = p_sNewLine
+        if p_bEndLine:
+            line += "\n"
+        f.write(line)
+
+def ini_get(p_sFile, p_sFindMask):
+    if not os.path.isfile(p_sFile):
+        return None
+    with open(p_sFile, "r") as f:
+        for line in f:
+            line = line.strip().replace('=',' ').split(' ')
+            if p_sFindMask == line[0].strip():
+                return line[-1].strip()
+
+def md5_file(p_sFile):
+    hasher = hashlib.md5()
+    with open(p_sFile, 'rb') as afile:
+        buf = afile.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
+
 
 def remove_file(p_sFile):
     try:

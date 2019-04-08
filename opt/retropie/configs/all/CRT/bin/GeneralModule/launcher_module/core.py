@@ -48,6 +48,7 @@ LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 # retropie path setup
 __RETROPIE_PATH = "/opt/retropie"
 RETROPIECFG_PATH = os.path.join(__RETROPIE_PATH, "configs")
+RETROPIEEMU_PATH = os.path.join(__RETROPIE_PATH, "emulators")
 CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
 __CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
 
@@ -75,6 +76,7 @@ class launcher(object):
 
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
+    m_sSystemCfg = ""
     m_sBinarySelected = ""
     m_lBinaryMasks = []
     m_lBinaries = []
@@ -99,12 +101,14 @@ class launcher(object):
         # user virtual methods
         self.configure()
 
-    def start(self):
+    def check(self):
         self.netplay_setup()
         self.system_setup()
         self.video_setup()
         self.emulatorcfg_setup()
         self.runcommand_check()
+
+    def start(self):
         self.runcommand_start()
         self.emulatorcfg_prepare()
         self.emulatorcfg_final_check()
@@ -251,6 +255,7 @@ class launcher(object):
             self.panic(infos, str(e))
 
     # generate command string
+    # just called if need rebuild the CMD
     def runcommand_generate(self, p_sCMD):
         p_sCMD = p_sCMD.replace('"','').strip()
         new_cmd = self.m_sBinarySelected + " = \""
@@ -288,12 +293,11 @@ class launcher(object):
             lValues = line.strip().split('=')
             lValues = map(lambda s: s.strip(), lValues)
             if lValues[0] == self.m_sBinarySelected:
-                sEmulatorCommand = lValues[1]
-                if TMP_SLEEPER_FILE not in sEmulatorCommand:
-                    sEmulatorCommand = self.runcommand_clean(sEmulatorCommand)
-                    new_line = self.runcommand_generate(sEmulatorCommand)
-                    logging.info("changed command (%s)" % new_line)
-                    modify_line(self.m_sCfgSystemPath, line, new_line)
+                cmd_cleaned = self.runcommand_clean(lValues[1])
+                cmd_current = self.runcommand_generate(cmd_cleaned)
+                if cmd_current != line.strip(): # atm just force our cmd
+                    logging.info("changed command (%s)" % cmd_current)
+                    modify_line(self.m_sCfgSystemPath, line, cmd_current)
 
 
     # wait_runcommand: wait for user launcher menu
