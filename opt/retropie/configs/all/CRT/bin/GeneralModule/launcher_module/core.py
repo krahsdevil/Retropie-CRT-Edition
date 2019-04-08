@@ -76,7 +76,6 @@ class launcher(object):
 
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
-    m_sSystemCfg = ""
     m_sBinarySelected = ""
     m_lBinaryMasks = []
     m_lBinaries = []
