@@ -38,7 +38,7 @@ __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
 
-TMP_LAUNCHER_PATH = "/tmp/crt"
+TMP_LAUNCHER_PATH = "/dev/shm"
 TMP_SPEEPER_NAME = "lchtmp"
 TMP_SLEEPER_FILE = os.path.join(TMP_LAUNCHER_PATH, TMP_SPEEPER_NAME)
 LEGACY_SLEEPER_FILE = "/tmp/lchtmp"
@@ -48,8 +48,8 @@ LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 # retropie path setup
 __RETROPIE_PATH = "/opt/retropie"
 RETROPIECFG_PATH = os.path.join(__RETROPIE_PATH, "configs")
-__CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
-__CRTBIN_PATH = os.path.join(__CRTROOT_PATH, "bin")
+CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
+__CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
 
 CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1 && "
 RUNCOMMAND_FILE = os.path.join(__RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
@@ -59,10 +59,8 @@ CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
 CFG_FIXMODES_FILE = os.path.join(__CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
 CFG_VIDEOUTILITY_FILE = os.path.join(__CRTBIN_PATH,"ScreenUtilityFiles/utility.cfg")
-CFG_NETPLAY_FILE = os.path.join(__CRTROOT_PATH, "netplay.cfg")
-CFG_TIMINGS_FILE = os.path.join(__CRTROOT_PATH, "Resolutions/base_systems.cfg")
-RACFG_PATH = os.path.join(__CRTROOT_PATH, "Retroarch/configs")
-
+CFG_NETPLAY_FILE = os.path.join(CRTROOT_PATH, "netplay.cfg")
+CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 
 
 # FIXME: arcade
@@ -99,17 +97,17 @@ class launcher(object):
         self.__setup()
 
         # user virtual methods
-        self.init()
+        self.configure()
 
     def start(self):
         self.netplay_setup()
         self.system_setup()
         self.video_setup()
-        self.emulator_setup()
+        self.emulatorcfg_setup()
         self.runcommand_check()
         self.runcommand_start()
-        self.emulator_prepare()
-        self.emulator_final_check()
+        self.emulatorcfg_prepare()
+        self.emulatorcfg_final_check()
 
     def wait(self):
         self.m_oRunProcess.wait()
@@ -138,14 +136,11 @@ class launcher(object):
         return True
 
     # called children init at start, called by __init__()
-    def init(self):
+    def configure(self):
         pass
 
     # esto quiza habria que hacerlo de forma externa, un proceso al inicio...
     def __temp(self):
-        if not os.path.isdir(TMP_LAUNCHER_PATH):
-            os.makedirs(TMP_LAUNCHER_PATH)
-            # os.system("mount -t tmpfs -o size=8m tmpfs %s" % TMP_LAUNCHER_PATH)
         if CLEAN_LOG_ONSTART:
             remove_file(LOG_PATH)
         logging.basicConfig(filename=LOG_PATH, level=__DEBUG__, format='[%(asctime)s] %(levelname)s - %(funcName)s : %(message)s')
@@ -190,7 +185,7 @@ class launcher(object):
     # RETROPIE allows to choice per game an specific emulator from available
     # we check if emulator is valid or clean emulators.cfg
     #
-    def get_emulator_per_game(self):
+    def emulatorcfg_per_game(self):
         if not os.path.exists(CFG_CUSTOMEMU_FILE):
             return False
         sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
@@ -214,7 +209,7 @@ class launcher(object):
     # we try to found this line: default = "emulator-binary-name"
     # p_oFile: file ready to seek
     # return: default emu or die
-    def default_emulator(self, p_bSetCore):
+    def emulatorcfg_default(self, p_bSetCore):
         with open(self.m_sCfgSystemPath, "r") as oFile:
             for line in oFile:
                 lValues = line.strip().split(' ')
@@ -227,7 +222,7 @@ class launcher(object):
 
     # we try to found emulator-binary-name = "command-to-launch-the-game"
     #   valid with our masks, if not found then die
-    def add_system_emulators(self):
+    def emulatorcfg_add_systems(self):
         with open(self.m_sCfgSystemPath, "r") as oFile:
             self.m_lBinaries = []
             for line in oFile:
@@ -242,11 +237,11 @@ class launcher(object):
                 self.panic("NOT FOUND any emulators mask [%s]" % str(self.m_lBinaryMasks))
 
     # prepare emulator to launch
-    def emulator_setup(self):
+    def emulatorcfg_setup(self):
         try:
-            self.add_system_emulators()
-            if not self.get_emulator_per_game():
-                self.default_emulator(True)
+            self.emulatorcfg_add_systems()
+            if not self.emulatorcfg_per_game():
+                self.emulatorcfg_default(True)
         except IOError as e:
             infos = "File error at emulators.cfg [%s]" % self.m_sSystem
             infos2 = "Please, install at least one emulator or core"
@@ -254,6 +249,32 @@ class launcher(object):
         except Exception as e:
             infos = "Error in emulators.cfg [%s]" % self.m_sSystem
             self.panic(infos, str(e))
+
+    # generate command string
+    def runcommand_generate(self, p_sCMD):
+        p_sCMD = p_sCMD.replace('"','').strip()
+        new_cmd = self.m_sBinarySelected + " = \""
+        new_cmd += CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
+        new_cmd += p_sCMD + "\""
+        return new_cmd
+
+    def runcommand_clean(self, p_sCMD):
+        # first remove quotes
+        p_sCMD = p_sCMD.replace('"', '')
+        # "touch /path/lchtmp && sleep 1 && /path/retroarch ...
+        # "/path/retroarch ...
+        if "&&" in p_sCMD:
+            p_sCMD = p_sCMD.split("&&")[-1]
+        # ... --appendconfig /path/system.cfg %ROM%"'
+        # ... %ROM%"'
+        if "--appendconfig" in p_sCMD:
+            p_sCMD = p_sCMD.split("--appendconfig")[0]
+        # add at the end
+        if "%ROM%" not in p_sCMD:
+            p_sCMD += "%ROM%"
+        # finally add quotes
+        p_sCMD = '"' + p_sCMD.strip() + '"'
+        return p_sCMD
 
     # check if runcommand has correct behaivor:
     #   FROM emulator-binary-name = "command-to-launch-the-game"
@@ -268,16 +289,12 @@ class launcher(object):
             lValues = map(lambda s: s.strip(), lValues)
             if lValues[0] == self.m_sBinarySelected:
                 sEmulatorCommand = lValues[1]
-                if LEGACY_SLEEPER_FILE in sEmulatorCommand:
-                    sEmulatorCommand = sEmulatorCommand \
-                        .replace(CRT_RUNCOMMAND_FORMAT % LEGACY_SLEEPER_FILE, '')
                 if TMP_SLEEPER_FILE not in sEmulatorCommand:
-                    sEmulatorCommand = sEmulatorCommand.replace('"','').strip()
-                    new_line = self.m_sBinarySelected + " = \""
-                    new_line += CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
-                    new_line += sEmulatorCommand + "\""
+                    sEmulatorCommand = self.runcommand_clean(sEmulatorCommand)
+                    new_line = self.runcommand_generate(sEmulatorCommand)
                     logging.info("changed command (%s)" % new_line)
                     modify_line(self.m_sCfgSystemPath, line, new_line)
+
 
     # wait_runcommand: wait for user launcher menu
     #   @full_checks: off, just check current process.
@@ -312,7 +329,7 @@ class launcher(object):
         logging.info("Subprocess running: %s", commandline)
         self.runcommand_wait()
 
-    def emulator_prepare(self):
+    def emulatorcfg_prepare(self):
         crt_open_screen_from_timings_cfg(self.m_sSystemFreq, CFG_TIMINGS_FILE)
         try:
             splash_info("black") # clean screen
@@ -322,17 +339,16 @@ class launcher(object):
         remove_file(TMP_SLEEPER_FILE)
 
 
-    def emulator_kill(self):
+    def emulatorcfg_kill(self):
         self.runcommand_wait(False)
         logging.error("closing %s processes" % str(self.m_lProcesses))
         for proc in self.m_lProcesses:
             os.system('killall %s > /dev/null 2>&1' % proc)
 
 
-    def emulator_final_check(self):
-        bValidCore = self.default_emulator(False)
+    def emulatorcfg_final_check(self):
+        bValidCore = self.emulatorcfg_default(False)
         if not bValidCore:
-            self.emulator_kill()
+            self.emulatorcfg_kill()
             remove_line(self.m_sCfgSystemPath, "default =")
             self.panic("selected invalid emulator", "try again!")
-

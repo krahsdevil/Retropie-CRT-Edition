@@ -26,7 +26,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, sys
-from .core import launcher
+from .core import launcher, CRTROOT_PATH
+
+RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
 
 class libretro(launcher):
     # FIXME: aun no se muy bien como haré esto...
@@ -35,8 +37,7 @@ class libretro(launcher):
         return ["sg-1000", "fds", "pcengine", "neogeo", "colecovision", "atari7800",
                 "vectrex", "pcenginecd", "zxspectrum", "amstradcpc"]
 
-
-    def init(self):
+    def configure(self):
         self.m_lBinaryMasks = ["lr-"]
         self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
         self.run()
@@ -46,7 +47,6 @@ class libretro(launcher):
         self.wait()
         self.cleanup()
 
-
     def system_setup(self):
         if self.m_sSystem == "zxspectrum":
             self.m_sSystemFreq = "zxspectrum50"
@@ -54,3 +54,14 @@ class libretro(launcher):
             self.m_sSystemFreq = "pcengine"
         else:
             super(libretro, self).system_setup()
+
+    def runcommand_generate(self, p_sCMD):
+        current_cmd = super(libretro, self).runcommand_generate(p_sCMD)
+        sSystem = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemFreq + ".cfg")
+        # if not exists use normal
+        if not os.path.exists(sSystem):
+            logging.info("not found cfg: %s" % sSystem)
+            return current_cmd
+        append_cmd = " --appendconfig %s" % sSystem
+        append_cmd += " %ROM%"
+        return current_cmd.replace("%ROM%", append_cmd)
