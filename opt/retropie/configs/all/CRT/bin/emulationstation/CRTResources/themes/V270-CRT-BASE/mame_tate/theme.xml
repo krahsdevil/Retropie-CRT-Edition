@@ -84,7 +84,7 @@
 		</text>
 		<text name="md_players">
 			<color>A0A0A0</color>
-			<forceUppercase>0</forceUppercase>
+			<forceUppercase>1</forceUppercase>
 			<fontPath>./../common/fonts/Lato-Regular.ttf</fontPath>
 			<fontSize>0.02</fontSize>
 			<size>0 0</size>
@@ -96,7 +96,7 @@
 			<fontPath>./../common/fonts/Lato-Regular.ttf</fontPath>
 			<fontSize>0.02</fontSize>
 			<alignment>left</alignment>
-			<forceUppercase>0</forceUppercase>
+			<forceUppercase>1</forceUppercase>
 			<lineSpacing>1.6</lineSpacing>
 			<color>A0A0A0</color>
 		</text>
