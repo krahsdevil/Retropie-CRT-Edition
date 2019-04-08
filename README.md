@@ -11,6 +11,14 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 
 You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 ## Changelog
+
+#### Beta 2.5.1:
+```
+- Fixed Atari 7800 Emulator Launcher
+- Fixed BASE/FLAT/FOREST Themes for 'arcade'
+- Fixed Music Background; Black Screen on Emulation Exit.
+- Changed Music Background to Resume mode.
+```
 #### Beta 2.5:
 ```
 - Changed 'Screent Utility' to 'Configuration Utility' (v2.1)
@@ -19,7 +27,7 @@ You can find original RGB-Pi project for recalbox [here](https://github.com/mort
     - Enable/disable feature from 'Configuration Utility'
     - Place songs at ./configs/music/ folder
 - Changed Video Player Font (font mod by -krahs-):
-    - Better visualization and better compatibility with other languages
+    - Better info/subtitles text visualization and better compatibility with other languages
 - Fixed Colecovision/Lynx Emulator Launchers and themes
 - Changed 'Genesis Plus GX' as default emulator for SEGA CD (compatible with CHD's)
 - Added 'Video View' to classic themes BASE/FLAT/FOREST and BASE Vertical
