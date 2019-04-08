@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, sys
-from .core import launcher, CRTROOT_PATH
+from .core import launcher, CRTROOT_PATH, logging
 
 RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
 
