@@ -5,6 +5,7 @@
 import os
 import time
 import random
+import commands
 #import pygame # if you don't have pygame: sudo apt-get install python-pygame
 #also that line is commented out as we import the mixer specifically a bit further down.
 import re
@@ -15,7 +16,7 @@ startdelay = 0 # Value (in seconds) to delay audio start.  If you have a splash 
 musicdir = '/opt/retropie/configs/music' # "~/" is the equivalent to "/home/pi"
 maxvolume = 0.75
 volumefadespeed = 0.02
-restart = True # If true, this will cause the script to fade the music out and -stop- the song rather than pause it.
+restart = False #If true, this will cause the script to fade the music out and -stop- the song rather than pause it.
 startsong = "" # if this is not blank, this is the EXACT, CaSeSeNsAtIvE filename of the song you always want to play first on boot.
 
 ### if ~ is used, change it to home directory (EXAMPLE: "~/BGM" to "/home/pi/BGM")
@@ -133,6 +134,8 @@ if not os.path.exists(overlay_tmp_file):
 
 #TODO: Fill in all of the current RetroPie Emulator process names in this list.
 emulatornames = ["retroarch","ags","uae4all2","uae4arm","capricerpi","linapple","hatari","stella","atari800","xroar","vice","daphne","reicast","pifba","osmose","gpsp","jzintv","basiliskll","mame","advmame","dgen","openmsx","mupen64plus","gngeo","dosbox","ppsspp","simcoupe","scummvm","snes9x","pisnes","frotz","fbzx","fuse","gemrb","cgenesis","zdoom","eduke32","lincity","love","kodi","alephone","micropolis","openbor","openttd","opentyrian","cannonball","tyrquake","ioquake3","residualvm","xrick","sdlpop","uqm","stratagus","wolf4sdl","solarus","drastic","coolcv","PPSSPPSDL","moonlight","Xorg","smw","omxplayer.bin","wolf4sdl-3dr-v14","wolf4sdl-gt-v14","wolf4sdl-spear","wolf4sdl-sw-v14","xvic","xvic cart","xplus4","xpet","x128","x64sc","x64","prince","fba2x","steamlink","pcsx-rearmed","limelight","sdltrs","ti99sm","dosbox-sdl2","minivmac","quasi88","xm7","yabause","abuse","cdogs-sdl","cgenius","digger","gemrb","hcl","love","love-0.10.2","openblok","openfodder","srb2","yquake2","amiberry","zesarux","dxx-rebirth","zesarux"]
+
+crtprocesses = ["crt_launcher.py", "emulator_launcher.py", "emulator_launcher_legacy.py"]
 
 #test: Ran into some issues with script crashing on a cold boot, so we're camping for emulationstation (if ES can start, so can we!)
 esStarted = False
@@ -262,12 +265,22 @@ while True:
                     mixer.music.stop() #we aren't going to resume the audio, so stop it outright.
                 else:
                     mixer.music.pause() #we are going to resume, so pause it.
+                #Identifying Launcher
+                output = commands.getoutput('ps -fe')
+                for item in crtprocesses:
+                    if item in output:
+                        CRTProcess = item
                 #print("Muted.  Monitoring emulator.")
                 while os.path.exists("/proc/" + pid):
                     time.sleep(1); # Delay 1 second and check again.
                 #Turn up the music
                 #print "Emulator finished, resuming audio..."
-                time.sleep(1.5)
+                #Wait to CRT Launcher to exit
+                while True:
+                    time.sleep(1)
+                    output = commands.getoutput('ps -fe')
+                    if not CRTProcess in output:
+                        break
                 if not restart:
                     mixer.music.unpause() #resume
                     while volume < maxvolume:
