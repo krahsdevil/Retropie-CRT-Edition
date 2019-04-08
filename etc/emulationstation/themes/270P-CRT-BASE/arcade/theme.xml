@@ -1,0 +1,28 @@
+<theme>
+
+    <formatVersion>4</formatVersion>
+    <include>./../common.xml</include>
+
+	<view name="system">
+		<sound name="bgsound"> <path>./system.ogg</path> </sound>
+		<!-- System Specific Images -->
+		<image name="logo">
+			<path>./logo.png</path>
+        </image>
+		
+		<image name="overlay" extra="true">
+			<path>./controller.png</path>
+		</image>
+	</view>
+
+	<view name="basic, detailed, video">
+		<!-- System Specific Images -->
+		<image name="logo">
+			<path>./logo.png</path>
+		</image>
+		
+		<image name="overlay" extra="true">
+			<path>./controller.png</path>
+		</image>
+	</view>
+</theme>
