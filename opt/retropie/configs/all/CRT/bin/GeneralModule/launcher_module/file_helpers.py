@@ -38,7 +38,7 @@ def remove_line(p_sFile, p_sRemoveMask):
         return True
 
 def modify_line(p_sFile, p_sLineToFind, p_sNewLine, p_bEndLine = True):
-    if  not os.path.isfile(p_sFile):
+    if not os.path.isfile(p_sFile):
         return
     with open(p_sFile, "r+") as f:
         new_file = f.readlines()
