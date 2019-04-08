@@ -137,14 +137,15 @@ check_videomodes() # remove video modes if exists
 #    8) SONY PLAYSTATION                                                          #
 #    9) MSX                                                                       #
 #    10) ATARI 2600                                                               #
-#    11) ATARI ST                                                                 #
-#    12) VIDEOPAC MAGNAVOX ODYSSEY 2                                              #
-#    13) SINCLAIR ZX 81                                                           #
-#    14) COMMODORE 64                                                             #
+#    11) ATARI 7800                                                               #
+#    12) ATARI ST                                                                 #
+#    13) VIDEOPAC MAGNAVOX ODYSSEY 2                                              #
+#    14) SINCLAIR ZX 81                                                           #
+#    15) COMMODORE 64                                                             #
 #                                                                                 #
 ###################################################################################
 
-if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or emulator == "mastersystem" or emulator == "n64" or emulator == "nes" or emulator == "snes" or emulator == "psx" or emulator == "msx" or emulator == "atari2600" or emulator == "odyssey2" or emulator == "zx81" or emulator == "atarist" or emulator == "c64":
+if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or emulator == "mastersystem" or emulator == "n64" or emulator == "nes" or emulator == "snes" or emulator == "psx" or emulator == "msx" or emulator == "atari2600" or emulator == "odyssey2" or emulator == "zx81" or emulator == "atarist" or emulator == "c64" or emulator == "atari7800" :
     logging.info("INFO: Detectado sistema compatible: %s" % emulator)
     logging.info("INFO: Categoria con selector de frecuencia")
     logging.info("INFO: Lanzando selector de frecuencia")
@@ -245,12 +246,11 @@ if emulator == "megadrive" or emulator == "segacd" or emulator == "sega32x" or e
 #     6) COLECOVISION                                                             #
 #     7) AMSTRAD CPC                                                              #
 #     8) PRBOOM                                                                   #
-#     9) ATARI 7800                                                               #
-#    10) SINCLAIR ZX SPECTRUM                                                     #
+#    9) SINCLAIR ZX SPECTRUM                                                     #
 #                                                                                 #
 ###################################################################################
 
-elif emulator == "sg-1000" or emulator == "fds" or emulator == "pcengine" or emulator == "pcenginecd" or emulator == "neogeo" or emulator == "coleco" or emulator == "amstradcpc" or emulator == "prboom" or emulator == "atari7800" or emulator == "vectrex" or emulator == "zxspectrum":
+elif emulator == "sg-1000" or emulator == "fds" or emulator == "pcengine" or emulator == "pcenginecd" or emulator == "neogeo" or emulator == "coleco" or emulator == "amstradcpc" or emulator == "prboom" or emulator == "vectrex" or emulator == "zxspectrum":
     #RETROPIE Identifies pcenginecd as same system as pcengine. Here we make the translation pcenginecd -> pcengine
     if emulator == "pcenginecd":
         emulatorWFQ = "pcenginecd"
