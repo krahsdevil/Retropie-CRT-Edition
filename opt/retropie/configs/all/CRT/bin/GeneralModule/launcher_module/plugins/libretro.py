@@ -41,7 +41,7 @@ class libretro(launcher):
     # FIXME: aun no se muy bien como haré esto...
     @staticmethod
     def get_system_list():
-        return ["sg-1000", "fds", "pcengine", "neogeo", "colecovision", "atari7800",
+        return ["sg-1000", "fds", "pcengine", "neogeo", "coleco", "atari7800",
                 "vectrex", "pcenginecd", "zxspectrum", "amstradcpc"]
 
     def configure(self):
