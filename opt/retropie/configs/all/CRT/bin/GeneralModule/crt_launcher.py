@@ -34,12 +34,14 @@ MODULES_PATH = os.path.join(BASE_DIR, "launcher_module/plugins")
 if __name__ == '__main__':
     try:
         sSystem = sys.argv[2]
+        bSystemFound = False
         for pl in plugin_list(MODULES_PATH):
             # print("Loading plugin " + pl["name"])
             launcher = plugin_load(pl)
             if sSystem in launcher.get_system_list():
+                bSystemFound = True
                 launcher(sys.argv[1], sys.argv[2], sys.argv[3])
-            else:
-                something_is_bad("ERROR - no emulator available for this system!", "")
+        if not bSystemFound:
+            something_is_bad("ERROR - no emulator available for this system!", "")
     except (IndexError):
         something_is_bad("ERROR - No game to launch or no emulator!", "")
