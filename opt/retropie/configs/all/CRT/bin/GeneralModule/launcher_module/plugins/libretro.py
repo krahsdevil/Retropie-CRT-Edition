@@ -27,8 +27,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys
 from distutils.version import LooseVersion
-from .core import launcher, logging, CRTROOT_PATH, RETROPIEEMU_PATH
-from .file_helpers import md5_file, add_line, modify_line, ini_get
+from launcher_module.core import launcher, logging, CRTROOT_PATH, RETROPIEEMU_PATH
+from launcher_module.file_helpers import md5_file, add_line, modify_line, ini_get
 
 RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
 RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "HashRetroarchVersionDB.txt")

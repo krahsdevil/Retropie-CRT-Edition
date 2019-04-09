@@ -25,20 +25,21 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys, optparse
-from launcher_module.libretro import libretro
-from launcher_module.bezel import bezel
-from launcher_module.utils import something_is_bad
+import os, sys
+from launcher_module.utils import something_is_bad, plugin_list, plugin_load
 
-# FIXME: need work!
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODULES_PATH = os.path.join(BASE_DIR, "launcher_module/plugins")
+
 if __name__ == '__main__':
     try:
         sSystem = sys.argv[2]
-        if sSystem in libretro.get_system_list():
-            libretro(sys.argv[1], sys.argv[2], sys.argv[3])
-        elif sSystem in bezel.get_system_list():
-            bezel(sys.argv[1], sys.argv[2], sys.argv[3])
-        else:
-            something_is_bad("ERROR - no emulator available for this system!", "")
+        for pl in plugin_list(MODULES_PATH):
+            # print("Loading plugin " + pl["name"])
+            launcher = plugin_load(pl)
+            if sSystem in launcher.get_system_list():
+                launcher(sys.argv[1], sys.argv[2], sys.argv[3])
+            else:
+                something_is_bad("ERROR - no emulator available for this system!", "")
     except (IndexError):
         something_is_bad("ERROR - No game to launch or no emulator!", "")

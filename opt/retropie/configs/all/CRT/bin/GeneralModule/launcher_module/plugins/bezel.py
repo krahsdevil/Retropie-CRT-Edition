@@ -25,9 +25,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, sys
-from .core import CFG_VIDEOUTILITY_FILE
-from .libretro import libretro, logging, RETROARCH_CONFIGS_PATH
-from .file_helpers import ini_get
+from launcher_module.core import CFG_VIDEOUTILITY_FILE
+from launcher_module.file_helpers import ini_get
+from launcher_module.plugins.libretro import libretro, logging, RETROARCH_CONFIGS_PATH
 
 class bezel(libretro):
     # FIXME: aun no se muy bien como haré esto...

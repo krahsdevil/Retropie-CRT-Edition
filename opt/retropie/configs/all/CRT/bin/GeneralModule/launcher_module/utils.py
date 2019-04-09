@@ -3,11 +3,37 @@
 
 # unlicense.org
 
-import os, time, subprocess
+import os, time, imp, subprocess
 import pygame
 
 PYGAME_FLAGS = (pygame.FULLSCREEN|pygame.HWSURFACE)
 
+#
+# simple plugin system
+#
+
+# returns a list of .py files and ignores __init__.py
+def plugin_list(p_sPath):
+    plugins = []
+    possibleplugins = os.listdir(p_sPath)
+    for pl in possibleplugins:
+        location = os.path.join(p_sPath, pl)
+        if pl.endswith(".py") and not pl.endswith("_.py"):
+            sClass = pl[:-3]
+            info = imp.find_module(sClass, [p_sPath])
+            plugins.append({"name": sClass, "info": info})
+    return plugins
+
+# load module dinamically and his main class (same name as .py file)
+# ex: userplugin.py, userplugin()
+def plugin_load(p_oPlugin):
+    _module = imp.load_module(p_oPlugin["name"], *p_oPlugin["info"])
+    return getattr(_module, p_oPlugin["name"])
+
+
+#
+# CRT Team functions
+#
 def something_is_bad(infos,infos2):
     time.sleep(2)
     problem = "/opt/retropie/configs/all/CRT/Datas/problem.sh \"%s\" \"%s\"" % (infos, infos2)
@@ -44,4 +70,3 @@ def splash_info(SplashImagePath):
         pygame.display.flip()
         time.sleep(5)
     pygame.quit()
-
