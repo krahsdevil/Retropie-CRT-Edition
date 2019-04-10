@@ -15,3 +15,4 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 
 You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 
+_Please take a look to our [Wiki](https://github.com/krahsdevil/crt-for-retropie/wiki) (in progress)_
