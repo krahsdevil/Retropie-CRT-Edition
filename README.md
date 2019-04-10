@@ -1,6 +1,10 @@
+***
 # Retropie CRT Edition
 
 ![img](https://github.com/krahsdevil/crt-for-retropie/blob/d398fe53a9e550c6aca72b926ea8c8a312aed028/logo.png?raw=true)
+***
+| Current Version  | BETA 2.5.1  | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs)  |
+|:---:|:---:|:---:|
 
 Adding support to Retropie 4.4 for custom 15khz resolutions and some cool utilities like USB Automount or easy TATE mode changing.
 
@@ -11,5 +15,3 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 
 You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 
-| Versión Actual  | BETA 2.5.1  | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs)  |
-|:---:|:---:|:---:|
