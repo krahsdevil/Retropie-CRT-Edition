@@ -33,10 +33,12 @@ from launcher_module.file_helpers import md5_file, add_line, modify_line, ini_ge
 RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
 RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "HashRetroarchVersionDB.txt")
 RETROARCH_BINARY_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
+AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "AutoFreqDB.cfg")
 
 class libretro(launcher):
     m_sSystemCfg = ""
     m_sSystemCfgPath = ""
+    m_sRomFile = ""
 
     # FIXME: aun no se muy bien como haré esto...
     @staticmethod

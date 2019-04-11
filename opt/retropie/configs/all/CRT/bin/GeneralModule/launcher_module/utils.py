@@ -3,7 +3,7 @@
 
 # unlicense.org
 
-import os, time, imp, subprocess
+import os, time, imp, subprocess, re
 import pygame
 
 PYGAME_FLAGS = (pygame.FULLSCREEN|pygame.HWSURFACE)
@@ -70,3 +70,8 @@ def splash_info(SplashImagePath):
         pygame.display.flip()
         time.sleep(5)
     pygame.quit()
+
+def compact_rom_name(p_sRomName):
+    sPreCleanedGame = re.sub('[^a-zA-Z0-9-_]+','', p_sRomName )
+    sCleanedGame = re.sub(' ','', sPreCleanedGame)
+    return sCleanedGame
