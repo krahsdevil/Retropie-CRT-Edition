@@ -38,6 +38,7 @@ LABELS60HZ = ["ntsc","1","4","a","j","b","k","c","u","hk","world","usa",
                 "europe,usa","japan,usa","usa,japan"]
 ALLOWED_FREQS = ["50", "60"]
 
+
 class selector(libretro):
     m_sCompactedName = ""
     m_sFrequency = ""
@@ -47,6 +48,12 @@ class selector(libretro):
     def get_system_list():
         return ["megadrive", "segacd", "sega32x", "mastersystem", "n64", "nes", "snes",
                 "psx", "msx", "atari2600", "odyssey2", "zx81", "atarist", "c64", "atari7800"]
+
+    # prepare internal variables at init...
+    def configure(self):
+        self.m_sCompactedName = compact_rom_name(self.m_sRomFile)
+        self.check_frequency_database()
+        super(selector, self).configure()
 
     def system_setup(self):
         super(selector, self).system_setup()
@@ -71,8 +78,6 @@ class selector(libretro):
         logging.info("enabled selector cfg: %s" % self.m_sSystemCfgPath)
 
     def frecuency_auto(self):
-        self.m_sCompactedName = compact_rom_name(self.m_sRomFile)
-        self.check_frequency_database()
         sFrequency = self.find_rom_frequency_database()
         if not sFrequency:
             sFrequency = self.find_frequency_in_name()
@@ -81,6 +86,7 @@ class selector(libretro):
         return sFrequency
 
     def frequency_manual(self):
+        # TODO: call user selector with pygame
         return "60"
 
     def check_frequency_database(self):
@@ -107,6 +113,7 @@ class selector(libretro):
         else:
             logging.error("Game could not be cleaned")
 
+    # TODO: optimize!
     def find_frequency_in_name(self):
         for CountryCODE in LABELS60HZ:
             if "(%s)"%CountryCODE in self.m_sRomFile.lower() or "[%s]"%CountryCODE in self.m_sRomFile.lower():
