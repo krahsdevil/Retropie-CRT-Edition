@@ -30,6 +30,14 @@ from launcher_module.plugins.libretro import libretro, logging, RETROARCH_CONFIG
 from launcher_module.file_helpers import ini_get, add_line, remove_line
 from launcher_module.utils import compact_rom_name
 
+
+LABELS50HZ = ["pal","nl","e","s","sw","fn","g","uk","gr","i","h","eu",
+                "europe","europa","spain","germany","france","italy"]
+LABELS60HZ = ["ntsc","1","4","a","j","b","k","c","u","hk","world","usa",
+                "us","ue","jue","jap","jp","japan","japon","asia","usa,europe",
+                "europe,usa","japan,usa","usa,japan"]
+ALLOWED_FREQS = ["50", "60"]
+
 class selector(libretro):
     m_sCompactedName = ""
     m_sFrequency = ""
@@ -43,23 +51,22 @@ class selector(libretro):
     def system_setup(self):
         super(selector, self).system_setup()
         self.m_sSelectFreq = ini_get(CFG_VIDEOUTILITY_FILE, "freq_selector")
-        if self.m_sSelectFreq == "100":
+
+        # first i try to find an allowed freq
+        if self.m_sSelectFreq in ALLOWED_FREQS:
+            logging.info("Frequency selector always %sHz" % self.m_sSelectFreq)
+        elif self.m_sSelectFreq == "100":
             logging.info("Frequency selector mode auto")
             self.m_sSelectFreq = self.frecuency_auto()
-        elif self.m_sSelectFreq == "50":
-            logging.info("Frequency selector always 50Hz")
-        elif self.m_sSelectFreq == "60":
-            logging.info("Frequency selector always 60Hz")
         else:
             logging.info("Frequency selector mode manual")
-            #Llamar a selector manual
-            self.m_sSelectFreq = "60"
+            self.m_sSelectFreq = self.frequency_manual()
 
+        self.m_sSystemCfg = self.m_sSystemFreq
         if self.m_sSelectFreq == "50":
-            self.m_sSystemCfg = self.m_sSystemFreq + "50.cfg"
-        elif self.m_sSelectFreq == "60":
-            self.m_sSystemCfg = self.m_sSystemFreq + ".cfg"
+            self.m_sSystemCfg += "50"
 
+        self.m_sSystemCfg += ".cfg"
         self.m_sSystemCfgPath = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)
         logging.info("enabled selector cfg: %s" % self.m_sSystemCfgPath)
 
@@ -67,12 +74,14 @@ class selector(libretro):
         self.m_sCompactedName = compact_rom_name(self.m_sRomFile)
         self.check_frequency_database()
         sFrequency = self.find_rom_frequency_database()
-        if sFrequency == "0":
+        if not sFrequency:
             sFrequency = self.find_frequency_in_name()
-            if sFrequency == "0":
-                #llamar a selector manual.
-                sFrequency = "60"
+            if not sFrequency:
+                sFrequency = self.frequency_manual()
         return sFrequency
+
+    def frequency_manual(self):
+        return "60"
 
     def check_frequency_database(self):
         if not os.path.isfile(AUTOFREQ_DATABASE):
@@ -80,40 +89,33 @@ class selector(libretro):
             logging.info("Created frequency database")
 
     def find_rom_frequency_database(self):
-        if not ini_get(AUTOFREQ_DATABASE, self.m_sCompactedName):
+        sFreqValue = ini_get(AUTOFREQ_DATABASE, self.m_sCompactedName)
+        if sFreqValue in ALLOWED_FREQS:
+            logging.info("Game found in current frequency database at %sHz" % sFreqValue)
+            return sFreqValue
+        elif not sFreqValue:
             logging.info("Game not found in current frequency database")
-            return "0"
-        elif ini_get(AUTOFREQ_DATABASE, self.m_sCompactedName) == "60":
-            logging.info("Game found in current frequency database at 60Hz")
-            return "60"
-        elif ini_get(AUTOFREQ_DATABASE, self.m_sCompactedName) == "50":
-            logging.info("Game found in current frequency database at 50Hz")
-            return "50"
+            return ""
         else:
             logging.info("Game found in current database with wrong Frequency")
-            self.clean_game_frequency_database()
-            return "0"
+            self.clean_loadedgame_frequency_database()
+            return ""
 
-    def clean_game_frequency_database(self):
+    def clean_loadedgame_frequency_database(self):
         if remove_line(AUTOFREQ_DATABASE, self.m_sCompactedName):
             logging.info("Game was cleaned")
         else:
-            logging.info("Game could not be cleaned")
+            logging.error("Game could not be cleaned")
 
     def find_frequency_in_name(self):
-        Labels50Hz = ["pal","nl","e","s","sw","fn","g","uk","gr","i","h","eu",
-                        "europe","europa","spain","germany","france","italy"]
-        Labels60Hz = ["ntsc","1","4","a","j","b","k","c","u","hk","world","usa",
-                        "us","ue","jue","jap","jp","japan","japon","asia","usa,europe",
-                        "europe,usa","japan,usa","usa,japan"]
-        for CountryCODE in Labels60Hz:
+        for CountryCODE in LABELS60HZ:
             if "(%s)"%CountryCODE in self.m_sRomFile.lower() or "[%s]"%CountryCODE in self.m_sRomFile.lower():
                 add_line(AUTOFREQ_DATABASE, "%s 60" % self.m_sCompactedName)
                 logging.info("60Hz Frequency label identified for: %s" % self.m_sRomFile)
                 return "60"
-        for CountryCODE in Labels50Hz:
+        for CountryCODE in LABELS50HZ:
             if "(%s)"%CountryCODE in self.m_sRomFile.lower() or "[%s]"%CountryCODE in self.m_sRomFile.lower():
                 add_line(AUTOFREQ_DATABASE, "%s 50" % self.m_sCompactedName)
                 logging.info("60Hz Frequency label identified for: %s" % self.m_sRomFile)
                 return "50"
-        return "0"
+        return ""
