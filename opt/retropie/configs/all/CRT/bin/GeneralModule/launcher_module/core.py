@@ -71,8 +71,8 @@ __ARCADE_FILE = "retroarcharcade"
 CFG_ARCADE_FILE = "%s%s.cfg" % (__ARCADE_PATH, __ARCADE_FILE)
 
 
-""" virtual class for crt launcher """
 class launcher(object):
+""" virtual class for crt launcher """
 
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""

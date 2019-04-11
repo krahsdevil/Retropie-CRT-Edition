@@ -41,8 +41,7 @@ ALLOWED_FREQS = ["50", "60"]
 
 class selector(libretro):
     m_sCompactedName = ""
-    m_sFrequency = ""
-    m_sSelectFreq = ""
+    m_oFreqDB = None
     # FIXME: aun no se muy bien como haré esto... (pues imagina yo)
     @staticmethod
     def get_system_list():
@@ -52,9 +51,10 @@ class selector(libretro):
     # prepare internal variables at init...
     def configure(self):
         self.m_sCompactedName = compact_rom_name(self.m_sRomFile)
-        self.check_frequency_database()
+        self.m_oFreqDB = dbfreq()
         super(selector, self).configure()
 
+    # getting correct frequency for FileName loaded
     def system_setup(self):
         super(selector, self).system_setup()
         self.m_sSelectFreq = ini_get(CFG_VIDEOUTILITY_FILE, "freq_selector")
@@ -72,15 +72,15 @@ class selector(libretro):
         self.m_sSystemCfg = self.m_sSystemFreq
         if self.m_sSelectFreq == "50":
             self.m_sSystemCfg += "50"
-
         self.m_sSystemCfg += ".cfg"
+
         self.m_sSystemCfgPath = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)
         logging.info("enabled selector cfg: %s" % self.m_sSystemCfgPath)
 
     def frecuency_auto(self):
-        sFrequency = self.find_rom_frequency_database()
+        sFrequency = self.m_oFreqDB.find(self.m_sCompactedName)
         if not sFrequency:
-            sFrequency = self.find_frequency_in_name()
+            sFrequency = self.frequency_by_name()
             if not sFrequency:
                 sFrequency = self.frequency_manual()
         return sFrequency
@@ -89,40 +89,46 @@ class selector(libretro):
         # TODO: call user selector with pygame
         return "60"
 
-    def check_frequency_database(self):
-        if not os.path.isfile(AUTOFREQ_DATABASE):
-            os.mkdir(AUTOFREQ_DATABASE)
-            logging.info("Created frequency database")
-
-    def find_rom_frequency_database(self):
-        sFreqValue = ini_get(AUTOFREQ_DATABASE, self.m_sCompactedName)
-        if sFreqValue in ALLOWED_FREQS:
-            logging.info("Game found in current frequency database at %sHz" % sFreqValue)
-            return sFreqValue
-        elif not sFreqValue:
-            logging.info("Game not found in current frequency database")
-            return ""
-        else:
-            logging.info("Game found in current database with wrong Frequency")
-            self.clean_loadedgame_frequency_database()
-            return ""
-
-    def clean_loadedgame_frequency_database(self):
-        if remove_line(AUTOFREQ_DATABASE, self.m_sCompactedName):
-            logging.info("Game was cleaned")
-        else:
-            logging.error("Game could not be cleaned")
-
     # TODO: optimize!
-    def find_frequency_in_name(self):
+    def frequency_by_name(self):
         for CountryCODE in LABELS60HZ:
             if "(%s)"%CountryCODE in self.m_sRomFile.lower() or "[%s]"%CountryCODE in self.m_sRomFile.lower():
-                add_line(AUTOFREQ_DATABASE, "%s 60" % self.m_sCompactedName)
+                self.m_oFreqDB.add(self.m_sCompactedName, "60")
                 logging.info("60Hz Frequency label identified for: %s" % self.m_sRomFile)
                 return "60"
         for CountryCODE in LABELS50HZ:
             if "(%s)"%CountryCODE in self.m_sRomFile.lower() or "[%s]"%CountryCODE in self.m_sRomFile.lower():
-                add_line(AUTOFREQ_DATABASE, "%s 50" % self.m_sCompactedName)
+                self.m_oFreqDB.add(self.m_sCompactedName, "50")
                 logging.info("60Hz Frequency label identified for: %s" % self.m_sRomFile)
                 return "50"
         return ""
+
+
+class dbfreq(object):
+    """ frequency database handler """
+    def __init__(self):
+        if not os.path.isfile(AUTOFREQ_DATABASE):
+            os.mkdir(AUTOFREQ_DATABASE)
+            logging.info("Created frequency database")
+
+    def find(self, p_sName):
+        sFreqValue = ini_get(AUTOFREQ_DATABASE, p_sName)
+        if sFreqValue in ALLOWED_FREQS:
+            logging.info("Game found in current frequency database at %sHz" % sFreqValue)
+            return sFreqValue
+        elif not sFreqValue:
+            logging.info("\"%s\" not found in current frequency database" % p_sName)
+            return ""
+        else:
+            logging.info("\"%s\" found in current database with wrong Frequency" % p_sName)
+            self.clean(p_sName)
+            return ""
+
+    def clean(self, p_sName):
+        if remove_line(AUTOFREQ_DATABASE, p_sName):
+            logging.info("Game was cleaned")
+        else:
+            logging.error("Game could not be cleaned")
+
+    def add(self, p_sName, p_sFreq):
+        add_line(AUTOFREQ_DATABASE, "%s %s" % (p_sName, p_sFreq))

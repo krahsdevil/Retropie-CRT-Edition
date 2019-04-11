@@ -27,7 +27,7 @@ import hashlib
 
 def remove_line(p_sFile, p_sRemoveMask):
     if not os.path.isfile(p_sFile):
-        return
+        return None
     with open(p_sFile,"r+") as f:
         new_file = f.readlines()
         f.seek(0) # rewind
@@ -39,7 +39,7 @@ def remove_line(p_sFile, p_sRemoveMask):
 
 def modify_line(p_sFile, p_sLineToFind, p_sNewLine, p_bEndLine = True):
     if not os.path.isfile(p_sFile):
-        return
+        return None
     with open(p_sFile, "r+") as f:
         new_file = f.readlines()
         f.seek(0) # rewind
@@ -54,7 +54,7 @@ def modify_line(p_sFile, p_sLineToFind, p_sNewLine, p_bEndLine = True):
 
 def add_line(p_sFile, p_sNewLine, p_bEndLine = True):
     if not os.path.isfile(p_sFile):
-        return
+        return None
     with open(p_sFile, "a") as f:
         line = p_sNewLine
         if p_bEndLine:
