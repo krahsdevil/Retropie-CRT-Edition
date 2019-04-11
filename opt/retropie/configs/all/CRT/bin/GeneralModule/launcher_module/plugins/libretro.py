@@ -38,7 +38,6 @@ AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "AutoFreqDB.cfg")
 class libretro(launcher):
     m_sSystemCfg = ""
     m_sSystemCfgPath = ""
-    m_sRomFile = ""
 
     # FIXME: aun no se muy bien como haré esto...
     @staticmethod

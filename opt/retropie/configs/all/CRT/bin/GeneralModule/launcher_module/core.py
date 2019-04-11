@@ -72,8 +72,8 @@ CFG_ARCADE_FILE = "%s%s.cfg" % (__ARCADE_PATH, __ARCADE_FILE)
 
 
 class launcher(object):
-""" virtual class for crt launcher """
-
+    """ virtual class for crt launcher """
+    m_sFileName = ""
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
     m_sBinarySelected = ""
@@ -83,15 +83,15 @@ class launcher(object):
 
     m_oRunProcess = None
 
-    def __init__(self, p_sRomPath, p_sSystem, p_sCustom):
-        self.m_sRomPath = p_sRomPath
+    def __init__(self, p_sFilePath, p_sSystem, p_sCustom):
+        self.m_sFilePath = p_sFilePath
         self.m_sSystem = p_sSystem
         self.m_sSystemVideoName = p_sSystem
         self.m_sCustom = p_sCustom
 
         self.__temp()
         logging.info("INFO: arg 1 (rom_path) = %s, (system) = %s, (sin uso) = %s"
-            % (self.m_sRomPath, self.m_sSystem, self.m_sCustom))
+            % (self.m_sFilePath, self.m_sSystem, self.m_sCustom))
 
         # rom name work
         self.__clean()
@@ -151,9 +151,9 @@ class launcher(object):
 
     # setup paths - called by __init__()
     def __setup(self):
+        self.m_sFileName = os.path.basename(self.m_sFilePath)
+        self.m_sGameName = os.path.splitext(self.m_sFileName)[0]
         self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
-        self.m_sRomFile = os.path.basename(self.m_sRomPath)
-        self.m_sGameName = os.path.splitext(self.m_sRomFile)[0]
 
     # clean system
     def __clean(self):
@@ -327,7 +327,7 @@ class launcher(object):
 
     # launch_core: run emulator!
     def runcommand_start(self):
-        commandline = "%s 0 _SYS_ %s \"%s\"" % (RUNCOMMAND_FILE, self.m_sSystem, self.m_sRomPath)
+        commandline = "%s 0 _SYS_ %s \"%s\"" % (RUNCOMMAND_FILE, self.m_sSystem, self.m_sFilePath)
         self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
         logging.info("Subprocess running: %s", commandline)
         self.runcommand_wait()

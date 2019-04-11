@@ -50,7 +50,7 @@ class selector(libretro):
 
     # prepare internal variables at init...
     def configure(self):
-        self.m_sCompactedName = compact_rom_name(self.m_sRomFile)
+        self.m_sCompactedName = compact_rom_name(self.m_sFileName)
         self.m_oFreqDB = dbfreq()
         super(selector, self).configure()
 
@@ -92,14 +92,14 @@ class selector(libretro):
     # TODO: optimize!
     def frequency_by_name(self):
         for CountryCODE in LABELS60HZ:
-            if "(%s)"%CountryCODE in self.m_sRomFile.lower() or "[%s]"%CountryCODE in self.m_sRomFile.lower():
+            if "(%s)"%CountryCODE in self.m_sFileName.lower() or "[%s]"%CountryCODE in self.m_sFileName.lower():
                 self.m_oFreqDB.add(self.m_sCompactedName, "60")
-                logging.info("60Hz Frequency label identified for: %s" % self.m_sRomFile)
+                logging.info("60Hz Frequency label identified for: %s" % self.m_sFileName)
                 return "60"
         for CountryCODE in LABELS50HZ:
-            if "(%s)"%CountryCODE in self.m_sRomFile.lower() or "[%s]"%CountryCODE in self.m_sRomFile.lower():
+            if "(%s)"%CountryCODE in self.m_sFileName.lower() or "[%s]"%CountryCODE in self.m_sFileName.lower():
                 self.m_oFreqDB.add(self.m_sCompactedName, "50")
-                logging.info("60Hz Frequency label identified for: %s" % self.m_sRomFile)
+                logging.info("60Hz Frequency label identified for: %s" % self.m_sFileName)
                 return "50"
         return ""
 
