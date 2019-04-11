@@ -25,9 +25,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys
+import os, sys, re
 from distutils.version import LooseVersion
-from launcher_module.core import launcher, logging, CRTROOT_PATH, RETROPIEEMU_PATH
+from launcher_module.core import launcher, logging, CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH
 from launcher_module.file_helpers import md5_file, add_line, modify_line, ini_get
 
 RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
@@ -35,28 +35,18 @@ RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "HashRetroarchVersionDB.txt")
 RETROARCH_BINARY_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
 AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "AutoFreqDB.cfg")
 
+CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
+
 class libretro(launcher):
     m_sSystemCfg = ""
     m_sSystemCfgPath = ""
 
-    # FIXME: aun no se muy bien como haré esto...
     @staticmethod
     def get_system_list():
         return ["sg-1000", "fds", "pcengine", "neogeo", "coleco", "atari7800",
                 "vectrex", "pcenginecd", "zxspectrum", "amstradcpc"]
 
-    def configure(self):
-        self.m_lBinaryMasks = ["lr-"]
-        self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
-        self.run()
-
-    def run(self):
-        self.check() # call system_setup in launcher
-        self.ra_check_version() # need the correct m_sSystemCfgPath
-        self.start()
-        self.wait()
-        self.cleanup()
-
+    # system configure vars
     def system_setup(self):
         if self.m_sSystem == "zxspectrum":
             self.m_sSystemFreq = "zxspectrum50"
@@ -71,6 +61,18 @@ class libretro(launcher):
             logging.error("not found cfg: %s" % system_path)
             return
         self.m_sSystemCfgPath = system_path
+
+    # final configure binary/process values and prepare emulatorcfg
+    def configure(self):
+        self.m_lBinaryMasks = ["lr-"]
+        self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
+        self.emulatorcfg_setup()
+        self.ra_check_version() # need the correct m_sSystemCfgPath
+
+    # we need check if retropie-menu changed something after command start
+    def start(self):
+        super(libretro, self).start() # command start (and set videomode)
+        self.emulatorcfg_check_or_die()
 
     # just called if need rebuild the CMD
     def runcommand_generate(self, p_sCMD):
@@ -112,3 +114,100 @@ class libretro(launcher):
         if ratio != ratio_value.replace('"', ''):
             modify_line(self.m_sSystemCfgPath, "aspect_ratio_index", "aspect_ratio_index = \"%s\"" % ratio)
             logging.info("fixed: %s version: %s ratio: %s (%s)" % (self.m_sSystemCfgPath, ra_version, ratio, ratio_value))
+
+    # emulatorcfg handlers
+
+    def emulatorcfg_setup(self):
+        """ prepare emulator to launch """
+        try:
+            self.emulatorcfg_add_systems()
+            if not self.emulatorcfg_per_game():
+                self.emulatorcfg_default(True)
+        except IOError as e:
+            infos = "File error at emulators.cfg [%s]" % self.m_sSystem
+            infos2 = "Please, install at least one emulator or core"
+            self.panic(infos, infos2)
+        except Exception as e:
+            infos = "Error in emulators.cfg [%s]" % self.m_sSystem
+            self.panic(infos, str(e))
+
+    # RETROPIE allows to choice per game an specific emulator from available
+    # we check if emulator is valid or clean emulators.cfg
+    def emulatorcfg_per_game(self):
+        if not os.path.exists(CFG_CUSTOMEMU_FILE):
+            return False
+        sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
+        sGameSystemName = "%s_%s" % (self.m_sSystem, sCleanName)
+        need_clean = False
+        with open(CFG_CUSTOMEMU_FILE, 'r') as oFile:
+            for line in oFile:
+                lValues = line.strip().split(' ')
+                if lValues[0] == sGameSystemName:
+                    if self.is_valid_binary(lValues[2]):
+                        self.m_sBinarySelected = lValues[2]
+                        return True
+                    else: # not valid is just ignored
+                        need_clean = True
+        # clean emulators.cfg if have an invalid binary
+        if need_clean:
+            logging.info("cleaning line %s from %s" % (sGameSystemName, CFG_CUSTOMEMU_FILE))
+            remove_line(CFG_CUSTOMEMU_FILE, sGameSystemName)
+        return False
+
+    # we try to found this line: default = "emulator-binary-name"
+    # p_oFile: file ready to seek
+    # return: default emu or die
+    def emulatorcfg_default(self, p_bSetCore):
+        with open(self.m_sCfgSystemPath, "r") as oFile:
+            for line in oFile:
+                lValues = line.strip().split(' ')
+                if lValues[0] == 'default':
+                    sBinaryName = lValues[2].replace('"', '')
+                    if p_bSetCore:
+                        self.set_binary(sBinaryName)
+                    else:
+                        return self.is_valid_binary(sBinaryName)
+
+    # we try to found emulator-binary-name = "command-to-launch-the-game"
+    #   valid with our masks, if not found then die
+    def emulatorcfg_add_systems(self):
+        with open(self.m_sCfgSystemPath, "r") as oFile:
+            self.m_lBinaries = []
+            for line in oFile:
+                lValues = line.strip().split(' ')
+                if lValues[0] == 'default': # ignore default line
+                    continue
+                if self.is_valid_binary(lValues[0]):
+                    self.m_lBinaries.append(lValues[0])
+            if len(self.m_lBinaries):
+                logging.info("VALID - emulators: %s" % str(self.m_lBinaries))
+            else:
+                self.panic("NOT FOUND any emulators mask [%s]" % str(self.m_lBinaryMasks))
+
+    def emulatorcfg_check_or_die(self):
+        bValidCore = self.emulatorcfg_default(False)
+        if not bValidCore:
+            self.emulatorcfg_kill()
+            remove_line(self.m_sCfgSystemPath, "default =")
+            self.panic("selected invalid emulator", "try again!")
+
+    def emulatorcfg_kill(self):
+        self.runcommand_wait(False)
+        logging.error("closing %s processes" % str(self.m_lProcesses))
+        for proc in self.m_lProcesses:
+            os.system('killall %s > /dev/null 2>&1' % proc)
+
+    # filter returns an array with valid values, we just check if has any value :)
+    def is_valid_binary(self, p_sCore):
+        if filter(lambda mask: mask in p_sCore, self.m_lBinaryMasks):
+            return True
+        else:
+            return False
+
+    def set_binary(self, p_sCore):
+        if self.is_valid_binary(p_sCore):
+            self.m_sBinarySelected = p_sCore
+            logging.info("Selected binary (%s)" % self.m_sBinarySelected)
+        else:
+            raise NameError("INVALID - binary (%s) - mask [%s]" %
+                (self.m_sBinarySelected, str(self.m_lBinaryMasks)) )

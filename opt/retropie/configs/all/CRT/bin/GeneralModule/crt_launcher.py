@@ -45,3 +45,5 @@ if __name__ == '__main__':
             something_is_bad("ERROR - System not supported!", sSystem)
     except (IndexError):
         something_is_bad("ERROR - No game to launch or no emulator!", "")
+    except Exception as e:
+        something_is_bad("ERROR - crt_launcher", str(e))

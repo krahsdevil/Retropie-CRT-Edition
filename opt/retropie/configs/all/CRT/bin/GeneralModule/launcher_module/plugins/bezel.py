@@ -30,7 +30,7 @@ from launcher_module.file_helpers import ini_get
 from launcher_module.plugins.libretro import libretro, logging, RETROARCH_CONFIGS_PATH
 
 class bezel(libretro):
-    # FIXME: aun no se muy bien como haré esto...
+
     @staticmethod
     def get_system_list():
         return ["atarilynx", "gbc", "gb", "gba", "ngpc", "ngp",

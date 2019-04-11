@@ -56,7 +56,6 @@ CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1 && "
 RUNCOMMAND_FILE = os.path.join(__RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
 
 CFG_VIDEOMODES_FILE = os.path.join(RETROPIECFG_PATH, "all/videomodes.cfg")
-CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
 CFG_FIXMODES_FILE = os.path.join(__CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
 CFG_VIDEOUTILITY_FILE = os.path.join(__CRTBIN_PATH,"ScreenUtilityFiles/utility.cfg")
@@ -84,174 +83,62 @@ class launcher(object):
     m_oRunProcess = None
 
     def __init__(self, p_sFilePath, p_sSystem, p_sCustom):
-        self.m_sFilePath = p_sFilePath
         self.m_sSystem = p_sSystem
-        self.m_sSystemVideoName = p_sSystem
         self.m_sCustom = p_sCustom
+        self.m_sFilePath = p_sFilePath
+        self.m_sFileName = os.path.basename(self.m_sFilePath)
+        self.m_sGameName = os.path.splitext(self.m_sFileName)[0]
 
         self.__temp()
+        self.__clean()
         logging.info("INFO: arg 1 (rom_path) = %s, (system) = %s, (sin uso) = %s"
             % (self.m_sFilePath, self.m_sSystem, self.m_sCustom))
 
-        # rom name work
-        self.__clean()
-        self.__setup()
-
-        # user virtual methods
-        self.configure()
+        self.init() # user virtual method get init values
+        self.setup() # rom name work
+        self.configure() # user virtual method for post configure
+        self.check() # check runcommand string
+        self.run() # launch, wait and cleanup
 
     def check(self):
         self.netplay_setup()
-        self.system_setup()
-        self.video_setup()
-        self.emulatorcfg_setup()
         self.runcommand_check()
+
+    def run(self):
+        self.start()
+        self.wait()
+        self.cleanup()
 
     def start(self):
         self.runcommand_start()
-        self.emulatorcfg_prepare()
-        self.emulatorcfg_final_check()
+        self.screen_set()
 
     def wait(self):
         self.m_oRunProcess.wait()
         logging.info("process end")
 
-    def cleanup(self):
-        es_restore_screen()
-        logging.info("ES mode recover")
-        os.system('clear')
-        self.__clean()
-        sys.exit()
-
-    def panic(self, p_sErrorLine1, p_sErrorLine2 = "-", p_bForceQuit = True):
-        logging.error("PANIC: %s" % p_sErrorLine1)
-        something_is_bad(p_sErrorLine1, p_sErrorLine2)
-        if p_bForceQuit:
-            logging.error("EXIT: crt_launcher forced")
-            self.__clean()
-            sys.exit(1)
-
-    def clean_videomodes(self):
-        try:
-            os.remove(CFG_VIDEOMODES_FILE)
-        except OSError:
-            return False
-        return True
-
-    # called children init at start, called by __init__()
-    def configure(self):
-        pass
-
-    # esto quiza habria que hacerlo de forma externa, un proceso al inicio...
-    def __temp(self):
-        if CLEAN_LOG_ONSTART:
-            remove_file(LOG_PATH)
-        logging.basicConfig(filename=LOG_PATH, level=__DEBUG__, format='[%(asctime)s] %(levelname)s - %(funcName)s : %(message)s')
-
-
     # setup paths - called by __init__()
-    def __setup(self):
-        self.m_sFileName = os.path.basename(self.m_sFilePath)
-        self.m_sGameName = os.path.splitext(self.m_sFileName)[0]
-        self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
-
-    # clean system
-    def __clean(self):
-        self.clean_videomodes()
-        remove_file(TMP_SLEEPER_FILE)
+    def setup(self):
+        self.video_setup()
+        self.system_setup()
 
     # TODO: Read data from EasyNetplay
     def netplay_setup(self):
         self.m_sNetIP = ""
 
+    def system_setup(self):
+        self.m_sSystemFreq = self.m_sSystemVideoName
+        self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
+
     def video_setup(self):
+        self.m_sSystemVideoName = self.m_sSystem
+
+    # called children init at start, called by __init__()
+    def configure(self):
         pass
 
-    def system_setup(self):
-        self.m_sSystemFreq = self.m_sSystem
-
-    # filter returns an array with valid values, we just check if has any value :)
-    def is_valid_binary(self, p_sCore):
-        if filter(lambda mask: mask in p_sCore, self.m_lBinaryMasks):
-            return True
-        else:
-            return False
-
-    def set_binary(self, p_sCore):
-        if self.is_valid_binary(p_sCore):
-            self.m_sBinarySelected = p_sCore
-            logging.info("Selected binary (%s)" % self.m_sBinarySelected)
-        else:
-            raise NameError("INVALID - binary (%s) - mask [%s]" %
-                (self.m_sBinarySelected, str(self.m_lBinaryMasks)) )
-
-    # RETROPIE allows to choice per game an specific emulator from available
-    # we check if emulator is valid or clean emulators.cfg
-    #
-    def emulatorcfg_per_game(self):
-        if not os.path.exists(CFG_CUSTOMEMU_FILE):
-            return False
-        sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
-        sGameSystemName = "%s_%s" % (self.m_sSystem, sCleanName)
-        need_clean = False
-        with open(CFG_CUSTOMEMU_FILE, 'r') as oFile:
-            for line in oFile:
-                lValues = line.strip().split(' ')
-                if lValues[0] == sGameSystemName:
-                    if self.is_valid_binary(lValues[2]):
-                        self.m_sBinarySelected = lValues[2]
-                        return True
-                    else: # not valid is just ignored
-                        need_clean = True
-        # clean emulators.cfg if have an invalid binary
-        if need_clean:
-            logging.info("cleaning line %s from %s" % (sGameSystemName, CFG_CUSTOMEMU_FILE))
-            remove_line(CFG_CUSTOMEMU_FILE, sGameSystemName)
-        return False
-
-    # we try to found this line: default = "emulator-binary-name"
-    # p_oFile: file ready to seek
-    # return: default emu or die
-    def emulatorcfg_default(self, p_bSetCore):
-        with open(self.m_sCfgSystemPath, "r") as oFile:
-            for line in oFile:
-                lValues = line.strip().split(' ')
-                if lValues[0] == 'default':
-                    sBinaryName = lValues[2].replace('"', '')
-                    if p_bSetCore:
-                        self.set_binary(sBinaryName)
-                    else:
-                        return self.is_valid_binary(sBinaryName)
-
-    # we try to found emulator-binary-name = "command-to-launch-the-game"
-    #   valid with our masks, if not found then die
-    def emulatorcfg_add_systems(self):
-        with open(self.m_sCfgSystemPath, "r") as oFile:
-            self.m_lBinaries = []
-            for line in oFile:
-                lValues = line.strip().split(' ')
-                if lValues[0] == 'default': # ignore default line
-                    continue
-                if self.is_valid_binary(lValues[0]):
-                    self.m_lBinaries.append(lValues[0])
-            if len(self.m_lBinaries):
-                logging.info("VALID - emulators: %s" % str(self.m_lBinaries))
-            else:
-                self.panic("NOT FOUND any emulators mask [%s]" % str(self.m_lBinaryMasks))
-
-    # prepare emulator to launch
-    def emulatorcfg_setup(self):
-        try:
-            self.emulatorcfg_add_systems()
-            if not self.emulatorcfg_per_game():
-                self.emulatorcfg_default(True)
-        except IOError as e:
-            infos = "File error at emulators.cfg [%s]" % self.m_sSystem
-            infos2 = "Please, install at least one emulator or core"
-            self.panic(infos, infos2)
-        except Exception as e:
-            infos = "Error in emulators.cfg [%s]" % self.m_sSystem
-            self.panic(infos, str(e))
+    def init(self):
+        pass
 
     # generate command string
     # just called if need rebuild the CMD
@@ -325,14 +212,14 @@ class launcher(object):
                     logging.info("detected %s in active process, wait finished...", proc)
                     return False
 
-    # launch_core: run emulator!
     def runcommand_start(self):
+        """ launch_core: run emulator!"""
         commandline = "%s 0 _SYS_ %s \"%s\"" % (RUNCOMMAND_FILE, self.m_sSystem, self.m_sFilePath)
         self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
         logging.info("Subprocess running: %s", commandline)
         self.runcommand_wait()
 
-    def emulatorcfg_prepare(self):
+    def screen_set(self):
         crt_open_screen_from_timings_cfg(self.m_sSystemFreq, CFG_TIMINGS_FILE)
         try:
             splash_info("black") # clean screen
@@ -341,17 +228,37 @@ class launcher(object):
         logging.info("clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
 
+    def panic(self, p_sErrorLine1, p_sErrorLine2 = "-", p_bForceQuit = True):
+        """ stop the program and show error to the user """
+        logging.error("PANIC: %s" % p_sErrorLine1)
+        something_is_bad(p_sErrorLine1, p_sErrorLine2)
+        if p_bForceQuit:
+            logging.error("EXIT: crt_launcher forced")
+            self.__clean()
+            sys.exit(1)
 
-    def emulatorcfg_kill(self):
-        self.runcommand_wait(False)
-        logging.error("closing %s processes" % str(self.m_lProcesses))
-        for proc in self.m_lProcesses:
-            os.system('killall %s > /dev/null 2>&1' % proc)
+    # cleanup code
 
+    def cleanup(self):
+        es_restore_screen()
+        logging.info("ES mode recover")
+        os.system('clear')
+        self.__clean()
+        sys.exit()
 
-    def emulatorcfg_final_check(self):
-        bValidCore = self.emulatorcfg_default(False)
-        if not bValidCore:
-            self.emulatorcfg_kill()
-            remove_line(self.m_sCfgSystemPath, "default =")
-            self.panic("selected invalid emulator", "try again!")
+    # clean system
+    def __clean(self):
+        self.clean_videomodes()
+        remove_file(TMP_SLEEPER_FILE)
+
+    def clean_videomodes(self):
+        try:
+            os.remove(CFG_VIDEOMODES_FILE)
+        except OSError:
+            return False
+        return True
+
+    def __temp(self):
+        if CLEAN_LOG_ONSTART:
+            remove_file(LOG_PATH)
+        logging.basicConfig(filename=LOG_PATH, level=__DEBUG__, format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')

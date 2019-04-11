@@ -42,17 +42,15 @@ ALLOWED_FREQS = ["50", "60"]
 class selector(libretro):
     m_sCompactedName = ""
     m_oFreqDB = None
-    # FIXME: aun no se muy bien como haré esto... (pues imagina yo)
+
     @staticmethod
     def get_system_list():
         return ["megadrive", "segacd", "sega32x", "mastersystem", "n64", "nes", "snes",
                 "psx", "msx", "atari2600", "odyssey2", "zx81", "atarist", "c64", "atari7800"]
 
-    # prepare internal variables at init...
-    def configure(self):
+    def init(self):
         self.m_sCompactedName = compact_rom_name(self.m_sFileName)
         self.m_oFreqDB = dbfreq()
-        super(selector, self).configure()
 
     # getting correct frequency for FileName loaded
     def system_setup(self):
@@ -76,6 +74,7 @@ class selector(libretro):
 
         self.m_sSystemCfgPath = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)
         logging.info("enabled selector cfg: %s" % self.m_sSystemCfgPath)
+
 
     def frecuency_auto(self):
         sFrequency = self.m_oFreqDB.find(self.m_sCompactedName)
@@ -101,6 +100,7 @@ class selector(libretro):
                 self.m_oFreqDB.add(self.m_sCompactedName, "50")
                 logging.info("60Hz Frequency label identified for: %s" % self.m_sFileName)
                 return "50"
+        logging.info("Frequency label not identified for: %s" % self.m_sFileName)
         return ""
 
 
@@ -131,4 +131,6 @@ class dbfreq(object):
             logging.error("Game could not be cleaned")
 
     def add(self, p_sName, p_sFreq):
+        if not p_sName or not p_sFreq:
+            return
         add_line(AUTOFREQ_DATABASE, "%s %s" % (p_sName, p_sFreq))
