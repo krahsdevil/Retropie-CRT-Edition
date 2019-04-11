@@ -26,10 +26,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys
 from launcher_module.core import CFG_VIDEOUTILITY_FILE
-from launcher_module.plugins.libretro import libretro, logging, RETROARCH_CONFIGS_PATH, AUTOFREQ_DATABASE
+from launcher_module.plugins.libretro import libretro, logging, CRTROOT_PATH, RETROARCH_CONFIGS_PATH
 from launcher_module.file_helpers import ini_get, add_line, remove_line
 from launcher_module.utils import compact_rom_name
 
+AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "AutoFreqDB.cfg")
 
 LABELS50HZ = ["pal","nl","e","s","sw","fn","g","uk","gr","i","h","eu",
                 "europe","europa","spain","germany","france","italy"]
