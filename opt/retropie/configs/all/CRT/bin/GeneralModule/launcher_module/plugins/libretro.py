@@ -25,10 +25,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, re
+import os, re, logging
 from distutils.version import LooseVersion
 from launcher_module.core import CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH
-from launcher_module.emulator import emulator, logging
+from launcher_module.emulator import emulator
 from launcher_module.file_helpers import md5_file, add_line, modify_line, ini_get
 
 RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")

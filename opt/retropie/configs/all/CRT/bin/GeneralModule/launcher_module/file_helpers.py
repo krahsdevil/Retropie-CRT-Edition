@@ -22,7 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os
+import os, logging
 import hashlib
 
 def remove_line(p_sFile, p_sRemoveMask):
@@ -61,14 +61,25 @@ def add_line(p_sFile, p_sNewLine, p_bEndLine = True):
             line += "\n"
         f.write(line)
 
-def ini_get(p_sFile, p_sFindMask):
+def ini_get(p_sFile, p_sFindMask, p_bFullData = False):
     if not os.path.isfile(p_sFile):
         return None
     with open(p_sFile, "r") as f:
         for line in f:
-            line = line.strip().replace('=',' ').split(' ')
-            if p_sFindMask == line[0].strip():
-                return line[-1].strip()
+            lValues = line.strip().replace('=',' ').split(' ')
+            if p_sFindMask == lValues[0].strip():
+                if p_bFullData:
+                    return lValues
+                else:
+                    return lValues[-1].strip()
+    return False
+
+def ini_getlist(p_sFile, p_sFindMask):
+    lValues = ini_get(p_sFile, p_sFindMask, True)
+    if lValues:
+        return lValues[1:]
+    else:
+        return []
 
 def md5_file(p_sFile):
     hasher = hashlib.md5()

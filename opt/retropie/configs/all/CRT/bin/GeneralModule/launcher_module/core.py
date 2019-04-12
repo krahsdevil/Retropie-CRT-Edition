@@ -30,7 +30,7 @@ import os, sys
 import subprocess, commands
 import logging
 
-from .screen_helpers import crt_open_screen_from_timings_cfg, es_restore_screen
+from .screen import CRT
 from .utils import something_is_bad, splash_info
 from .file_helpers import *
 
@@ -50,15 +50,15 @@ __RETROPIE_PATH = "/opt/retropie"
 RETROPIECFG_PATH = os.path.join(__RETROPIE_PATH, "configs")
 RETROPIEEMU_PATH = os.path.join(__RETROPIE_PATH, "emulators")
 CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
-__CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
+CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
 
 CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1 && "
 RUNCOMMAND_FILE = os.path.join(__RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
 
 CFG_VIDEOMODES_FILE = os.path.join(RETROPIECFG_PATH, "all/videomodes.cfg")
 
-CFG_FIXMODES_FILE = os.path.join(__CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
-CFG_VIDEOUTILITY_FILE = os.path.join(__CRTBIN_PATH,"ScreenUtilityFiles/utility.cfg")
+CFG_FIXMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
+CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH,"ScreenUtilityFiles/utility.cfg")
 CFG_NETPLAY_FILE = os.path.join(CRTROOT_PATH, "netplay.cfg")
 CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 
@@ -81,6 +81,7 @@ class launcher(object):
     m_lProcesses = []
 
     m_oRunProcess = None
+    m_oCRT = None
 
     def __init__(self, p_sFilePath, p_sSystem, p_sCustom):
         self.m_sSystem = p_sSystem
@@ -219,8 +220,15 @@ class launcher(object):
         logging.info("Subprocess running: %s", commandline)
         self.runcommand_wait()
 
+    def runcommand_kill(self):
+        self.runcommand_wait(False)
+        logging.error("closing %s processes" % str(self.m_lProcesses))
+        for proc in self.m_lProcesses:
+            os.system('killall %s > /dev/null 2>&1' % proc)
+
     def screen_set(self):
-        crt_open_screen_from_timings_cfg(self.m_sSystemFreq, CFG_TIMINGS_FILE)
+        self.m_oCRT = CRT(self.m_sSystemFreq)
+        self.m_oCRT.screen_calculated(CFG_TIMINGS_FILE)
         try:
             splash_info("black") # clean screen
         except Exception as e:
@@ -240,7 +248,7 @@ class launcher(object):
     # cleanup code
 
     def cleanup(self):
-        es_restore_screen()
+        self.m_oCRT.screen_restore()
         logging.info("ES mode recover")
         os.system('clear')
         self.__clean()
@@ -248,6 +256,8 @@ class launcher(object):
 
     # clean system
     def __clean(self):
+        #if self.m_oRunProcess:
+        #    self.runcommand_kill()
         self.clean_videomodes()
         remove_file(TMP_SLEEPER_FILE)
 

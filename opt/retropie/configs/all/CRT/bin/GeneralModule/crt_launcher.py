@@ -43,6 +43,7 @@ if __name__ == '__main__':
                 launcher(sys.argv[1], sys.argv[2], sys.argv[3])
         if not bSystemFound:
             something_is_bad("ERROR - System not supported!", sSystem)
+    # TODO: kill emulator ?
     except (IndexError):
         something_is_bad("ERROR - No game to launch or no emulator!", "")
     except Exception as e:

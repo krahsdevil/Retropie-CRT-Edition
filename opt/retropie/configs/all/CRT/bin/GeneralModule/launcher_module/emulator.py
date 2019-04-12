@@ -25,8 +25,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, re
-from launcher_module.core import launcher, logging, RETROPIECFG_PATH
+import os, re, logging
+from launcher_module.core import launcher, RETROPIECFG_PATH
 
 CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
@@ -108,15 +108,9 @@ class emulator(launcher):
     def emulatorcfg_check_or_die(self):
         bValidCore = self.emulatorcfg_default(False)
         if not bValidCore:
-            self.emulatorcfg_kill()
+            self.runcommand_kill()
             remove_line(self.m_sCfgSystemPath, "default =")
             self.panic("selected invalid emulator", "try again!")
-
-    def emulatorcfg_kill(self):
-        self.runcommand_wait(False)
-        logging.error("closing %s processes" % str(self.m_lProcesses))
-        for proc in self.m_lProcesses:
-            os.system('killall %s > /dev/null 2>&1' % proc)
 
     # filter returns an array with valid values, we just check if has any value :)
     def is_valid_binary(self, p_sCore):

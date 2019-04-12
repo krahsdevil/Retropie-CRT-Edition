@@ -24,13 +24,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys
+import os, sys, logging
 from launcher_module.core import CFG_VIDEOUTILITY_FILE
 from launcher_module.file_helpers import ini_get
-from launcher_module.plugins.libretro import libretro, logging, RETROARCH_CONFIGS_PATH
+from launcher_module.plugins.libretro import libretro, RETROARCH_CONFIGS_PATH
 
 class bezel(libretro):
-
+    # FIXME: aun no se muy bien como haré esto...
     @staticmethod
     def get_system_list():
         return ["atarilynx", "gbc", "gb", "gba", "ngpc", "ngp",
