@@ -43,7 +43,7 @@ DB_FBALPHA = os.path.join(CRTROOT_PATH, "Resolutions/fbalpha_games.txt")
 DB_ADVMAME = os.path.join(CRTROOT_PATH, "Resolutions/advmame_games.txt")
 
 class arcade(emulator):
-    m_sPathDB = ""
+    m_sPathScreenDB = ""
     m_lTimingData = []
     m_dVideo = {}
 
@@ -54,22 +54,22 @@ class arcade(emulator):
     def config_generate(self):
         pass
 
-    def screen_configure(self):
-        self.m_sPathDB = DB_MAME078 # mame2000
+    def screen_prepare(self):
+        self.m_sPathScreenDB = DB_MAME078 # mame2003
         if "2000" in self.m_sBinarySelected:
-            self.m_sPathDB = DB_MAME037
+            self.m_sPathScreenDB = DB_MAME037
         elif "2010" in self.m_sBinarySelected:
-            self.m_sPathDB = DB_MAME139
+            self.m_sPathScreenDB = DB_MAME139
         elif "fbalpha" in self.m_sBinarySelected:
-            self.m_sPathDB = DB_FBALPHA
+            self.m_sPathScreenDB = DB_FBALPHA
         elif "advmame" in self.m_sBinarySelected:
-            self.m_sPathDB = DB_ADVMAME
+            self.m_sPathScreenDB = DB_ADVMAME
 
-        logging.info("binary: %s | %s" % (self.m_sBinarySelected, self.m_sPathDB))
+        logging.info("binary: %s | %s" % (self.m_sBinarySelected, self.m_sPathScreenDB))
 
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sGameName)
-        self.m_dVideo = self.m_oCRT.arcade_data(self.m_sPathDB)
+        self.m_dVideo = self.m_oCRT.arcade_data(self.m_sPathScreenDB)
         self.config_generate()
         self.m_oCRT.arcade_set()
 

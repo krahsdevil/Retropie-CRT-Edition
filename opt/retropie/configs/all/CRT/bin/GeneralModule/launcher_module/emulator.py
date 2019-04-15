@@ -32,14 +32,19 @@ CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
 class emulator(launcher):
 
-    def check(self):
+    def prepare(self):
+        self.netplay_setup()
         self.emulatorcfg_prepare()
-        super(emulator, self).check() # command check
+        super(emulator, self).prepare() # core command prepare
 
     # we need check if retropie-menu changed something after command start
     def start(self):
         super(emulator, self).start() # command start (and set videomode)
         self.emulatorcfg_check_or_die()
+
+    # TODO: Read data from EasyNetplay
+    def netplay_setup(self):
+        self.m_sNetIP = ""
 
     def emulatorcfg_prepare(self):
         """ prepare emulator to launch """

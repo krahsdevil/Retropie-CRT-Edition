@@ -61,7 +61,6 @@ class launcher(object):
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
     m_sBinarySelected = ""
-    m_sSystemVideoName = ""
     m_lBinaryMasks = []
     m_lBinaries = []
     m_lProcesses = []
@@ -85,12 +84,12 @@ class launcher(object):
         self.init() # user virtual method get init values
         self.setup() # rom name work
         self.configure() # user virtual method for post configure
-        self.check() # check runcommand string
+        self.prepare() # check runcommand string
         self.run() # launch, wait and cleanup
 
-    def check(self):
-        self.netplay_setup()
-        self.runcommand_check()
+    def prepare(self):
+        self.runcommand_prepare()
+        self.screen_prepare()
 
     def run(self):
         self.start()
@@ -98,7 +97,6 @@ class launcher(object):
         self.cleanup()
 
     def start(self):
-        self.screen_configure()
         self.runcommand_start()
         self.screen_set()
 
@@ -109,10 +107,6 @@ class launcher(object):
     # setup paths - called by __init__()
     def setup(self):
         self.system_setup()
-
-    # TODO: Read data from EasyNetplay
-    def netplay_setup(self):
-        self.m_sNetIP = ""
 
     def system_setup(self):
         self.m_sSystemFreq = self.m_sSystem
@@ -211,7 +205,7 @@ class launcher(object):
         for proc in self.m_lProcesses:
             os.system('killall %s > /dev/null 2>&1' % proc)
 
-    def screen_configure(self):
+    def screen_prepare(self):
         pass
 
     def screen_set(self):

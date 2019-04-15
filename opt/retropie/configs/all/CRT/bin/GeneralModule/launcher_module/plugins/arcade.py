@@ -30,7 +30,6 @@ from launcher_module.file_helpers import ini_get
 from launcher_module.arcade import arcade, CFG_ARCADE_FILE
 
 class arcade(arcade):
-
     m_oConfigureFunc = None
 
     @staticmethod
@@ -52,9 +51,8 @@ class arcade(arcade):
 
     # just called if need rebuild the CMD
     def runcommand_generate(self, p_sCMD):
-        logging.info("YEEEEEEEEEEEEEEEEEEEEEEEEEE")
         current_cmd = super(arcade, self).runcommand_generate(p_sCMD)
-        if self.m_sSystem == "mame-advmame":
+        if self.m_sSystem == "mame-advmame": # advmame not need append any cfg
             return current_cmd
         # update system_custom_cfg, used in ra_check_version
         append_cmd = "--appendconfig %s" % CFG_ARCADE_FILE

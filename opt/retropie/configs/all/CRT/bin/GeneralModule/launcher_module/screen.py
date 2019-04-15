@@ -134,7 +134,6 @@ class CRT(object):
     def timing_parse_arcade(self, p_lTimings):
         self.m_sSide_Game = p_lTimings[12]
         self.timing_parse_calculated(p_lTimings)
-        logging.info("SIDE [%s] - ARCADE: %s" % (self.m_sSide_Game, str(p_lTimings)))
         return self.m_dData
 
     def timing_parse_calculated(self, p_lTimings):
@@ -319,7 +318,6 @@ class CRT(object):
         cmd += "%s %s %s %s %s " % ( V_Res, V_Unk, V_FP, V_Sync, V_BP )
         cmd += "%s %s %s " % ( Unk_0, Unk_1, Unk_2 )
         cmd += "%s %s %s %s > /dev/null" % ( R_Rate, Unk_R, P_Clock, Unk_P )
-        logging.info("Final CRT: %s" % str(self.m_dData))
         self._command_call(cmd)
 
     def _command_call(self, p_sCMD):
