@@ -49,13 +49,13 @@ class selector(libretro):
         return ["megadrive", "segacd", "sega32x", "mastersystem", "n64", "nes", "snes",
                 "psx", "msx", "atari2600", "odyssey2", "zx81", "atarist", "c64", "atari7800"]
 
-    def init(self):
+    def pre_configure(self):
         self.m_sCompactedName = compact_rom_name(self.m_sFileName)
         self.m_oFreqDB = dbfreq()
 
     # getting correct frequency for FileName loaded
-    def system_setup(self):
-        super(selector, self).system_setup()
+    def configure(self):
+        super(selector, self).configure()
         self.m_sSelectFreq = ini_get(CFG_VIDEOUTILITY_FILE, "freq_selector")
 
         # first i try to find an allowed freq

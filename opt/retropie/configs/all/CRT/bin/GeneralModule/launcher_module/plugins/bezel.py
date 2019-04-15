@@ -36,8 +36,8 @@ class bezel(libretro):
         return ["atarilynx", "gbc", "gb", "gba", "ngpc", "ngp",
                 "wonderswan", "wonderswancolor", "gamegear"]
 
-    def system_setup(self):
-        super(bezel, self).system_setup()
+    def configure(self):
+        super(bezel, self).configure()
         if ini_get(CFG_VIDEOUTILITY_FILE, "handheld_bezel") == "1":
             self.m_sSystemCfg = self.m_sSystemFreq + "_s.cfg"
             self.m_sSystemCfgPath = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)

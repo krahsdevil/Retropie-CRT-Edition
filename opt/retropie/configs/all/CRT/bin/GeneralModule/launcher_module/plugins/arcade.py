@@ -36,7 +36,7 @@ class arcade(arcade):
     def get_system_list():
         return ["arcade", "mame-advmame", "mame-libretro", "fba"]
 
-    def init(self):
+    def pre_configure(self):
         if self.m_sSystem == "mame-advmame":
             self.m_oConfigureFunc = self.adv_config_generate
             self.m_lBinaryMasks = ["advmame"]

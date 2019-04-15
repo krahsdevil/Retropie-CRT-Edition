@@ -81,11 +81,24 @@ class launcher(object):
         logging.info("INFO: arg 1 (rom_path) = %s, (system) = %s, (sin uso) = %s"
             % (self.m_sFilePath, self.m_sSystem, self.m_sCustom))
 
-        self.init() # user virtual method get init values
-        self.setup() # rom name work
-        self.configure() # user virtual method for post configure
-        self.prepare() # check runcommand string
+        self.pre_configure() # user virtual method get init values
+        self.configure() # rom name work
+        self.post_configure() # user virtual method for post configure
+        self.prepare() # check runcommand and screen
         self.run() # launch, wait and cleanup
+
+    # called children pre_configure at start, called by __init__()
+    def pre_configure(self):
+        pass
+
+    # setup paths - called by __init__()
+    def configure(self):
+        self.m_sSystemFreq = self.m_sSystem
+        self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
+
+    # called children post_configure at start, called by __init__()
+    def post_configure(self):
+        pass
 
     def prepare(self):
         self.runcommand_prepare()
@@ -103,21 +116,6 @@ class launcher(object):
     def wait(self):
         self.m_oRunProcess.wait()
         logging.info("process end")
-
-    # setup paths - called by __init__()
-    def setup(self):
-        self.system_setup()
-
-    def system_setup(self):
-        self.m_sSystemFreq = self.m_sSystem
-        self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
-
-    # called children init at start, called by __init__()
-    def configure(self):
-        pass
-
-    def init(self):
-        pass
 
     # generate command string
     # just called if need rebuild the CMD

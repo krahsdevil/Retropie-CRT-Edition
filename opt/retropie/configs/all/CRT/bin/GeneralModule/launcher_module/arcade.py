@@ -34,7 +34,9 @@ from launcher_module.screen import CRT
 RC_ADVANCEDMAME_FILE = os.path.join(RETROPIE_PATH, "mame-advmame/advmame.rc")
 __ARCADE_PATH = TMP_LAUNCHER_PATH
 __ARCADE_FILE = "retroarcharcade.cfg"
-CFG_ARCADE_FILE = os.path.join(__ARCADE_PATH, __ARCADE_FILE)
+CFG_ARCADE_BASE = os.path.join(CRTROOT_PATH, "Retroarch/configs", __ARCADE_FILE)
+TMP_ARCADE_FILE = os.path.join(__ARCADE_PATH, __ARCADE_FILE)
+
 
 DB_MAME037 = os.path.join(CRTROOT_PATH, "Resolutions/mame037b5_games.txt")
 DB_MAME078 = os.path.join(CRTROOT_PATH, "Resolutions/mame078_games.txt")
@@ -81,7 +83,7 @@ class arcade(emulator):
         if self.m_oCRT.m_iRGame == -90:
             self.m_oCRT.m_sSide_Game = 'H'
             self.cfg_hres = 1220
-            self.ra_config_create()
+            self.ra_config_create(p_bSmooth = True)
             self.m_oCRT.timing_set("H_Pos", "130")
         elif (self.m_oCRT.m_iRGame == 0 and self.m_oCRT.m_iRSys != -90) or self.m_oCRT.m_iRSys == 90:
             self.m_oCRT.m_sSide_Game = 'V3'
@@ -96,29 +98,37 @@ class arcade(emulator):
                 self.cfg_offsety = 4
             self.ra_config_create()
 
-    def ra_config_create(self):
-        self.ra_config_write(self.cfg_hres, self.m_dVideo["V_Res"],
-                    self.cfg_offsetx, self.cfg_offsety, self.m_dVideo["R_Rate"],
-                    self.m_oCRT.m_sSide_Game)
+    def ra_config_create(self, p_bSmooth = False):
+        self.ra_config_write(p_bSmooth)
 
-    def ra_config_write(self, p_iWidth, p_iHeight, p_iX, p_iY, p_fRate, p_sSide):
-        logging.info("result - w %s, h %s (%s/%s) - %sHz - s[%s]" % (p_iWidth, p_iHeight, p_iX, p_iY, p_fRate, p_sSide))
-        CFG_FILE = os.path.join(CRTROOT_PATH, "Retroarch/configs/retroarcharcade.cfg")
-        TMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "retroarcharcade.cfg")
+    def ra_config_write(self, p_bSmooth):
+        logging.info("result - w %s, h %s (%s/%s) - %sHz - s[%s] smooth{%s}" % (
+            self.cfg_hres,
+            self.m_dVideo["V_Res"],
+            self.cfg_offsetx,
+            self.cfg_offsety,
+            self.m_dVideo["R_Rate"],
+            self.m_oCRT.m_sSide_Game,
+            p_bSmooth
+            ))
         # copy cfg base
-        shutil.copy2(CFG_FILE, TMP_LAUNCHER_PATH)
-        add_line(TMP_FILE, 'custom_viewport_width = "%s"' % p_iWidth)
-        add_line(TMP_FILE, 'custom_viewport_height = "%s"' % p_iHeight)
-        add_line(TMP_FILE, 'custom_viewport_x = "%s"' % p_iX)
-        add_line(TMP_FILE, 'custom_viewport_y = "%s"' % p_iY)
-        add_line(TMP_FILE, 'video_refresh_rate = "%s"' % p_fRate)
+        shutil.copy2(CFG_ARCADE_BASE, TMP_ARCADE_FILE)
+        add_line(TMP_ARCADE_FILE, 'custom_viewport_width = "%s"' % self.cfg_hres)
+        add_line(TMP_ARCADE_FILE, 'custom_viewport_height = "%s"' % self.m_dVideo["V_Res"])
+        add_line(TMP_ARCADE_FILE, 'custom_viewport_x = "%s"' % self.cfg_offsetx)
+        add_line(TMP_ARCADE_FILE, 'custom_viewport_y = "%s"' % self.cfg_offsety)
+        add_line(TMP_ARCADE_FILE, 'video_refresh_rate = "%s"' % self.m_dVideo["R_Rate"])
+
+        # smooth vertical games on horizontal screens
+        add_line(TMP_ARCADE_FILE, 'video_smooth = "%s"' % str(p_bSmooth).lower())
+
         # Check orientation
-        if p_sSide == "H":
-            add_line(TMP_FILE, 'video_rotation = "0"')
-        elif p_sSide == "V3":
-            add_line(TMP_FILE, 'video_rotation = "3"')
-        elif p_sSide == "V1":
-            add_line(TMP_FILE, 'video_rotation = "1"')
+        if self.m_oCRT.m_sSide_Game == "H":
+            add_line(TMP_ARCADE_FILE, 'video_rotation = "0"')
+        elif self.m_oCRT.m_sSide_Game == "V3":
+            add_line(TMP_ARCADE_FILE, 'video_rotation = "3"')
+        elif self.m_oCRT.m_sSide_Game == "V1":
+            add_line(TMP_ARCADE_FILE, 'video_rotation = "1"')
 
     def adv_config_generate(self):
         display_ror = "no"

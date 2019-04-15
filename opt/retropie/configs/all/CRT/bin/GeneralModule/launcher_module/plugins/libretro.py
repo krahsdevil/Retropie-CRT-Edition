@@ -45,13 +45,13 @@ class libretro(emulator):
                 "vectrex", "pcenginecd", "zxspectrum", "amstradcpc"]
 
     # system configure vars
-    def system_setup(self):
+    def configure(self):
         if self.m_sSystem == "zxspectrum":
             self.m_sSystemFreq = "zxspectrum50"
         elif self.m_sSystem == "pcenginecd":
             self.m_sSystemFreq = "pcengine"
         else:
-            super(libretro, self).system_setup()
+            super(libretro, self).configure()
         self.m_sSystemCfg = self.m_sSystemFreq + ".cfg"
         system_path = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)
         # if not exists report it
@@ -61,7 +61,7 @@ class libretro(emulator):
         self.m_sSystemCfgPath = system_path
 
     # final configure binary/process values and prepare emulatorcfg
-    def configure(self):
+    def post_configure(self):
         self.m_lBinaryMasks = ["lr-"]
         self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
         self.ra_check_version() # need the correct m_sSystemCfgPath
