@@ -23,10 +23,16 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, logging
 from math import ceil, floor
+
+from launcher_module.core_paths import CRTROOT_PATH, CRTBIN_PATH
 from launcher_module.file_helpers import ini_get, ini_getlist
 
-CFG_VIDEOUTILITY_FILE = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
-CFG_COMPMODES_FILE = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/modes.cfg'
+CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/utility.cfg")
+CFG_COMPMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
+DEFAULT_SCREEN_BIN = os.path.join(CRTROOT_PATH, "Datas/default.sh")
+
+DEFAULT_RES = ["1920", "224", "60.000000", "-4", "-27", "3", "48", "192", "240", "5", "15734", "screen_lib", "H"]
+
 
 class CRT(object):
     """CRT handler"""
@@ -51,26 +57,23 @@ class CRT(object):
                 "H_Pos": 0,     # H_Pos   - Horizontal position of the screen (-10 to 10)
                 "H_Zoom": 0,    # H_Zoom  - Horizontal size of the screen (-40 to 10)
                 "V_Pos": 0,     # V_Pos   - Vertical position of the screen (-10 to 10)
-                "H_Freq": 0     # H_Freq  - Horizontal frequency of the screen. (15500 to 16000)
+                "H_Freq": 0,    # H_Freq  - Horizontal frequency of the screen. (15500 to 16000)
+                # -------------------------------------
 
                 # WARNING, all these values are intrinsically linked. If your screen is desynchronized, quickly reboot the RPI.
                 # Some values will be limited due to other values.
     }
 
-    m_iSide_Game = 0
-    m_iR_Sys = 0
-    m_iR_Game = 0
+    m_iRSys = 0         # R_Sys   - Frontend rotation
+    m_iRGame = 0        # R_Game  - Game rotation
+    m_sSide_Game = ""   #
 
     def __init__(self, p_sSystem):
         self.m_sSystem = p_sSystem
 
-    # vcgencmd hdmi_timings 1920 1 160 192 320 288 1 6 5 14 0 0 0 50.0 0 40564800 1
     def screen_calculated(self, p_sTimingCfgPath):
         self.p_sTimingPath = p_sTimingCfgPath
         lValues = self.get_values()
-        if not lValues:
-            logging.error("%s not calculated Timing: %s" % (self.m_sSystem, self.p_sTimingPath))
-            return False
         self.timing_parse_calculated(lValues)
         lValues = self.get_fix_tv('%s_game_mask')
         if lValues:
@@ -78,65 +81,64 @@ class CRT(object):
         self.set_timing_unk()
         self.get_fix_user()
         self._calculated_adjustement()
-        self.resolution_set(**self.m_dData)
+        self.resolution_call(**self.m_dData)
 
     def screen_raw(self, p_sTimingCfgPath):
         self.p_sTimingPath = p_sTimingCfgPath
-        self._raw_data()
-        lValues = self.get_fix_tv('%s_game_mask_raw') # FIXME: not used in adjustement ??
+        lValues = self.get_values()
+        self.timing_parse_raw(lValues)
+        # TODO: get_fix_user_raw - 320x240
+        lValues = self.get_fix_tv('%s_game_mask_raw')
         if lValues:
             self.timing_parse_raw(lValues)
-        self.resolution_set(**self.m_dData)
+        self.resolution_call(**self.m_dData)
 
-    def screen_raw_adjustement(self, p_sTimingCfgPath):
+    def arcade_data(self, p_sTimingCfgPath):
         self.p_sTimingPath = p_sTimingCfgPath
-        self._raw_data()
-        self._raw_adjustement(
-            H_Mov = ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetX"),
-            V_Mov = ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetY"),
-            H_Zoom = ini_get(CFG_VIDEOUTILITY_FILE, "test60_width"),
-            )
-        self.resolution_set(**self.m_dData)
+        lValues = self.get_values()
+        self.timing_parse_arcade(lValues)
+        self._arcade_encapsulator()
+        lValues = self.get_fix_tv('%s_game_mask')
+        if lValues:
+            self.timing_parse_calculated(lValues)
+        self.set_timing_unk()
+        self.get_fix_user()
+        return self.m_dData
 
-    # vcgencmd hdmi_timings 2376 2 206 224 412 560 2 19 10 37 0 0 0 100.0 0 50164800 2
+    def arcade_set(self):
+        self._calculated_adjustement()
+        self.resolution_call(**self.m_dData)
+
+
     def screen_restore(self):
         lValues = ini_getlist('/boot/config.txt', 'hdmi_timings')
-        if not lValues:
-            logging.error("Not found restore timing in boot/config.txt")
-            return False
         self.timing_reset()
         self.timing_parse_raw(lValues)
-        self.resolution_set(**self.m_dData)
-
-    def _raw_data(self):
-        lValues = self.get_values()
-        if not lValues:
-            logging.error("%s not raw Timing: %s" % (self.m_sSystem, self.p_sTimingPath))
-            return False
-        self.timing_parse_raw(lValues)
+        self.resolution_call(**self.m_dData)
 
     def get_fix_tv(self, p_sFindMask):
         sSelected = ini_get(CFG_COMPMODES_FILE, "mode_default")
-        #lValues = ini_get(CFG_COMPMODES_FILE, "mode_default", True)
         if not sSelected or sSelected.lower() == "default":
             return False
         return ini_getlist(CFG_COMPMODES_FILE, p_sFindMask % sSelected)
 
     def get_fix_user(self):
-        self.timing_set("H_Pos", ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetX"))
-        self.timing_set("V_Pos", ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetY"))
-        self.timing_set("H_Zoom", ini_get(CFG_VIDEOUTILITY_FILE, "test60_width"))
+        self.timing_add("H_Pos", ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetX"))
+        self.timing_add("V_Pos", ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetY"))
+        self.timing_add("H_Zoom", ini_get(CFG_VIDEOUTILITY_FILE, "test60_width"))
+        self.m_iRSys = int(ini_get(CFG_VIDEOUTILITY_FILE, "frontend_rotation"))
+        self.m_iRGame = int(ini_get(CFG_VIDEOUTILITY_FILE, "game_rotation"))
 
-    def timing_reset(self):
-        for key in self.m_dData:
-            self.m_dData[key] = 0
+    # ------------- timings
 
-    def timing_set(self, p_sDataType, p_sValue):
-        if p_sValue:
-            self.m_dData[p_sDataType] += int(p_sValue)
+    def timing_parse_arcade(self, p_lTimings):
+        self.m_sSide_Game = p_lTimings[12]
+        self.timing_parse_calculated(p_lTimings)
+        logging.info("SIDE [%s] - ARCADE: %s" % (self.m_sSide_Game, str(p_lTimings)))
+        return self.m_dData
 
     def timing_parse_calculated(self, p_lTimings):
-        self.set_timing_data(H_Res  = int(p_lTimings[0]),
+        self.timing_data_set(H_Res  = int(p_lTimings[0]),
                          V_Res  = int(p_lTimings[1]),
                          R_Rate = float(p_lTimings[2]),
                          H_Pos  = int(p_lTimings[3]),
@@ -153,7 +155,7 @@ class CRT(object):
                          )
 
     def timing_parse_raw(self, p_lTimings):
-        self.set_timing_data(H_Res  = int(p_lTimings[0]),
+        self.timing_data_set(H_Res  = int(p_lTimings[0]),
                          H_Unk  = int(p_lTimings[1]),
                          H_FP   = int(p_lTimings[2]),
                          H_Sync = int(p_lTimings[3]),
@@ -172,7 +174,7 @@ class CRT(object):
                          Unk_P   = int(p_lTimings[16])
                          )
 
-    def set_timing_data(self, H_Res, H_FP, H_Sync, H_BP,
+    def timing_data_set(self, H_Res, H_FP, H_Sync, H_BP,
                               V_Res, V_FP, V_Sync, V_BP,
                               P_Clock, R_Rate,
                               H_Pos = 0, H_Zoom = 0, V_Pos = 0, H_Freq = 0,
@@ -203,9 +205,25 @@ class CRT(object):
         self.m_dData["V_Pos"]   += V_Pos
         self.m_dData["H_Freq"]  += H_Freq
 
-
         # "Side_Game": video_data[12],
-        #logging.info("CRT Timing: %s" % str(self.m_dData))
+        logging.info("CRT Timing: %s" % str(self.m_dData))
+
+    def timing_reset(self):
+        for key in self.m_dData:
+            self.m_dData[key] = 0
+
+    def timing_overwrite(self, p_dNewData):
+        for key in self.m_dData:
+            self.m_dData[key] = p_dNewData[key]
+
+    def timing_add(self, p_sDataType, p_sValue):
+        if p_sValue:
+            self.m_dData[p_sDataType] += int(p_sValue)
+
+    def timing_set(self, p_sDataType, p_sValue):
+        if p_sValue:
+            self.m_dData[p_sDataType] = int(p_sValue)
+
 
     # set unknown default values
     def set_timing_unk(self):
@@ -223,50 +241,24 @@ class CRT(object):
                 lValues = line.strip().split(' ')
                 if self.m_sSystem == lValues[0]:
                     return lValues[1:] # ignore first value
-        return []
+        logging.error("%s timing not found using default for: %s" % (self.m_sSystem, self.p_sTimingPath))
+        os.system(DEFAULT_SCREEN_BIN) # show to user default resolution used
+        return DEFAULT_RES
 
-    def _raw_adjustement(self, H_Zoom, H_Mov, V_Mov):
-        if H_Zoom:
-            VMAX = (self.m_dData["V_Res"] + self.m_dData["V_FP"] + self.m_dData["V_BP"])
-            HMAX = (self.m_dData["H_Res"] + self.m_dData["H_FP"] + self.m_dData["H_BP"]) - 2
-            HZOOM_Normalized = int(round(H_Zoom, 0))
-            RectHZOOMT3 = 0
-            if HZOOM_Normalized > (self.m_dData["H_FP"] - 1):
-                RectHZOOMT3 = self.m_dData["H_FP"] - 1
-            RectHZOOMT5 = 0
-            if HZOOM_Normalized > (self.m_dData["H_BP"] - 1):
-                RectHZOOMT5 = self.m_dData["H_BP"] - 1
-            if RectHZOOMT3:
-                HZOOM_Normalized = RectHZOOMT3
-                if RectHZOOMT5 and RectHZOOMT3 >= RectHZOOMT5:
-                    HZOOM_Normalized = RectHZOOMT5
-            elif RectHZOOMT5:
-                HZOOM_Normalized = RectHZOOMT5
-            self.m_dData["H_Res"] += HZOOM_Normalized * 2
-            Reverse_HZOOM = HZOOM_Normalized * -1
-            self.m_dData["H_FP"] += Reverse_HZOOM
-            self.m_dData["H_BP"] += Reverse_HZOOM
+    def _arcade_encapsulator(self):
+        # Center a little but don't launch the encapsulator
+        if self.m_dData["V_Res"] == 240:
+            self.m_dData["V_Pos"] -= 5
 
-        # HORIZONTAL MOVEMENT
-        if H_Mov:
-            H_Mov = int(round(H_Mov, 0))
-            if H_Mov > 0 and (self.m_dData["H_FP"] - H_Mov) < 1:
-                H_Mov = self.m_dData["H_FP"] - 1
-            if H_Mov < 0 and (self.m_dData["H_BP"] + H_Mov) < 1:
-                H_Mov = (self.m_dData["H_BP"] - 1) * -1
-            self.m_dData["H_FP"] -= H_Mov
-            self.m_dData["H_BP"] += H_Mov
-
-        # VERTICAL MOVEMENT
-        if V_Mov:
-            V_Mov = int(round(V_Mov, 0))
-            if V_Mov < 0 and (self.m_dData["V_BP"] + V_Mov) < 1:
-                V_Mov = (self.m_dData["V_BP"] - 1) * -1
-            if V_Mov > 0 and (self.m_dData["V_FP"] - V_Mov) < 1:
-                V_Mov = self.m_dData["V_FP"] - 1
-            self.m_dData["V_FP"] -= V_Mov
-            self.m_dData["V_BP"] += V_Mov
-
+        # Launch the encapsulator
+        if self.m_dData["V_Res"] > 240:
+            select = selector_encapsulate()
+            if select == 1: # Encapsulate
+                self.m_dData["H_Freq"] = 15840
+                self.m_dData["V_Pos"] += 10
+            elif self.m_dData["R_Rate"] < 55: # Cropped if is under 55Hz
+                self.m_dData["H_Freq"] = 15095
+                self.m_dData["V_Pos"] -= 10
 
     def _calculated_adjustement(self):
         # Scaling Front and back porch horizontals according to horizontal position and horizontal zoom settings.
@@ -312,8 +304,11 @@ class CRT(object):
         self.m_dData["V_BP"] = int(self.m_dData["V_BP"] - self.m_dData["V_FP"])
 
 
+    def resolution_set(self):
+        self.resolution_call(**self.m_dData)
+
     # FIXME: use internal data?
-    def resolution_set(self, H_Res, H_FP, H_Sync, H_BP, H_Unk,
+    def resolution_call(self, H_Res, H_FP, H_Sync, H_BP, H_Unk,
                              V_Res, V_FP, V_Sync, V_BP, V_Unk,
                              Unk_0, Unk_1, Unk_2,
                              R_Rate, Unk_R, P_Clock, Unk_P,
@@ -324,9 +319,14 @@ class CRT(object):
         cmd += "%s %s %s %s %s " % ( V_Res, V_Unk, V_FP, V_Sync, V_BP )
         cmd += "%s %s %s " % ( Unk_0, Unk_1, Unk_2 )
         cmd += "%s %s %s %s > /dev/null" % ( R_Rate, Unk_R, P_Clock, Unk_P )
-        self._resolution_call(cmd)
+        logging.info("Final CRT: %s" % str(self.m_dData))
+        self._command_call(cmd)
 
-    def _resolution_call(self, p_sCMD):
+    def _command_call(self, p_sCMD):
         logging.info("CMD: %s" % p_sCMD)
         os.system(p_sCMD)
         os.system("fbset -depth 8 && fbset -depth 24")
+
+
+def selector_encapsulate(self):
+    return 0

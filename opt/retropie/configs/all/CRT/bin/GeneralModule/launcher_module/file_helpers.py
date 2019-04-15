@@ -23,7 +23,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, logging
-import hashlib
+import hashlib, shutil
+
+from .core_paths import TMP_LAUNCHER_PATH, CRTROOT_PATH
 
 def remove_line(p_sFile, p_sRemoveMask):
     if not os.path.isfile(p_sFile):

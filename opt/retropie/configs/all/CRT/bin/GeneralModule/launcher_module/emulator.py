@@ -32,9 +32,12 @@ CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
 class emulator(launcher):
 
+    def check(self):
+        self.emulatorcfg_prepare()
+        super(emulator, self).check() # command check
+
     # we need check if retropie-menu changed something after command start
     def start(self):
-        self.emulatorcfg_prepare()
         super(emulator, self).start() # command start (and set videomode)
         self.emulatorcfg_check_or_die()
 

@@ -32,28 +32,20 @@ import logging
 
 from .screen import CRT
 from .utils import something_is_bad, splash_info
+from .core_paths import *
 from .file_helpers import *
 
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
 
-TMP_LAUNCHER_PATH = "/dev/shm"
 TMP_SPEEPER_NAME = "lchtmp"
 TMP_SLEEPER_FILE = os.path.join(TMP_LAUNCHER_PATH, TMP_SPEEPER_NAME)
 LEGACY_SLEEPER_FILE = "/tmp/lchtmp"
-
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 
-# retropie path setup
-__RETROPIE_PATH = "/opt/retropie"
-RETROPIECFG_PATH = os.path.join(__RETROPIE_PATH, "configs")
-RETROPIEEMU_PATH = os.path.join(__RETROPIE_PATH, "emulators")
-CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
-CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
-
 CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1 && "
-RUNCOMMAND_FILE = os.path.join(__RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
+RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
 
 CFG_VIDEOMODES_FILE = os.path.join(RETROPIECFG_PATH, "all/videomodes.cfg")
 
@@ -63,19 +55,13 @@ CFG_NETPLAY_FILE = os.path.join(CRTROOT_PATH, "netplay.cfg")
 CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 
 
-# FIXME: arcade
-RC_ADVANCEDMAME_FILE = os.path.join(__RETROPIE_PATH, "mame-advmame/advmame.rc")
-__ARCADE_PATH = TMP_LAUNCHER_PATH
-__ARCADE_FILE = "retroarcharcade"
-CFG_ARCADE_FILE = "%s%s.cfg" % (__ARCADE_PATH, __ARCADE_FILE)
-
-
 class launcher(object):
     """ virtual class for crt launcher """
     m_sFileName = ""
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
     m_sBinarySelected = ""
+    m_sSystemVideoName = ""
     m_lBinaryMasks = []
     m_lBinaries = []
     m_lProcesses = []
@@ -88,6 +74,7 @@ class launcher(object):
         self.m_sCustom = p_sCustom
         self.m_sFilePath = p_sFilePath
         self.m_sFileName = os.path.basename(self.m_sFilePath)
+        self.m_sFileDir = os.path.dirname(self.m_sFilePath)
         self.m_sGameName = os.path.splitext(self.m_sFileName)[0]
 
         self.__temp()
@@ -111,6 +98,7 @@ class launcher(object):
         self.cleanup()
 
     def start(self):
+        self.screen_configure()
         self.runcommand_start()
         self.screen_set()
 
@@ -120,7 +108,6 @@ class launcher(object):
 
     # setup paths - called by __init__()
     def setup(self):
-        self.video_setup()
         self.system_setup()
 
     # TODO: Read data from EasyNetplay
@@ -128,11 +115,8 @@ class launcher(object):
         self.m_sNetIP = ""
 
     def system_setup(self):
-        self.m_sSystemFreq = self.m_sSystemVideoName
+        self.m_sSystemFreq = self.m_sSystem
         self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
-
-    def video_setup(self):
-        self.m_sSystemVideoName = self.m_sSystem
 
     # called children init at start, called by __init__()
     def configure(self):
@@ -179,6 +163,7 @@ class launcher(object):
         for line in new_file:
             lValues = line.strip().split('=')
             lValues = map(lambda s: s.strip(), lValues)
+            logging.info("BIN: %s == %s" % (lValues[0] , self.m_sBinarySelected))
             if lValues[0] == self.m_sBinarySelected:
                 cmd_cleaned = self.runcommand_clean(lValues[1])
                 cmd_current = self.runcommand_generate(cmd_cleaned)
@@ -225,6 +210,9 @@ class launcher(object):
         logging.error("closing %s processes" % str(self.m_lProcesses))
         for proc in self.m_lProcesses:
             os.system('killall %s > /dev/null 2>&1' % proc)
+
+    def screen_configure(self):
+        pass
 
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
