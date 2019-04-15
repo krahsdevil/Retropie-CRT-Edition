@@ -8,11 +8,9 @@
 
 Adding support to Retropie 4.4 for custom 15khz resolutions and some cool utilities like USB Automount or easy TATE mode changing.
 
-This software works with RGB-Pi and all standard (RGB) vga666 GPIO adapters (or based on like pi2scart).
-Boot, configure controls on ES and go to 'Screen Utilies' under 'CRT Config' for choosing your adapter (RGB-Pi > VGA666 > PI2SCART)
+This software works with all standard (RGB) vga666 GPIO adapters (or based on like pi2scart) and some custom adapters like RGB-Pi.
+Boot, configure controls on ES and go to 'Screen Utilies' under 'CRT Config' for choosing your adapter (VGA666 > RGB-Pi > PI2SCART)
 
 Maybe some professional monitors like SONY PVM, BVM or DTV could face some resolution problems, most of TV or monitors seems to work great with super-resolutions.
-
-You can find original RGB-Pi project for recalbox [here](https://github.com/mortaca/RGB-Pi/)
 
 _Please take a look to our [Wiki](https://github.com/krahsdevil/crt-for-retropie/wiki) (in progress)_
