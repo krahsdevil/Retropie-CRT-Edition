@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os, logging
 from launcher_module.core import CFG_VIDEOUTILITY_FILE
 from launcher_module.file_helpers import ini_get
-from launcher_module.arcade import arcade, CFG_ARCADE_FILE
+from launcher_module.arcade import arcade, TMP_ARCADE_FILE
 
 class arcade(arcade):
     m_oConfigureFunc = None
@@ -55,6 +55,6 @@ class arcade(arcade):
         if self.m_sSystem == "mame-advmame": # advmame not need append any cfg
             return current_cmd
         # update system_custom_cfg, used in ra_check_version
-        append_cmd = "--appendconfig %s" % CFG_ARCADE_FILE
+        append_cmd = "--appendconfig %s" % TMP_ARCADE_FILE
         append_cmd += " %ROM%"
         return current_cmd.replace("%ROM%", append_cmd)
