@@ -239,6 +239,7 @@ class CRT(object):
             for line in f:
                 lValues = line.strip().split(' ')
                 if self.m_sSystem == lValues[0]:
+                    logging.info("%s timing found at: %s" % (self.m_sSystem, self.p_sTimingPath))
                     return lValues[1:] # ignore first value
         logging.error("%s timing not found using default for: %s" % (self.m_sSystem, self.p_sTimingPath))
         os.system(DEFAULT_SCREEN_BIN) # show to user default resolution used

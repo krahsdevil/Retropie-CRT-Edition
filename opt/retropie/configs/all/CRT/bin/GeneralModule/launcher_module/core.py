@@ -149,7 +149,7 @@ class launcher(object):
     # check if runcommand has correct behaivor:
     #   FROM emulator-binary-name = "command-to-launch-the-game"
     #   TO   emulator-binary-name = "crt-command && command-to-launch-the-game"
-    def runcommand_check(self):
+    def runcommand_prepare(self):
         f = open(self.m_sCfgSystemPath, "r")
         new_file = f.readlines()
         f.close()
@@ -157,7 +157,6 @@ class launcher(object):
         for line in new_file:
             lValues = line.strip().split('=')
             lValues = map(lambda s: s.strip(), lValues)
-            logging.info("BIN: %s == %s" % (lValues[0] , self.m_sBinarySelected))
             if lValues[0] == self.m_sBinarySelected:
                 cmd_cleaned = self.runcommand_clean(lValues[1])
                 cmd_current = self.runcommand_generate(cmd_cleaned)
