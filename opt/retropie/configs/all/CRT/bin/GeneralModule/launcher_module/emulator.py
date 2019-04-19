@@ -32,14 +32,21 @@ from launcher_module.file_helpers import remove_line
 CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
 class emulator(launcher):
-
+    """
+    Used in emulators installed by retropie, we check here emulators.cfg file
+    """
     def prepare(self):
+        """
+        after configure we need set netplay data and get current emulator
+        """
         self.netplay_setup()
         self.emulatorcfg_prepare()
         super(emulator, self).prepare() # core command prepare
 
-    # we need check if retropie-menu changed something after command start
     def start(self):
+        """
+        We need check if retropie-menu changed something after command start
+        """
         super(emulator, self).start() # command start (and set videomode)
         self.emulatorcfg_check_or_die()
 
@@ -48,7 +55,14 @@ class emulator(launcher):
         self.m_sNetIP = ""
 
     def emulatorcfg_prepare(self):
-        """ prepare emulator to launch """
+        """
+        Prepare emulator to launch
+
+        Panic
+        -----
+            if not valid default emulator is found
+            if not cores are installed
+        """
         try:
             self.emulatorcfg_add_systems()
             if not self.emulatorcfg_per_game():
@@ -62,9 +76,18 @@ class emulator(launcher):
             infos = "Error in emulators.cfg [%s]" % self.m_sSystem
             self.panic(infos, str(e))
 
-    # RETROPIE allows to choice per game an specific emulator from available
-    # we check if emulator is valid or clean emulators.cfg
     def emulatorcfg_per_game(self):
+        """
+        Retropie allows to choice per game an specific emulator from available
+        we check if emulator is valid or clean emulators.cfg
+
+        Returns
+        -------
+        False
+            If emulator is wrong and it was cleaned
+        True
+            Emulator is ok!
+        """
         if not os.path.exists(CFG_CUSTOMEMU_FILE):
             return False
         sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
@@ -85,10 +108,22 @@ class emulator(launcher):
             remove_line(CFG_CUSTOMEMU_FILE, sGameSystemName)
         return False
 
-    # we try to found this line: default = "emulator-binary-name"
+    #
     # p_oFile: file ready to seek
     # return: default emu or die
     def emulatorcfg_default_check(self):
+        """
+        We try to found this line: default = "emulator-binary-name"
+
+        Returns
+        -------
+        True
+            Emulator is ok!
+        False
+            If default emulator selected is invalid and it was cleaned
+        None
+            If not found default line (then Retropie launch a selector)
+        """
         with open(self.m_sCfgSystemPath, "r") as oFile:
             for line in oFile:
                 lValues = line.strip().split(' ')
@@ -97,9 +132,14 @@ class emulator(launcher):
                     return self.set_binary(sBinaryName)
             return None
 
-    # we try to found emulator-binary-name = "command-to-launch-the-game"
-    #   valid with our masks, if not found then die
     def emulatorcfg_add_systems(self):
+        """
+        We try to found a valid emulator-binary-name = "command-to-launch-game"
+
+        Panic
+        -----
+            if not valid emulators are found, then die!
+        """
         with open(self.m_sCfgSystemPath, "r") as oFile:
             self.m_lBinaries = []
             for line in oFile:
@@ -113,26 +153,64 @@ class emulator(launcher):
             else:
                 self.panic("NOT FOUND any emulators mask [%s]" % str(self.m_lBinaryMasks))
 
-    def emulatorcfg_die(self):
+    def _emulatorcfg_die(self):
         self.runcommand_kill()
 
 
     def emulatorcfg_check_or_die(self):
+        """
+        After runcommand-config is closed we check if emulator still be valid or die!
+
+        Panic
+        -----
+            if not valid default emulator is found.
+            if user change screen resolution config.
+        """
         if not self.emulatorcfg_default_check():
-            self.emulatorcfg_die()
+            self._emulatorcfg_die()
             self.panic("selected invalid emulator", "try again!")
         if self.clean_videomodes():
-            self.emulatorcfg_die()
+            self._emulatorcfg_die()
             self.panic("do not touch emulator resolution", "try again!")
 
-    # filter returns an array with valid values, we just check if has any value :)
     def is_valid_binary(self, p_sCore):
+        """
+        We check if core is valid using our list of m_lBinaryMasks
+
+        Parameters
+        ----------
+        p_sCore : str
+            Current core name
+
+        Returns
+        -------
+        True
+            Emulator is valid
+        False
+            Emulator is invalid
+        """
+        # filter returns an array with valid values, we just check if has any value
         if filter(lambda mask: mask in p_sCore, self.m_lBinaryMasks):
             return True
         else:
             return False
 
     def set_binary(self, p_sCore):
+        """
+        If core is valid the set value in our m_sBinarySelected
+
+        Parameters
+        ----------
+        p_sCore : str
+            Current core name
+
+        Returns
+        -------
+        True
+            Emulator is valid.
+        False
+            If emulator is invalid and default value is cleaned.
+        """
         if self.is_valid_binary(p_sCore):
             self.m_sBinarySelected = p_sCore
             logging.info("Selected binary (%s)" % self.m_sBinarySelected)
