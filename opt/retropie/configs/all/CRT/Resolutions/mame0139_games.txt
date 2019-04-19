@@ -1,25 +1,25 @@
-03.12.2018 RGB-PI Database for MAME 2010 (0.139) by @Fran_Tron
-
-Name, H pixels, Scanlines, Frame Rate, H position, H zoom, V position, 
-H Front Porch, H Sync, H Back Porch, V Sync, H Frequency, Core, Orientation.
-
-Name          :  Name of game(zip) to launch.
-H pixels      :  Horizontal resolution.
-Scanlines     :  Vertical resolution of the game, number of lines of the game.
-Frame Rate    :  Frame Rate of the game in Hz.
-
-H Position    :  Horizontal Position, use this value to move screen horizontally.
-H Zoom        :  Horizontal Zoom, use this value to zoom/unzoom horizontal screen.
-V Position    :  Vertical Position, use this value to move screen vertically.
-
-H Front Porch :  Horizontal Front Porch
-H Sync        :  Horizontal Synchronisation
-H Back Porch  :  Horizontal Back Porch
-V Sync        :  Vertical  Synchronisation
-H Frequency   :  Horizontal Frequency, can be tweaked to force 625 lines mode (e.g. 15840 at 55Hz)
-
-Core          :  Libretro core to use.
-Orientation   :  Game Orientation, can be HORIZONTAL(H) or VERTICAL(V).
+# 03.12.2018 RGB-PI Database for MAME 2010 (0.139) by @Fran_Tron
+#
+# Name, H pixels, Scanlines, Frame Rate, H position, H zoom, V position,
+# H Front Porch, H Sync, H Back Porch, V Sync, H Frequency, Core, Orientation.
+#
+# Name          :  Name of game(zip) to launch.
+# H pixels      :  Horizontal resolution.
+# Scanlines     :  Vertical resolution of the game, number of lines of the game.
+# Frame Rate    :  Frame Rate of the game in Hz.
+#
+# H Position    :  Horizontal Position, use this value to move screen horizontally.
+# H Zoom        :  Horizontal Zoom, use this value to zoom/unzoom horizontal screen.
+# V Position    :  Vertical Position, use this value to move screen vertically.
+#
+# H Front Porch :  Horizontal Front Porch
+# H Sync        :  Horizontal Synchronisation
+# H Back Porch  :  Horizontal Back Porch
+# V Sync        :  Vertical  Synchronisation
+# H Frequency   :  Horizontal Frequency, can be tweaked to force 625 lines mode (e.g. 15840 at 55Hz)
+#
+# Core          :  Libretro core to use.
+# Orientation   :  Game Orientation, can be HORIZONTAL(H) or VERTICAL(V).
 
 default 1920 224 60.000000 -4 -27 3 48 192 240 5 15734 mame2010 H
 

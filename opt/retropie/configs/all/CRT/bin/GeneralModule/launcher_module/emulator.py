@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, re, logging
 from launcher_module.core import launcher, RETROPIECFG_PATH
+from launcher_module.file_helpers import remove_line
 
 CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
@@ -51,7 +52,8 @@ class emulator(launcher):
         try:
             self.emulatorcfg_add_systems()
             if not self.emulatorcfg_per_game():
-                self.emulatorcfg_default(True)
+                if self.emulatorcfg_default_check() == False:
+                     self.panic("selected invalid emulator", "try again!")
         except IOError as e:
             infos = "File error at emulators.cfg [%s]" % self.m_sSystem
             infos2 = "Please, install at least one emulator or core"
@@ -86,16 +88,14 @@ class emulator(launcher):
     # we try to found this line: default = "emulator-binary-name"
     # p_oFile: file ready to seek
     # return: default emu or die
-    def emulatorcfg_default(self, p_bSetCore):
+    def emulatorcfg_default_check(self):
         with open(self.m_sCfgSystemPath, "r") as oFile:
             for line in oFile:
                 lValues = line.strip().split(' ')
                 if lValues[0] == 'default':
                     sBinaryName = lValues[2].replace('"', '')
-                    if p_bSetCore:
-                        self.set_binary(sBinaryName)
-                    else:
-                        return self.is_valid_binary(sBinaryName)
+                    return self.set_binary(sBinaryName)
+            return None
 
     # we try to found emulator-binary-name = "command-to-launch-the-game"
     #   valid with our masks, if not found then die
@@ -113,12 +113,17 @@ class emulator(launcher):
             else:
                 self.panic("NOT FOUND any emulators mask [%s]" % str(self.m_lBinaryMasks))
 
+    def emulatorcfg_die(self):
+        self.runcommand_kill()
+
+
     def emulatorcfg_check_or_die(self):
-        bValidCore = self.emulatorcfg_default(False)
-        if not bValidCore:
-            self.runcommand_kill()
-            remove_line(self.m_sCfgSystemPath, "default =")
+        if not self.emulatorcfg_default_check():
+            self.emulatorcfg_die()
             self.panic("selected invalid emulator", "try again!")
+        if self.clean_videomodes():
+            self.emulatorcfg_die()
+            self.panic("do not touch emulator resolution", "try again!")
 
     # filter returns an array with valid values, we just check if has any value :)
     def is_valid_binary(self, p_sCore):
@@ -131,6 +136,9 @@ class emulator(launcher):
         if self.is_valid_binary(p_sCore):
             self.m_sBinarySelected = p_sCore
             logging.info("Selected binary (%s)" % self.m_sBinarySelected)
+            return True
         else:
-            raise NameError("INVALID - binary (%s) - mask [%s]" %
+            remove_line(self.m_sCfgSystemPath, "default =")
+            logging.error("INVALID - binary (%s) - mask [%s]" %
                 (self.m_sBinarySelected, str(self.m_lBinaryMasks)) )
+            return False
