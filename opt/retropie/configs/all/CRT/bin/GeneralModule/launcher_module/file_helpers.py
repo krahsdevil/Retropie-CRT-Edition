@@ -76,6 +76,21 @@ def ini_get(p_sFile, p_sFindMask, p_bFullData = False):
                     return lValues[-1].strip()
     return False
 
+def ini_set(p_sFile, p_sKeyMask, p_sNewValue):
+    if not os.path.isfile(p_sFile):
+        return None
+    with open(p_sFile, "r+") as f:
+        new_file = f.readlines()
+        f.seek(0) # rewind
+        for line in new_file:
+            lValues = line.strip().replace('=',' ').split(' ')
+            if p_sKeyMask == lValues[0].strip():
+                line = '%s = "%s"\n' % (p_sKeyMask, p_sNewValue)
+            f.write(line) # new line
+        f.truncate() # remove everything after the last write
+        return True
+
+
 def ini_getlist(p_sFile, p_sFindMask):
     lValues = ini_get(p_sFile, p_sFindMask, True)
     if lValues:
