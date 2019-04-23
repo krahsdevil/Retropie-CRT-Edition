@@ -94,6 +94,11 @@ get_retropie_joy_map()
 # VARIABLES
 ES_Res_50hz = 'system50'
 ES_Res_60hz = 'system60'
+CurTheme = "none"
+HorTheme240p = "none"
+HorTheme270p = "none"
+VerTheme240p = "none"
+VerTheme270p = "none"
 state_up = 0
 state_down = 0
 state_left = 0
@@ -124,6 +129,7 @@ SelectedMode = (['DEFAULT', "Timings presets for better compatibility"])
 #files
 sucfg = '/opt/retropie/configs/all/CRT/su.cfg'
 VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
+EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
 CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/modes.cfg'
 RaspbianCFG = "/boot/config.txt"
 
@@ -154,10 +160,13 @@ def draw_arrow_right():
 
 def save():
     if SaveConfig == True:
+        modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%opt[0][3], '%s_theme_horizontal %s'%(opt[0][3], CurTheme))
         if opt[0][2] == '240p':
             modificarLinea(VideoUtilityCFG,'default','default %s'%ES_Res_60hz)
+            modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme240p)
         if opt[0][2] == '270p':
             modificarLinea(VideoUtilityCFG,'default','default %s'%ES_Res_50hz)
+            modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme270p)
     if SaveModes == True:
         modificarLinea(CompModesCFG,'mode_default','mode_default %s'%SelectedMode[0])
 
@@ -369,6 +378,11 @@ def get_available_modes():
     opt[1][1] = SelectedMode[1]
 def get_config():
     global opt
+    global CurTheme
+    global HorTheme240p
+    global HorTheme270p
+    global VerTheme240p
+    global VerTheme270p
     with open(VideoUtilityCFG, 'r') as file:
         for line in file:
             line = line.strip().replace('=',' ').split(' ')
@@ -381,8 +395,18 @@ def get_config():
                     opt[0][2] = '240p'
                     if opt[0][3] == 0:
                         opt[0][3] = '240p'
+            elif line[0] == '240p_theme_horizontal':
+                HorTheme240p = line[1]
+            elif line[0] == '270p_theme_horizontal':
+                HorTheme270p = line[1]
     get_output_video_mode()
     get_available_modes()
+    if os.path.exists(EsSystemcfg):
+        with open(EsSystemcfg, 'r') as file:
+            for line in file:
+                line = line.strip().replace('"','').replace(' ','').replace('/','').replace('>','').split('=')
+                if 'ThemeSet' in line[1]:
+                    CurTheme = line[2]
 
 get_config()
 
