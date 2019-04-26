@@ -135,6 +135,8 @@ EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
 CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/modes.cfg'
 MainConfPath = '/opt/retropie/configs'
 LaunchImgPath = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images_modes'
+IconsImgPathSrc = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/crt_icons'
+IconsImgPathDst = '/opt/retropie/configs/all/CRT/config/icons'
 RaspbianCFG = "/boot/config.txt"
 
 # FUNCTIONS
@@ -179,6 +181,13 @@ def replace_launch_image(image):
         except:
             pass
 
+def replace_icons_image():
+    for file in os.listdir(IconsImgPathDst):
+        IconImg = IconsImgPathDst+"/"+file
+        IconImgMode = IconsImgPathSrc+"/"+file[:-4]+"_"+opt[0][2]+".png"
+        if not os.path.isdir(IconImg):
+            os.system('cp "%s" "%s" >> /dev/null 2>&1'%(IconImgMode, IconImg))
+
 def search_launch_image():
     for Level1 in os.listdir(MainConfPath):
         if os.path.isdir(MainConfPath+"/"+Level1):
@@ -204,6 +213,7 @@ def save():
             modificarLinea(VideoUtilityCFG,'default','default %s'%ES_Res_50hz)
             modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme270p)
         search_launch_image()
+        replace_icons_image()
     if SaveModes == True:
         modificarLinea(CompModesCFG,'mode_default','mode_default %s'%SelectedMode[0])
 
