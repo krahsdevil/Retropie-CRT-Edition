@@ -97,8 +97,8 @@ class emulator(launcher):
             for line in oFile:
                 lValues = line.strip().split(' ')
                 if lValues[0] == sGameSystemName:
-                    if self.is_valid_binary(lValues[2]):
-                        self.m_sBinarySelected = lValues[2]
+                    sBinaryName = lValues[2].replace('"', '')
+                    if self.set_binary(sBinaryName):
                         return True
                     else: # not valid is just ignored
                         need_clean = True
