@@ -25,9 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os
-import subprocess
-import commands
+import os, logging
 import pygame
 
 from .core_paths import RETROPIECFG_PATH
@@ -39,9 +37,11 @@ CRT_UP      = 1
 CRT_DOWN    = 2
 CRT_LEFT    = 4
 CRT_RIGHT   = 8
-CRT_BUTTON  = 16 | 32
 CRT_OK      = 16
 CRT_CANCEL  = 32
+
+CRT_BUTTON      = CRT_OK | CRT_CANCEL
+CRT_DIRECTION   = CRT_UP | CRT_DOWN | CRT_LEFT | CRT_RIGHT
 
 CRT_NONE    = 0
 CRT_ZERO    = None
@@ -72,8 +72,7 @@ class joystick(object):
     """
     m_lJoys = []
     m_iNumJoys = 0
-    def __init__(self, arg):
-        self.arg = arg
+    def __init__(self):
         pygame.joystick.init()
         try:
             for j in range(0,4):
@@ -81,8 +80,8 @@ class joystick(object):
                 self.m_iNumJoys = j + 1
         except:
             pass
-        print "joysticks found:", self.m_iNumJoys
-        print str(self.m_lJoys)
+        logging.info("joysticks found: %i" % self.m_iNumJoys)
+        #print str(self.m_lJoys)
 
     def _initialize(self, p_iJoy):
         pygame.joystick.Joystick(p_iJoy).init()
@@ -104,11 +103,13 @@ class joystick(object):
         jData['cancel'] = int(ini_get(sCfgFile, 'input_b_btn').replace('"', ''), 10)
         self.m_lJoys.append(jData)
 
+    def get_num(self):
+        return len(self.m_lJoys)
+
     def get_key(self, p_oKey):
         try:
             return KEY_CFG[p_oKey]
         except:
-            print "k-ign:", str(p_oKey)
             return CRT_NONE
 
     def get_button(self, p_iDevice, p_iButton):
@@ -116,7 +117,7 @@ class joystick(object):
             return CRT_OK
         elif self.m_lJoys[p_iDevice]['cancel'] == p_iButton:
             return CRT_CANCEL
-        print "jb-ign:", p_iDevice, p_iButton
+        logging.info("jb-ign: %i %i" % (p_iDevice, p_iButton))
         return CRT_NONE
 
     def get_axis(self, p_iDevice, p_iAxis, p_fValue):
@@ -132,7 +133,7 @@ class joystick(object):
                 return CRT_DOWN
             else:
                 return CRT_UP
-        print "jb-ign:", p_iDevice, p_iAxis, p_fValue
+        logging.info("jb-ign: %i %i %s" % (p_iDevice, p_iAxis, str(p_fValue)))
         return CRT_NONE
 
     def get_hat(self, p_lValue):
@@ -145,12 +146,11 @@ class joystick(object):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    print "keyb:", event.key, event
+                    logging.info("keyb: %s %s" % (event.key, str(event)))
                     return self.get_key(event.key)
                 elif event.type == pygame.JOYBUTTONDOWN:
                     return self.get_button(event.joy, event.button)
                 if event.type == pygame.JOYAXISMOTION:
                     return self.get_axis(event.joy, event.axis, event.value)
                 elif event.type == pygame.JOYHATMOTION:
-                    print "jh:", event.joy, event.hat, event.value
                     return self.get_hat(event.value)

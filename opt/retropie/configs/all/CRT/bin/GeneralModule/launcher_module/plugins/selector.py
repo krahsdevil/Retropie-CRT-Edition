@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, logging
 from launcher_module.core import CFG_VIDEOUTILITY_FILE
+from launcher_module.core_choices import choices
 from launcher_module.plugins.libretro import libretro, CRTROOT_PATH, RETROARCH_CONFIGS_PATH
 from launcher_module.file_helpers import ini_get, add_line, remove_line
 from launcher_module.utils import compact_rom_name
@@ -86,8 +87,15 @@ class selector(libretro):
         return sFrequency
 
     def frequency_manual(self):
-        # TODO: call user selector with pygame
-        return "60"
+        ch = choices()
+        ch.load_choices([
+            ("ff60.png", "60"),
+            ("ff50.png", "50"),
+            ])
+        result = ch.run()
+        # TODO: save result
+        ch.cleanup()
+        return result
 
     # TODO: optimize!
     def frequency_by_name(self):
