@@ -25,11 +25,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys
+import os, sys, traceback
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.utils import something_is_bad, plugin_list, plugin_load
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODULES_PATH = os.path.join(BASE_DIR, "launcher_module/plugins")
+
+EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 if __name__ == '__main__':
     try:
@@ -47,4 +50,6 @@ if __name__ == '__main__':
     except (IndexError):
         something_is_bad("ERROR - No game to launch or no emulator!", "")
     except Exception as e:
-        something_is_bad("ERROR - crt_launcher", str(e))
+        with open(EXCEPTION_LOG, 'a') as f:
+            f.write(str(e))
+            f.write(traceback.format_exc())

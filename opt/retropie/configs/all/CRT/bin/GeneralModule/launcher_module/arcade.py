@@ -28,7 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os, logging, shutil
 from launcher_module.core import RETROPIE_PATH, CRTROOT_PATH, TMP_LAUNCHER_PATH
 from launcher_module.emulator import emulator
-from launcher_module.file_helpers import ini_getlist, add_line, modify_line
+from launcher_module.file_helpers import add_line, modify_line
 from launcher_module.screen import CRT
 
 RC_ADVANCEDMAME_FILE = os.path.join(RETROPIE_PATH, "mame-advmame/advmame.rc")

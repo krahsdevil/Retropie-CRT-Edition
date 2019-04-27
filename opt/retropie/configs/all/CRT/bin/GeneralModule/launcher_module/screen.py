@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging
+import os, logging, subprocess
 from math import ceil, floor
 
 from launcher_module.core_paths import CRTROOT_PATH, CRTBIN_PATH
@@ -68,8 +68,20 @@ class CRT(object):
     m_iRGame = 0        # R_Game  - Game rotation
     m_sSide_Game = ""   #
 
-    def __init__(self, p_sSystem):
+    def __init__(self, p_sSystem = "system"):
         self.m_sSystem = p_sSystem
+
+    @staticmethod
+    def get_xy_screen():
+        process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
+        output = process.stdout.read() # use commands?
+        for line in output.splitlines():
+            if 'x' in line and 'mode' in line:
+                ResMode = line
+                ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
+                x_screen = int(ResMode[1])
+                y_screen = int(ResMode[2])
+                return (x_screen, y_screen)
 
     def screen_calculated(self, p_sTimingCfgPath):
         self.p_sTimingPath = p_sTimingCfgPath
@@ -108,7 +120,6 @@ class CRT(object):
     def arcade_set(self):
         self._calculated_adjustement()
         self.resolution_call(**self.m_dData)
-
 
     def screen_restore(self):
         lValues = ini_getlist('/boot/config.txt', 'hdmi_timings')

@@ -218,7 +218,7 @@ class launcher(object):
     def panic(self, p_sErrorLine1, p_sErrorLine2 = "-", p_bForceQuit = True):
         """ stop the program and show error to the user """
         logging.error("PANIC: %s" % p_sErrorLine1)
-        CRT("system").screen_restore()
+        CRT().screen_restore()
         something_is_bad(p_sErrorLine1, p_sErrorLine2)
         if p_bForceQuit:
             logging.error("EXIT: crt_launcher forced")
