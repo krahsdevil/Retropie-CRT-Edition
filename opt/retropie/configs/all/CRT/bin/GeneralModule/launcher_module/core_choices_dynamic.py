@@ -160,7 +160,7 @@ class choices(object):
         rect = self.m_oTable.img.get_rect()
         rect.center = self.m_lScreenCenter
         self.m_oTable.position = rect
-        self.m_oTable.fill(self.dCFG['bgcolor'])
+        self.m_oTable.fill(self.dCFG['bgcolor'], self.dCFG['bgtype'])
 
     def _table_border(self):
         w = self.be.get_width()
@@ -290,7 +290,10 @@ class Table(object):
     def get_size(self):
         return (self.width, self.height)
 
-    def fill(self, p_lBaseColor):
+    def fill(self, p_lBaseColor, p_iType):
+        if p_iType == BG_FLAT:
+            self.img.fill(p_lBaseColor)
+            return
         ndeg = min(p_lBaseColor)/8
         height = (self.height/ndeg) + 1
         cont = 0
