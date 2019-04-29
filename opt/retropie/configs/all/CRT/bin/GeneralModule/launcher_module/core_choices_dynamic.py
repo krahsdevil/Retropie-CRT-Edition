@@ -25,6 +25,23 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+"""
+### HOW TO THEME YOUR CHOICES!!
+
+    # first get default cfg
+    custom_cfg = DEFAULT_CFG
+
+    # change some default values (see DEFAULT_CFG to see options)
+    custom_cfg['font'] = "font_16.ttf"
+    custom_cfg['font_size'] = 16
+    custom_cfg['bgcolor'] = (80, 180, 120)
+
+    # init class using your theme
+    ch = choices(custom_cfg)
+
+"""
+
+
 import os, sys
 import logging
 import pygame
@@ -35,25 +52,25 @@ from .core_controls import joystick, CRT_UP, CRT_DOWN, CRT_BUTTON
 
 SKINSELECTOR_PATH = os.path.join(CRTROOT_PATH, "Datas/FreqSelectorSkins")
 
-C_BLACK = pygame.Color(  0,   0,   0)
-C_WHITE = pygame.Color(255, 255, 255)
-BG_COLOR = (128, 120, 211) # 15
-BG_COLOR_SEL = (180, 80, 100) # 15
+# BASE COLORS
+BG_COLOR = (128, 120, 211)
+BG_COLOR_SEL = (180, 80, 100)
+
+# BG TYPES
 BG_FLAT = 1
 BG_DEGRADE = 2
 
-FPS = 30
 
 DEFAULT_CFG = {
     'style': "choice_dynamic",
 
     'border': "border.png",
-    'border_round': "border_round.png",
-    'border_vertical': "border_vert.png",
+    'border_corner': "border_corner.png",
     'border_height': 8,
 
     'cursor': "cursor.png",
     'font': "font.ttf",
+    'font_size': 16,
     'snd_cursor': "cursor.wav",
     'snd_load': "load.wav",
 
@@ -92,12 +109,16 @@ class choices(object):
         pygame.display.init()
         pygame.font.init()
         # fonts
-        self.m_oFontText = pygame.font.Font(os.path.join(self.m_sSkinPath, self.dCFG['font']), 16)
+        self.m_oFontText = pygame.font.Font(os.path.join(self.m_sSkinPath,
+            self.dCFG['font']),
+            self.dCFG['font_size'])
         self.dCFG['font_line'] = self.m_oFontText.get_linesize()
-        self.m_oFontTitle = pygame.font.Font(os.path.join(self.m_sSkinPath, self.dCFG['font']), 32)
+        self.m_oFontTitle = pygame.font.Font(os.path.join(self.m_sSkinPath,
+            self.dCFG['font']),
+            self.dCFG['font_size'] * 2)
         self.dCFG['title_line'] = self.m_oFontTitle.get_linesize()
         # gfx
-        self.be = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['border_round']))
+        self.be = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['border_corner']))
         self.b = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['border']))
         self.c = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['cursor']))
         pygame.mouse.set_visible(0)
@@ -277,3 +298,8 @@ class Table(object):
             color = map(lambda x: x - (8 * cont), p_lBaseColor)
             pygame.draw.rect(self.img, color, (0,y, self.width, height) )
             cont += 1
+
+# internal
+C_BLACK = pygame.Color(  0,   0,   0)
+C_WHITE = pygame.Color(255, 255, 255)
+FPS = 30
