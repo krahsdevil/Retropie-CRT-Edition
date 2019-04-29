@@ -16,6 +16,8 @@ import os
 import commands
 import subprocess
 import math
+import filecmp
+
 #sys.path.insert(0, '/opt/retropie/configs/all/CRT/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/SelectorsModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
@@ -94,6 +96,11 @@ get_retropie_joy_map()
 # VARIABLES
 ES_Res_50hz = 'system50'
 ES_Res_60hz = 'system60'
+CurTheme = "none"
+HorTheme240p = "none"
+HorTheme270p = "none"
+VerTheme240p = "none"
+VerTheme270p = "none"
 state_up = 0
 state_down = 0
 state_left = 0
@@ -124,7 +131,12 @@ SelectedMode = (['DEFAULT', "Timings presets for better compatibility"])
 #files
 sucfg = '/opt/retropie/configs/all/CRT/su.cfg'
 VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
+EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
 CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/modes.cfg'
+MainConfPath = '/opt/retropie/configs'
+LaunchImgPath = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images_modes'
+IconsImgPathSrc = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/crt_icons'
+IconsImgPathDst = '/opt/retropie/configs/all/CRT/config/icons'
 RaspbianCFG = "/boot/config.txt"
 
 # FUNCTIONS
@@ -152,12 +164,56 @@ def draw_arrow_left():
 def draw_arrow_right():
     fullscreen.blit((myfont.render('>>', 1, (arrow_c))), (data_x+2, (30+y_margin+LineMov)+y*Interline))
 
+def replace_launch_image(image):
+    image_cur = MainConfPath+"/"+image
+    image_240p = LaunchImgPath+"/"+image[:-4]+"_240p.png"
+    image_270p = LaunchImgPath+"/"+image[:-4]+"_270p.png"
+    if "240" in opt[0][2]:
+        try:
+            if filecmp.cmp(image_cur, image_270p):
+                os.system('cp "%s" "%s" >> /dev/null 2>&1'%(image_240p, image_cur))
+        except:
+            pass
+    elif "270" in opt[0][2]:
+        try:
+            if filecmp.cmp(image_cur, image_240p):
+                os.system('cp "%s" "%s" >> /dev/null 2>&1'%(image_270p, image_cur))
+        except:
+            pass
+
+def replace_icons_image():
+    for file in os.listdir(IconsImgPathDst):
+        IconImg = IconsImgPathDst+"/"+file
+        IconImgMode = IconsImgPathSrc+"/"+file[:-4]+"_"+opt[0][2]+".png"
+        if not os.path.isdir(IconImg):
+            os.system('cp "%s" "%s" >> /dev/null 2>&1'%(IconImgMode, IconImg))
+
+def search_launch_image():
+    for Level1 in os.listdir(MainConfPath):
+        if os.path.isdir(MainConfPath+"/"+Level1):
+            for Level2 in os.listdir(MainConfPath+"/"+Level1):
+                if os.path.isdir(MainConfPath+"/"+Level1+"/"+Level2):
+                    for Level3 in os.listdir(MainConfPath+"/"+Level1+"/"+Level2):
+                        if os.path.isdir(MainConfPath+"/"+Level1+"/"+Level2+"/"+Level3):
+                            for Level4 in os.listdir(MainConfPath+"/"+Level1+"/"+Level2+"/"+Level3):
+                                if os.path.isfile(MainConfPath+"/"+Level1+"/"+Level2+"/"+Level3+"/"+Level4):
+                                    replace_launch_image(Level1+"/"+Level2+"/"+Level3+"/"+Level4)
+                        else:
+                            replace_launch_image(Level1+"/"+Level2+"/"+Level3)
+                else:
+                    replace_launch_image(Level1+"/"+Level2)
+
 def save():
     if SaveConfig == True:
+        modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%opt[0][3], '%s_theme_horizontal %s'%(opt[0][3], CurTheme))
         if opt[0][2] == '240p':
             modificarLinea(VideoUtilityCFG,'default','default %s'%ES_Res_60hz)
-        if opt[0][2] == '270p':
+            modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme240p)
+        elif opt[0][2] == '270p':
             modificarLinea(VideoUtilityCFG,'default','default %s'%ES_Res_50hz)
+            modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme270p)
+        search_launch_image()
+        replace_icons_image()
     if SaveModes == True:
         modificarLinea(CompModesCFG,'mode_default','mode_default %s'%SelectedMode[0])
 
@@ -369,6 +425,11 @@ def get_available_modes():
     opt[1][1] = SelectedMode[1]
 def get_config():
     global opt
+    global CurTheme
+    global HorTheme240p
+    global HorTheme270p
+    global VerTheme240p
+    global VerTheme270p
     with open(VideoUtilityCFG, 'r') as file:
         for line in file:
             line = line.strip().replace('=',' ').split(' ')
@@ -381,8 +442,18 @@ def get_config():
                     opt[0][2] = '240p'
                     if opt[0][3] == 0:
                         opt[0][3] = '240p'
+            elif line[0] == '240p_theme_horizontal':
+                HorTheme240p = line[1]
+            elif line[0] == '270p_theme_horizontal':
+                HorTheme270p = line[1]
     get_output_video_mode()
     get_available_modes()
+    if os.path.exists(EsSystemcfg):
+        with open(EsSystemcfg, 'r') as file:
+            for line in file:
+                line = line.strip().replace('"','').replace(' ','').replace('/','').replace('>','').split('=')
+                if 'ThemeSet' in line[1]:
+                    CurTheme = line[2]
 
 get_config()
 
