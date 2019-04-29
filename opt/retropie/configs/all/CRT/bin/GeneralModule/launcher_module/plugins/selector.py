@@ -26,9 +26,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, logging
 from launcher_module.core import CFG_VIDEOUTILITY_FILE
-from launcher_module.core_choices import choices
+from launcher_module.core_choices_dynamic import choices, DEFAULT_CFG
 from launcher_module.plugins.libretro import libretro, CRTROOT_PATH, RETROARCH_CONFIGS_PATH
-from launcher_module.file_helpers import ini_get, add_line, remove_line
+from launcher_module.file_helpers import ini_get, add_line, remove_line, touch_file
 from launcher_module.utils import compact_rom_name
 
 AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "AutoFreqDB.cfg")
@@ -117,7 +117,7 @@ class dbfreq(object):
     """ frequency database handler """
     def __init__(self):
         if not os.path.isfile(AUTOFREQ_DATABASE):
-            os.mkdir(AUTOFREQ_DATABASE)
+            touch_file(AUTOFREQ_DATABASE)
             logging.info("Created frequency database")
 
     def find(self, p_sName):

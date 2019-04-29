@@ -111,3 +111,7 @@ def remove_file(p_sFile):
         os.remove(p_sFile)
     except OSError:
         pass
+
+def touch_file(fname, times=None):
+    with open(fname, 'a'):
+        os.utime(fname, times)
