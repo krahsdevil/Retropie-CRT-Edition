@@ -89,8 +89,8 @@ class selector(libretro):
     def frequency_manual(self):
         ch = choices()
         ch.load_choices([
-            ("ff60.png", "60"),
-            ("ff50.png", "50"),
+                ("60Hz", "60"),
+                ("50Hz", "50"),
             ])
         result = ch.run()
         # TODO: save result

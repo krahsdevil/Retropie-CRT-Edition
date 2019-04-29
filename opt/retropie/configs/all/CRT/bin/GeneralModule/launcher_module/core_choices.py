@@ -128,7 +128,7 @@ class choices(object):
             self._draw_screen(img)
             pygame.time.delay(2000)
         except Exception as e:
-            logging.error("no selected img found (%s): %s" % (filename, str(e)))
+            logging.error("no selected img found: %s" % str(e))
         result = self.m_lOpts[self.m_iCurrent]['value']
         logging.info("selected: %s" % str(result))
         return result
