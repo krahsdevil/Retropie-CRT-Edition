@@ -88,6 +88,7 @@ class selector(libretro):
 
     def frequency_manual(self):
         ch = choices()
+        #ch.set_title("FREQ SELECTOR")
         ch.load_choices([
                 ("60Hz / NTSC", "60"),
                 ("50Hz / PAL", "50"),

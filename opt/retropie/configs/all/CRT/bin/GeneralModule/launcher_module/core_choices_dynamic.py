@@ -79,6 +79,11 @@ DEFAULT_CFG = {
     'bgtype': BG_DEGRADE,
 }
 
+# internal
+C_BLACK = pygame.Color(  0,   0,   0)
+C_WHITE = pygame.Color(255, 255, 255)
+FPS = 30
+
 class choices(object):
     """show a selector with choices using pygame."""
 
@@ -92,7 +97,7 @@ class choices(object):
     m_lResolutionXY = ()
     m_oScreen = None
     m_oFont = None
-    m_oFontTitle = None
+    m_oTitle = None
     m_oTable = None
 
     def __init__(self, p_dChoices = DEFAULT_CFG):
@@ -108,20 +113,19 @@ class choices(object):
     def _init_screen(self):
         pygame.display.init()
         pygame.font.init()
-        # fonts
+        pygame.mouse.set_visible(0)
+
+        # gfx
         self.m_oFontText = pygame.font.Font(os.path.join(self.m_sSkinPath,
             self.dCFG['font']),
             self.dCFG['font_size'])
         self.dCFG['font_line'] = self.m_oFontText.get_linesize()
-        self.m_oFontTitle = pygame.font.Font(os.path.join(self.m_sSkinPath,
-            self.dCFG['font']),
-            self.dCFG['font_size'] * 2)
-        self.dCFG['title_line'] = self.m_oFontTitle.get_linesize()
-        # gfx
+
         self.be = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['border_corner']))
         self.b = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['border']))
         self.c = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['cursor']))
-        pygame.mouse.set_visible(0)
+
+        # screen
         self.m_lResolutionXY = CRT.get_xy_screen()
         self.m_lScreenCenter = map(lambda x: x/2, self.m_lResolutionXY)
         self.m_oScreen = pygame.display.set_mode(self.m_lResolutionXY, pygame.FULLSCREEN)
@@ -142,8 +146,15 @@ class choices(object):
         except Exception as e:
             logging.error(e)
 
-    def load_choices(self, p_lOpts):
+    def set_title(self, p_sTitle, p_lColor = C_WHITE, p_lShadowColor = C_BLACK):
+        self.m_oTitle = self.text_render(p_sTitle, p_lColor, p_lShadowColor)
+        self.m_iTitleSize = self.dCFG['font_line'] + (self.dCFG['border_height'] * 2) + 1
+
+    def _reset_data(self):
         self.m_lOpts = []
+        self.m_oTitle = None
+
+    def load_choices(self, p_lOpts):
         for opt in p_lOpts:
             logging.info(str(opt))
             self._add_opt(opt)
@@ -151,6 +162,9 @@ class choices(object):
 
     def _table_create(self):
         self.m_oTable = Table(0, self.dCFG['font_line'] * len(self.m_lOpts))
+        if self.m_oTitle:
+            self.m_oTable.width = self.m_oTitle.get_width()
+            self.m_oTable.height += self.m_iTitleSize
         for opt in self.m_lOpts:
             if opt['img'].get_width() > self.m_oTable.width:
                 self.m_oTable.width = opt['img'].get_width()
@@ -163,26 +177,35 @@ class choices(object):
         self.m_oTable.fill(self.dCFG['bgcolor'], self.dCFG['bgtype'])
 
     def _table_border(self):
+        top = 0
+        # title
+        if self.m_oTitle:
+            bottom = self.m_iTitleSize - self.be.get_height() - 1
+            self._draw_border(top, bottom)
+            top = bottom + self.be.get_height() + 1
+        bottom = self.m_oTable.img.get_height() - self.be.get_height()
+        self._draw_border(top, bottom)
+
+    def _draw_border(self, top, bottom):
         w = self.be.get_width()
         h = self.be.get_height()
-        bottom = self.m_oTable.img.get_height() - h
         right = self.m_oTable.img.get_width() - w
 
         # edges
         tmp = pygame.transform.flip(self.b, 0, 1)
         for x in range(w, right):
-            self.m_oTable.img.blit(self.b, (x, 0))
+            self.m_oTable.img.blit(self.b, (x, top))
             self.m_oTable.img.blit(tmp, (x, bottom))
         tmp = pygame.transform.rotate(self.b, 90)
         tmp2 = pygame.transform.rotate(self.b, -90)
-        for y in range(h, bottom):
+        for y in range(h + top, bottom):
             self.m_oTable.img.blit(tmp, (0, y))
             self.m_oTable.img.blit(tmp2, (right, y))
 
         # corners
-        self.m_oTable.img.blit(self.be, (0,0))
+        self.m_oTable.img.blit(self.be, (0, top))
         tmp = pygame.transform.rotate(self.be, -90)
-        self.m_oTable.img.blit(tmp, (right, 0))
+        self.m_oTable.img.blit(tmp, (right, top))
         tmp = pygame.transform.rotate(self.be, 180)
         self.m_oTable.img.blit(tmp, (right, bottom))
         tmp = pygame.transform.rotate(self.be, 90)
@@ -192,6 +215,16 @@ class choices(object):
         self._table_create()
         self._table_border()
         line = self.dCFG['border_height']
+
+        # title
+        if self.m_oTitle:
+            rect = self.m_oTitle.get_rect()
+            #rect.center = self.m_lScreenCenter
+            rect.x = (self.m_oTable.width - self.m_oTitle.get_width()) / 2
+            rect.y = line
+            self.m_oTable.img.blit(self.m_oTitle, rect)
+            line += self.m_iTitleSize
+
         for opt in self.m_lOpts:
             rect = opt['img'].get_rect()
             rect.x = 16
@@ -199,7 +232,7 @@ class choices(object):
             self.m_oTable.img.blit(opt['img'], rect)
             line += self.dCFG['font_line']
 
-    def text_render(self, p_sText, p_lTextColor, p_lShadowColor = None, p_iShadowDrop = 1):
+    def text_render(self, p_sText, p_lTextColor, p_lShadowColor = None, p_iShadowDrop = 1, p_bUseBiggerFont = True):
         img = self.m_oFontText.render(p_sText, False, p_lTextColor)
         rect = img.get_rect()
         sf = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
@@ -243,6 +276,7 @@ class choices(object):
     def _choice_select(self):
         result = self.m_lOpts[self.m_iCurrent]['value']
         text = self.m_lOpts[self.m_iCurrent]['text']
+        self._reset_data()
         # just create a new simple table to show the result
         self.dCFG['bgcolor'] = self.dCFG['bgcolor_selected']
         self.load_choices([("SELECTED: %s" % text, 0)])
@@ -269,6 +303,8 @@ class choices(object):
         self.m_oScreen.fill(C_BLACK)
         self.m_oScreen.blit(self.m_oTable.img, self.m_oTable.position)
         y = self.m_oTable.position.y + self.dCFG['border_height'] + (p_iSelect * self.dCFG['font_line'])
+        if self.m_oTitle:
+            y += self.m_iTitleSize
         self.m_oScreen.blit(self.c, (self.m_oTable.position.x,y))
         pygame.display.flip()
 
@@ -301,8 +337,3 @@ class Table(object):
             color = map(lambda x: x - (8 * cont), p_lBaseColor)
             pygame.draw.rect(self.img, color, (0,y, self.width, height) )
             cont += 1
-
-# internal
-C_BLACK = pygame.Color(  0,   0,   0)
-C_WHITE = pygame.Color(255, 255, 255)
-FPS = 30
