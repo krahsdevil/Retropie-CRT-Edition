@@ -1,0 +1,250 @@
+<!--
+theme name:        240p Bubblegum
+version:          0.06
+original author:              Pietze
+main editor:              -krahs-
+(XML modifications, overscan centering and all new logo images and consoles for Retropie CRT Edition by -krahs-)
+credit:         Logo artwork originally from Carbon theme & alphatoanant
+alphatoanant’s art book theme. https://retropie.org.uk/forum/topic/11728/theme-art-book/108
+Thanks @alphatoanant for the permission to use them!
+-->
+
+<theme>
+    <formatVersion>4</formatVersion>
+
+    <feature supported="carousel">
+         <view name="system">
+            <carousel name="systemcarousel">
+               <type>horizontal</type>
+               <color>14141488</color>
+               <pos>0 0.4</pos>
+            </carousel>
+            <text name="systemInfo">
+               <pos>0.29 0.065</pos>
+               <color>c4c4c4</color>
+               <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
+               <fontSize>0.0345</fontSize>
+            </text>
+            <image name="system-border" extra="true">
+               <origin>0.5 0</origin>
+               <pos>0.5 0.60</pos>
+               <size>0.25 0.83</size>
+               <path>./_inc/images/space.png</path>
+               <color>666666</color>
+            </image>
+            <text name="logoText">
+               <color>FFFFFF</color>
+               <fontSize>0.0028</fontSize>
+               <forceUppercase>true</forceUppercase>
+            </text>
+         </view>
+    </feature>
+
+    <view name="system">
+        <image name="bottom" extra="true">
+            <color>000000</color>
+        </image>
+        <image name="bottom-highlight" extra="true">
+            <color>3D3D3D</color>
+        </image>
+        <image name="background_pattern" extra="true">
+            <path>./_inc/images/wallpaper.png</path>
+            <origin>0.5 0.5</origin>
+            <pos>0.5 0.5</pos>
+            <size>1 1</size>
+        </image>
+        <image name="background_help" extra="true">
+            <origin>0 1</origin>
+            <pos>-0.4 1</pos>
+            <size>1 0.070</size>
+            <color>FFFFFF99</color>
+        </image>
+        <image name="console_overlay" extra="true">
+            <pos>0.5 0.5</pos>
+            <origin>0.5 0.5</origin>
+            <maxSize>0.95 0.90</maxSize>
+            <tile>false</tile>
+        </image>
+        <helpsystem name="help">
+            <!-- help bottom -->
+            <pos>0.05 0.91</pos>
+            <textColor>FFFFFF</textColor>
+            <iconColor>FFFFFF</iconColor>
+            <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
+            <fontSize>0.0345</fontSize>
+        </helpsystem>
+    </view>
+
+    <view name="basic">
+        <image name="background_color" extra="true">
+            <path>./_inc/images/bg_color.png</path>
+            <origin>0 0</origin>
+            <pos>0 0</pos>
+            <size>1 1</size>
+            <color>000000</color>
+        </image>
+        <image name="background_pattern" extra="true">
+            <path>./_inc/images/wallpaper_systems.png</path>
+            <origin>0.5 0.5</origin>
+            <pos>0.5 0.5</pos>
+            <size>1 1</size>
+        </image>
+        <image name="background" extra="true">
+            <pos>0.5 0.60</pos>
+            <origin>0.5 0.5</origin>
+            <maxSize>1 0.71</maxSize>
+            <color>555555</color>
+            <tile>false</tile>
+        </image>
+        <image name="background_frame" extra="true">
+            <path>./_inc/images/border_basic.png</path>
+            <origin>0 0</origin>
+            <pos>0 0</pos>
+            <size>1 1</size>
+            <color>d4d4d4</color>
+        </image>
+        <image name="logo">
+            <pos>0.50 0.15</pos>
+            <maxSize>0.30 0.135</maxSize>
+            <origin>0.5 0.5</origin>
+        </image>
+        <helpsystem name="help">
+            <pos>0.012 1.960</pos>
+            <textColor>ffffff</textColor>
+            <iconColor>ffffff</iconColor>
+            <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
+            <fontSize>0.033</fontSize>
+        </helpsystem>
+        <text name="md_lbl_playcount">
+            <pos>0.676 0.580</pos>
+            <fontSize>0.03</fontSize>
+        </text>
+        <text name="md_playcount">
+            <pos>0.829 0.574</pos>
+            <fontSize>0.03</fontSize>
+        </text>
+        <textlist name="gamelist">
+            <pos>0.0625 0.24</pos>
+            <size>0.870 0.696</size>
+            <alignment>center</alignment>
+            <horizontalMargin>0.01</horizontalMargin>
+            <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
+            <fontSize>0.037</fontSize>
+            <selectorColor>00000099</selectorColor>
+            <selectedColor>e15c94</selectedColor>
+            <primaryColor>ffffff</primaryColor>
+            <secondaryColor>c3c3c3</secondaryColor>
+            <forceUppercase>1</forceUppercase>
+            <scrollSound>./_inc/sound/menu.wav</scrollSound>
+        </textlist>
+    </view>
+
+    <view name="detailed, video">
+        <image name="background_color" extra="true">
+            <path>./_inc/images/bg_color.png</path>
+            <origin>0 0</origin>
+            <pos>0 0</pos>
+            <size>1 1</size>
+            <color>000000</color>
+        </image>
+        <image name="background_pattern" extra="true">
+            <path>./_inc/images/wallpaper_systems.png</path>
+            <origin>0.5 0.5</origin>
+            <pos>0.5 0.5</pos>
+            <size>1 1</size>
+        </image>
+        <image name="background_frame" extra="true">
+            <path>./_inc/images/border.png</path>
+            <origin>0 0</origin>
+            <pos>0 0</pos>
+            <size>1 1</size>
+            <color>d4d4d4</color>
+        </image>
+        <helpsystem name="help">
+            <pos>0.012 1.960</pos>
+            <textColor>42ff00</textColor>
+            <iconColor>ffffff</iconColor>
+            <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
+            <fontSize>0.035</fontSize>
+        </helpsystem>
+        <image name="logo">
+            <pos>0.74 0.16</pos>
+            <maxSize>0.30 0.135</maxSize>
+            <origin>0.5 0.5</origin>
+        </image>
+        <textlist name="gamelist">
+            <pos>0.070 0.08</pos>
+            <size>0.44 0.85</size>
+            <alignment>left</alignment>
+            <horizontalMargin>0.01</horizontalMargin>
+            <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
+            <fontSize>0.0345</fontSize>
+            <selectorColor>00000099</selectorColor>
+            <selectedColor>e15c94</selectedColor>
+            <primaryColor>ffffff</primaryColor>
+            <secondaryColor>c3c3c3</secondaryColor>
+            <forceUppercase>1</forceUppercase>
+            <scrollSound>./_inc/sound/menu.wav</scrollSound>
+        </textlist>
+        <!--         Start Meta Data                  -->
+        <text name="md_lbl_rating, md_lbl_releasedate, md_lbl_players, md_lbl_developer, md_developer, md_releasedate, md_lbl_publisher, md_publisher, md_lbl_genre, md_genre, md_lbl_players, md_players, md_lbl_playcount, md_playcount, md_lbl_lastplayed, md_description, md_lastplayed">
+            <pos>1 1</pos>
+            <size>0.180 0.030</size>
+            <color>cccccc</color>
+            <forceUppercase>1</forceUppercase>
+            <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
+            <fontSize>0.032</fontSize>
+        </text>
+        <datetime name="md_releasedate">
+            <pos>0.55 0.775</pos>
+        </datetime>
+        <text name="md_developer">
+            <pos>0.55 0.82</pos>
+        </text>
+        <text name="md_genre">
+            <pos>0.55 0.86</pos>
+        </text>
+        <datetime name="md_lastplayed">
+            <pos>0.55 0.90</pos>
+        </datetime>
+        <text name="md_players">
+            <pos>0.875 0.775</pos>
+            <color>e15c94</color>
+        </text>
+        <text name="md_lbl_players">
+            <pos>0.74 0.775</pos>
+        </text>
+        <text name="md_publisher">
+            <pos>0.74 0.82</pos>
+        </text>
+        <rating name="md_rating">
+            <pos>0.74 0.86</pos>
+            <size>0.192 0.030</size>
+            <filledPath>./_inc/images/star_filled.svg</filledPath>
+            <unfilledPath>./_inc/images/star_empty.svg</unfilledPath>
+        </rating>
+        <text name="md_playcount">
+            <pos>0.74 0.90</pos>
+            <color>e15c94</color>
+        </text>
+    </view>
+
+    <view name="detailed">
+        <image name="md_image">
+            <pos>0.736 0.50</pos>
+            <maxSize>0.365 0.46</maxSize>
+            <origin>0.5 0.5</origin>
+        </image>
+    </view>
+
+    <view name="video">
+        <video name="md_video">
+            <pos>0.736 0.50</pos>
+            <maxSize>0.365 0.46</maxSize>
+            <origin>0.5 0.5</origin>
+            <showSnapshotNoVideo>true</showSnapshotNoVideo>
+            <showSnapshotDelay>true</showSnapshotDelay>
+            <delay>1.5</delay>
+        </video>
+    </view>
+    </theme>

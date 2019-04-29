@@ -35,8 +35,11 @@ y_margin = 0
 MarginNorm = 0.1482
 Interline = 0
 LineMov = 0
+SystemRes = '240p'
+ES_Res_50hz = 'system50'
+ES_Res_60hz = 'system60'
 CurTheme = "none"
-VerTheme = "V270-CRT-BASE"
+VerTheme = "V270P-CRT-BASE"
 HorTheme = "270P-CRT-BASE"
 #positions and arrows color
 data_x = 0
@@ -188,15 +191,15 @@ def rotate_frontend():
             os.system('touch /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-yoko')
             os.system('sudo rm /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
             os.system('sudo mv /etc/emulationstation/disabled.themes /etc/emulationstation/themes >> /dev/null 2>&1')
-            os.system('sudo rm -R /opt/retropie/configs/all/emulationstation/themes/V270-CRT-BASE/ >> /dev/null 2>&1')
+            os.system('sudo rm -R /opt/retropie/configs/all/emulationstation/themes/V270P-CRT-BASE/ >> /dev/null 2>&1')
             if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbah_launching.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbah_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmameh_launching.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmameh_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mameh_launching.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mameh_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxh_launching.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxh_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
             os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_H.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
             modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme)
         if opt[1][2] == 90:
@@ -205,15 +208,15 @@ def rotate_frontend():
             os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
             if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
                 os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-            os.system('cp -R /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/themes/V270-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
+            os.system('cp -R /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
             if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbav1_launching.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbav1_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev1_launching.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev1_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev1_launching.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev1_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv1_launching.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv1_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
             os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V1.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
             modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
         if opt[1][2] == -90:
@@ -222,15 +225,15 @@ def rotate_frontend():
             os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
             if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
                 os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-            os.system('cp -R /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/themes/V270-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
+            os.system('cp -R /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
             if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbav3_launching.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbav3_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev3_launching.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev3_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev3_launching.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev3_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv3_launching.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv3_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
             os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V3.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
             modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
 
@@ -281,8 +284,13 @@ def get_config():
     global CurTheme
     global HorTheme
     global VerTheme
+    global SystemRes
+    HorTheme240p = "none"
+    HorTheme270p = "none"
+    VerTheme240p = "none"
+    VerTheme270p = "none"
     if not os.path.exists(VideoUtilityCFG):
-        DefVideoUtilityCFG = "default system50\nsystem60_timings 450 1 44 26 100 270 1 16 5 22 0 0 0 50 0 9600000 1\nsystem60_offsetX 0\nsystem60_offsetY 0\nsystem60_width 0\nsystem60_height 0\nsystem50_timings 450 1 50 32 94 270 1 12 5 26 0 0 0 50 0 9600000 1\nsystem50_offsetX 0\nsystem50_offsetY 0\nsystem50_width 0\nsystem50_height 0\ntest60_timings 1920 240 60.00 -4 -27 3 48 192 240 5 15734\ntest60_offsetX 0\ntest60_offsetY 0\ntest60_width 0\ntest60_height 0\ngame_rotation 0\nfrontend_rotation 0\nhandheld_bezel 0\nfreq_selector 0\n theme_vertical V270-CRT-BASE\ntheme_horizontal 270P-CRT-BASE"
+        DefVideoUtilityCFG = "default system50\nsystem60_timings 450 1 44 26 100 270 1 16 5 22 0 0 0 50 0 9600000 1\nsystem60_offsetX 0\nsystem60_offsetY 0\nsystem60_width 0\nsystem60_height 0\nsystem50_timings 450 1 50 32 94 270 1 12 5 26 0 0 0 50 0 9600000 1\nsystem50_offsetX 0\nsystem50_offsetY 0\nsystem50_width 0\nsystem50_height 0\ntest60_timings 1920 240 60.00 -4 -27 3 48 192 240 5 15734\ntest60_offsetX 0\ntest60_offsetY 0\ntest60_width 0\ntest60_height 0\ngame_rotation 0\nfrontend_rotation 0\nhandheld_bezel 0\nfreq_selector 0\n240p_theme_vertical V270P-CRT-BASE\n270p_theme_vertical V270P-CRT-BASE\n240p_theme_horizontal 240P-CRT-BUBBLEGUM\n270p_theme_horizontal 270P-CRT-BASE"
         os.system('echo %s > %s'%(DefVideoUtilityCFG,VideoUtilityCFG))
     with open(VideoUtilityCFG, 'r') as file:
         for line in file:
@@ -293,10 +301,25 @@ def get_config():
                 opt[2][2] = int(line[1])
             elif line[0] == 'freq_selector':
                 opt[3][2] = int(line[1])
-            elif line[0] == 'theme_horizontal':
-                HorTheme = line[1]
-            elif line[0] == 'theme_vertical':
-                VerTheme = line[1]
+            elif line[0] == '240p_theme_horizontal':
+                HorTheme240p = line[1]
+            elif line[0] == '270p_theme_horizontal':
+                HorTheme270p = line[1]
+            elif line[0] == '240p_theme_vertical':
+                VerTheme240p = line[1]
+            elif line[0] == '270p_theme_vertical':
+                VerTheme270p = line[1]
+            elif line[0] == 'default':
+                if line[1] == ES_Res_50hz:
+                    SystemRes = '270p'
+                elif line[1] == ES_Res_60hz:
+                    SystemRes = '240p'
+    if SystemRes == '240p':
+        HorTheme = HorTheme240p
+        VerTheme = VerTheme240p
+    elif SystemRes == '270p':
+        HorTheme = HorTheme270p
+        VerTheme = VerTheme270p
 
     if os.path.exists(EsSystemcfg):
         with open(EsSystemcfg, 'r') as file:
@@ -320,20 +343,20 @@ def get_config():
         opt[1][2] = 90
         opt[1][3] = 90
         opt[0][2] = 0
-        modificarLinea(VideoUtilityCFG, 'theme_vertical ', 'theme_vertical %s'%CurTheme)
+        modificarLinea(VideoUtilityCFG, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
     elif os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate3'):
         opt[1][2] = -90
         opt[1][3] = -90
         opt[0][2] = 0
-        modificarLinea(VideoUtilityCFG, 'theme_vertical ', 'theme_vertical %s'%CurTheme)
+        modificarLinea(VideoUtilityCFG, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
     elif os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-yoko'):
         opt[1][2] = 0
         opt[1][3] = 0
-        modificarLinea(VideoUtilityCFG, 'theme_horizontal ', 'theme_horizontal %s'%CurTheme)
+        modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
     else:
         opt[1][2] = 0
         opt[1][3] = 0
-        modificarLinea(VideoUtilityCFG, 'theme_horizontal ', 'theme_horizontal %s'%CurTheme)
+        modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
     Check_BackGround_Music()
 
 
