@@ -89,11 +89,11 @@ class selector(libretro):
     def frequency_manual(self):
         ch = choices()
         ch.load_choices([
-                ("60Hz", "60"),
-                ("50Hz", "50"),
+                ("60Hz / NTSC", "60"),
+                ("50Hz / PAL", "50"),
             ])
         result = ch.run()
-        # TODO: save result
+        self.m_oFreqDB.add(self.m_sCompactedName, result)
         ch.cleanup()
         return result
 
