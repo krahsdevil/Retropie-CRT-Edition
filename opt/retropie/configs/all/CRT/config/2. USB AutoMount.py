@@ -58,6 +58,8 @@ joystick = 0 # 0 is the 1sf joystick
 
 # FF files
 wait = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/wait.png')
+waitPos = wait.get_rect()
+waitPos.center = ((x_screen/2), (y_screen/2))
 extract = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/extract.png')
 nojoy = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/nojoy.png')
 
@@ -111,7 +113,7 @@ def DesInstallServiceAutomount():
 fullscreen = pygame.display.set_mode((x_screen,y_screen), FULLSCREEN)
 fullscreen.fill((0,0,0))
 # PASTE PICTURE ON FULLSCREEN
-fullscreen.blit(wait, (119,80))
+fullscreen.blit(wait, waitPos)
 pygame.display.flip()
 time.sleep(1)
 CheckService = commands.getoutput('systemctl list-units --all | grep \"CRT-Automount.service\"')
@@ -157,13 +159,36 @@ else:
     option2_ENA = cancelenabled
     MAXoptions = 1
 
+FramePos = Frame.get_rect()
+FramePos.center = ((x_screen/2), (y_screen/2))
+
+option1Pos = option1.get_rect()
+option1Pos.center = ((x_screen/2), (y_screen/2))
+option2Pos = option2.get_rect()
+option2Pos.center = ((x_screen/2), (y_screen/2))
+
+option1_ENAPos = option1_ENA.get_rect()
+option1_ENAPos.center = ((x_screen/2), (y_screen/2))
+option2_ENAPos = option2_ENA.get_rect()
+option2_ENAPos.center = ((x_screen/2), (y_screen/2))
+
+extractPos = extract.get_rect()
+extractPos.center = ((x_screen/2), (y_screen/2))
+
+if MAXoptions > 1:
+    option3Pos = option3.get_rect()
+    option3Pos.center = ((x_screen/2), (y_screen/2))
+    option3_ENAPos = option3_ENA.get_rect()
+    option3_ENAPos.center = ((x_screen/2), (y_screen/2))
+    
+
 def quit_moudule():
     pygame.display.quit()
     pygame.quit()
     sys.exit()
 
-fullscreen.blit(Frame, (119,80))
-fullscreen.blit(option1, (119,116))
+fullscreen.blit(Frame, FramePos)
+fullscreen.blit(option1, option1Pos)
 pygame.display.flip()
 
 y = 0
@@ -176,7 +201,7 @@ while True:
         if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
             if y < 1:
                 load.play()
-                fullscreen.blit(option1_ENA, (119,116))
+                fullscreen.blit(option1_ENA, option1_ENAPos)
                 pygame.display.flip()
                 time.sleep(1)
                 if ServiceRunning == True:
@@ -187,17 +212,17 @@ while True:
 
             if y == 1:
                 load.play()
-                fullscreen.blit(option2_ENA, (119,116))
+                fullscreen.blit(option2_ENA, option2_ENAPos)
                 pygame.display.flip()
                 time.sleep(1)
                 quit_moudule()
 
             if y == 2:
                 load.play()
-                fullscreen.blit(option3_ENA, (119,116))
+                fullscreen.blit(option3_ENA, option3_ENAPos)
                 pygame.display.flip()
                 time.sleep(1)
-                fullscreen.blit(extract, (119,80))
+                fullscreen.blit(extract, extractPos)
                 pygame.display.flip()
                 time.sleep(3)
                 os.system('sudo umount %s > /dev/null 2>&1' % MountedPaths[0])
@@ -212,9 +237,9 @@ while True:
                 y = y + 1
                 cursor.play()
                 if y == 1:
-                    fullscreen.blit(option2, (119,116))
+                    fullscreen.blit(option2, option2Pos)
                 elif y == 2:
-                    fullscreen.blit(option3, (119,116))
+                    fullscreen.blit(option3, option3Pos)
                 pygame.display.flip()
 
         #up
@@ -223,9 +248,9 @@ while True:
                 y = y - 1
                 cursor.play()
                 if y == 1:
-                    fullscreen.blit(option2, (119,116))
+                    fullscreen.blit(option2, option2Pos)
                 elif y == 0:
-                    fullscreen.blit(option1, (119,116))
+                    fullscreen.blit(option1, option1Pos)
                 pygame.display.flip()
 quit_moudule()
 
