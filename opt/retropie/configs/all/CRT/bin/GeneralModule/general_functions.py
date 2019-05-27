@@ -591,6 +591,10 @@ def make_retroarcharcade_configfile(datas1,datas2,offsetx,offsety,datas3,datas13
         if datas13 == "H":
             param = "video_rotation = \"%s\"\n" % ("0")
             file.writelines(param)
+        elif datas13 == "V":
+            param = "video_rotation = \"%s\"\n" % ("0")
+            file.writelines(param)
+            modificarLinea('/tmp/retroarcharcade.cfg','video_smooth = "false"','video_smooth = "true"')
         elif datas13 == "V3":
             param = "video_rotation = \"%s\"\n" % ("3")
             file.writelines(param)

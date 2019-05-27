@@ -479,7 +479,7 @@ elif emulator == "arcade" or emulator == "mame-advmame" or emulator == "mame-lib
 
     if LoadDBFile[1] == "mame-libretro" or LoadDBFile[1] == "fba" or LoadDBFile[1] == "unknown" or emulator == "mame-libretro" or emulator == "fba":
         if games_datas[game][13] == 'V' and R_Game == -90:
-            Side_Game = 'H'
+            Side_Game = 'V'
             make_retroarcharcade_configfile('1220',games_datas[game][2],0,0,games_datas[game][3],Side_Game)
             H_Pos = int('130')
         elif (games_datas[game][13] == 'V' and R_Game == 0 and R_Sys != -90) or (games_datas[game][13] == 'V' and R_Sys == 90):
