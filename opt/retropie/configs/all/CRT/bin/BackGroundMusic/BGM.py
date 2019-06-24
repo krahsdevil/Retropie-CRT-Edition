@@ -277,7 +277,7 @@ while True:
                 #print "Emulator finished, resuming audio..."
                 #Wait to CRT Launcher to exit
                 while True:
-                    time.sleep(2.3)
+                    time.sleep(2.5)
                     output = commands.getoutput('ps -fe')
                     if not CRTProcess in output:
                         break
