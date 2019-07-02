@@ -86,10 +86,11 @@ class emulator(launcher):
         False
             If emulator is wrong and it was cleaned
         True
-            Emulator is ok!
+            Emulator is ok or not specific emulator for this game was selected
         """
         if not os.path.exists(CFG_CUSTOMEMU_FILE):
-            return False
+            #create emulators.cfg if doesn't exists
+            os.system('touch %s' % CFG_CUSTOMEMU_FILE)
         sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
         sGameSystemName = "%s_%s" % (self.m_sSystem, sCleanName)
         need_clean = False
@@ -106,7 +107,8 @@ class emulator(launcher):
         if need_clean:
             logging.info("cleaning line %s from %s" % (sGameSystemName, CFG_CUSTOMEMU_FILE))
             remove_line(CFG_CUSTOMEMU_FILE, sGameSystemName)
-        return False
+            return False
+        return True
 
     #
     # p_oFile: file ready to seek
@@ -129,7 +131,12 @@ class emulator(launcher):
                 lValues = line.strip().split(' ')
                 if lValues[0] == 'default':
                     sBinaryName = lValues[2].replace('"', '')
-                    return self.set_binary(sBinaryName)
+                    if not self.set_binary(sBinaryName):
+                        remove_line(self.m_sCfgSystemPath, "default =")
+                        return False
+                    else:
+                        return True
+                    #return self.set_binary(sBinaryName)
             return None
 
     def emulatorcfg_add_systems(self):
@@ -168,7 +175,10 @@ class emulator(launcher):
         """
         if not self.emulatorcfg_default_check():
             self._emulatorcfg_die()
-            self.panic("selected invalid emulator", "try again!")
+            self.panic("selected invalid default emulator", "try again!")
+        if not self.emulatorcfg_per_game():
+            self._emulatorcfg_die()
+            self.panic("selected invalid emulator for this game", "try again!")
         if self.clean_videomodes():
             self._emulatorcfg_die()
             self.panic("do not touch emulator resolution", "try again!")
@@ -216,7 +226,6 @@ class emulator(launcher):
             logging.info("Selected binary (%s)" % self.m_sBinarySelected)
             return True
         else:
-            remove_line(self.m_sCfgSystemPath, "default =")
             logging.error("INVALID - binary (%s) - mask [%s]" %
                 (self.m_sBinarySelected, str(self.m_lBinaryMasks)) )
             return False
