@@ -94,7 +94,13 @@ class selector(libretro):
                 ("50Hz / PAL", "50"),
             ])
         result = ch.run()
-        self.m_oFreqDB.add(self.m_sCompactedName, result)
+        sFrequency = self.m_oFreqDB.find(self.m_sCompactedName)
+        if not sFrequency:
+            self.m_oFreqDB.add(self.m_sCompactedName, result)
+        else:
+            if sFrequency != result:
+                self.m_oFreqDB.clean(self.m_sCompactedName)
+                self.m_oFreqDB.add(self.m_sCompactedName, result)
         ch.cleanup()
         return result
 
