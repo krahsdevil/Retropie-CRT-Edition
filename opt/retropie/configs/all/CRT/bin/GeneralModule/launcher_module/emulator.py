@@ -90,7 +90,8 @@ class emulator(launcher):
         """
         if not os.path.exists(CFG_CUSTOMEMU_FILE):
             #create emulators.cfg if doesn't exists
-            os.system('touch %s' % CFG_CUSTOMEMU_FILE)
+            touch_file(CFG_CUSTOMEMU_FILE)
+            logging.info("Created emulators.cfg")
         sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
         sGameSystemName = "%s_%s" % (self.m_sSystem, sCleanName)
         need_clean = False
