@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, re, logging
 from launcher_module.core import launcher, RETROPIECFG_PATH
-from launcher_module.file_helpers import remove_line
+from launcher_module.file_helpers import remove_line, touch_file
 
 CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
 
