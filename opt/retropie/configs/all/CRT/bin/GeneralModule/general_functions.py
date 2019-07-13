@@ -951,12 +951,13 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
                     logging.info("INFO: Modificando cadena de ejecucion para emulador libretro (%s) en %s" % (linecheck[0],cfgfilepath))
                     found_Lr_core = True
                     count = 0
+                    subsystem = "none"
                     for item in linecheck:
                         if item == "-L":
                             corepath = linecheck[count+1]
                             logging.info("INFO: Path del emulador libretro (%s): \"%s\"" % (linecheck[0],corepath))
-                        if '--subsystem' in item:
-                            subsystem = item+" "+linecheck[count+1]
+                        elif item == "--subsystem":
+                            subsystem = item + " " + linecheck[count+1]
                         count += 1
                     if not os.path.isfile(corepath):
                         logging.info("INFO: No se ha podido encontrar la ruta del emulador")
@@ -965,11 +966,9 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
                         something_is_bad(infos,infos2)
                         logging.info("Saliendo de la aplicacion")
                         sys.exit()
-                    try:
+                    if subsystem != "none":
                         corepath = corepath + " " + subsystem
                         logging.info("INFO: Argumento --subsystem encontrado, anadido a corepath (%s): \"%s\"" % (linecheck[0],corepath))
-                    except Exception:
-                        pass
                     if easynet == "":
                         logging.info("INFO: Easynet esta deshabilitado, excluido de la cadena de ejecucion")
                         retropiecommand = "%s = \"touch /tmp/lchtmp && sleep 1 && /opt/retropie/emulators/retroarch/bin/retroarch -L %s --config /opt/retropie/configs/%s/retroarch.cfg --appendconfig %s %s\"" % (coreid,corepath,emulator,addcfgpath,"%ROM%")
