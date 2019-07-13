@@ -51,7 +51,7 @@ def test_system(name, fullname, command):
         core_name = SYSTEMS[name]["core"]   # set core name
 
     if core_name: # only test command if core exists
-        fullcommand = "python %s %%ROM%% %s %s" % (LAUNCHER_BIN, core_name, command_dummy)
+        fullcommand = "python %s %ROM% %s %s" % (LAUNCHER_BIN, core_name, command_dummy)
         if fullcommand != command and not "force" in command :
             print("-- CHANGED: %s" % fullcommand )
             system.find('command').text = fullcommand
