@@ -18,6 +18,7 @@ maxvolume = 0.75
 volumefadespeed = 0.02
 restart = False #If true, this will cause the script to fade the music out and -stop- the song rather than pause it.
 startsong = "" # if this is not blank, this is the EXACT, CaSeSeNsAtIvE filename of the song you always want to play first on boot.
+esStarted = False #Variable for EmulationStation control initialized to False
 
 ### if ~ is used, change it to home directory (EXAMPLE: "~/BGM" to "/home/pi/BGM")
 if "~/" in musicdir:
@@ -116,6 +117,7 @@ bgm = [mp3 for mp3 in os.listdir(musicdir) if mp3[-4:] == ".mp3" or mp3[-4:] == 
 lastsong = -1
 currentsong = -1
 from pygame import mixer # import PyGame's music mixer
+mixer.pre_init(44100, -16, 2, 2048)
 mixer.init() # Prep that bad boy up.
 random.seed()
 volume = maxvolume # Store this for later use to handle fading out.
@@ -137,20 +139,23 @@ emulatornames = ["retroarch","ags","uae4all2","uae4arm","capricerpi","linapple",
 
 crtprocesses = ["crt_launcher.py", "emulator_launcher.py", "emulator_launcher_legacy.py"]
 
-#test: Ran into some issues with script crashing on a cold boot, so we're camping for emulationstation (if ES can start, so can we!)
-esStarted = False
-while not esStarted:
-    time.sleep(1)
+def wait_ES(timeR):
+    #test: Ran into some issues with script crashing on a cold boot, so we're camping for emulationstation (if ES can start, so can we!)
+    time.sleep(timeR)
     pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
     for pid in pids:
         try:
             procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
             if procname[:-1] == "emulationstatio": # Emulation Station's actual process name is apparently short 1 letter.
-                esStarted=True
-        except IOError:    
-            continue
+                return True
+        except IOError:
+            return False
+    return False
 
 #ES Should be going, see if we need to delay our start
+
+while not esStarted:
+    esStarted = wait_ES(1)
 
 if startdelay > 0:
     time.sleep(startdelay) # Delay audio start per config option above
@@ -178,15 +183,7 @@ while True:
     while not esStarted: #New check (4/23/16) - Make sure EmulationStation is actually started.  There is code further down that, as part of the emulator loop, makes sure eS is running.
         if mixer.music.get_busy():
             mixer.music.stop(); #halt the music, emulationStation is not running!
-        time.sleep(10)
-        pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-        for pid in pids:
-            try:
-                procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-                if procname[:-1] == "emulationstatio": # Emulation Station's actual process name is apparently short 1 letter.
-                    esStarted=True # Will cause us to break out of the loop because ES is now running.
-            except IOError:    
-                continue
+        esStarted = wait_ES(10)
                 
     #Check to see if the DisableMusic file exists; if it does, stop doing everything!
     #disablefile = os.path.expanduser('~/DisableMusic')
@@ -279,6 +276,8 @@ while True:
                 while True:
                     output = commands.getoutput('ps -fe')
                     if not CRTProcess in output:
+                        while not esStarted:
+                            esStarted = wait_ES(1)
                         break
                 if not restart:
                     mixer.music.unpause() #resume
