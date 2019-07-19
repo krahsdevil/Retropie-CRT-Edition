@@ -42,27 +42,34 @@ tree = ET.parse(EsSystemcfg)
 root = tree.getroot()
 
 
-def test_system(name, fullname, command):
+def test_system(name, fullname, command, theme):
     global XMLChanged
     core_name = name
     command_dummy = "dummy"
-    if name in SYSTEMS:
-        SYSTEMS[name]["check"] = True       # set checked
-        core_name = SYSTEMS[name]["core"]   # set core name
-
+    for syselement in SYSTEMS:
+        if name == syselement:
+            SYSTEMS[name]["check"] = True       # set checked
+            core_name = SYSTEMS[name]["core"]   # set core name
+            if theme != SYSTEMS[name]["theme"]:
+                theme = SYSTEMS[name]["theme"]
+                print("-- CHANGED: theme to %s" % theme )
+                system.find('theme').text = theme
+                XMLChanged = True
     if core_name: # only test command if core exists
-        fullcommand = "python %s %ROM% %s %s" % (LAUNCHER_BIN, core_name, command_dummy)
+        fullcommand = "python %s %%ROM%% %s %s" % (LAUNCHER_BIN, core_name, command_dummy)
         if fullcommand != command and not "force" in command :
             print("-- CHANGED: %s" % fullcommand )
             system.find('command').text = fullcommand
             XMLChanged = True
+            
 
 
 for system in root.iter('system'):
     name = system.find('name').text
     fullname = system.find('fullname').text
     command = system.find('command').text
-    test_system(name, fullname, command)
+    theme = system.find('theme').text
+    test_system(name, fullname, command, theme)
 
 if XMLChanged == True:
     tree.write(EsSystemcfg)
