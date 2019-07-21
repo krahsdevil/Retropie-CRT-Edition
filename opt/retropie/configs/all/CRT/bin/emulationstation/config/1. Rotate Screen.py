@@ -125,6 +125,7 @@ def rotate_frontend(ToMode):
             os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxh_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
         os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_H.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
         modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme)
+        modificarLinea(VideoUtilityCFG, 'frontend_rotation', 'frontend_rotation 0')
     if ToMode == 3:
         os.system('touch /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate3')
         os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
@@ -142,6 +143,7 @@ def rotate_frontend(ToMode):
             os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv3_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
         os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V3.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
         modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
+        modificarLinea(VideoUtilityCFG, 'frontend_rotation', 'frontend_rotation -90')
     if ToMode == 1:
         os.system('touch /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate1')
         os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
@@ -159,6 +161,7 @@ def rotate_frontend(ToMode):
             os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv1_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
         os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V1.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
         modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
+        modificarLinea(VideoUtilityCFG, 'frontend_rotation', 'frontend_rotation 90')
 
 def get_xy_screen():
     global x_screen
