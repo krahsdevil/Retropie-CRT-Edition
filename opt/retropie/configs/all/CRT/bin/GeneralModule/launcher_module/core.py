@@ -128,6 +128,7 @@ class launcher(object):
 
     def runcommand_clean(self, p_sCMD):
         # first remove quotes
+        logging.info("p_sCMD incoming (%s)" % p_sCMD)
         p_sCMD = p_sCMD.replace('"', '')
         # "touch /path/lchtmp && sleep 1 && /path/retroarch ...
         # "/path/retroarch ...
@@ -142,6 +143,7 @@ class launcher(object):
             p_sCMD += "%ROM%"
         # finally add quotes
         p_sCMD = '"' + p_sCMD.strip() + '"'
+        logging.info("p_sCMD outgoing (%s)" % p_sCMD)
         return p_sCMD
 
     # check if runcommand has correct behaivor:
@@ -152,15 +154,16 @@ class launcher(object):
         new_file = f.readlines()
         f.close()
         # only change file if is need it
-        for line in new_file:
-            lValues = line.strip().split('=')
-            lValues = map(lambda s: s.strip(), lValues)
-            if lValues[0] == self.m_sBinarySelected:
-                cmd_cleaned = self.runcommand_clean(lValues[1])
-                cmd_current = self.runcommand_generate(cmd_cleaned)
-                if cmd_current != line.strip(): # atm just force our cmd
-                    logging.info("changed command (%s)" % cmd_current)
-                    modify_line(self.m_sCfgSystemPath, line, cmd_current)
+        for Binary in self.m_lBinaries:
+            for line in new_file:
+                lValues = line.strip().split('=')
+                lValues = map(lambda s: s.strip(), lValues)
+                if lValues[0] == Binary:
+                    cmd_cleaned = self.runcommand_clean(lValues[1])
+                    cmd_current = self.runcommand_generate(cmd_cleaned)
+                    if cmd_current != line.strip(): # atm just force our cmd
+                        logging.info("changed command (%s)" % cmd_current)
+                        modify_line(self.m_sCfgSystemPath, line, cmd_current)
 
 
     # wait_runcommand: wait for user launcher menu
