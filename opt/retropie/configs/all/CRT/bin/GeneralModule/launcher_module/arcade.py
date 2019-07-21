@@ -80,23 +80,26 @@ class arcade(emulator):
         if self.m_oCRT.m_sSide_Game != 'V':
             self.ra_config_create()
             return
-        if self.m_oCRT.m_iRGame == -90:
-            self.m_oCRT.m_sSide_Game = 'H'
-            self.cfg_hres = 1220
-            self.ra_config_create(p_bSmooth = True)
-            self.m_oCRT.timing_set("H_Pos", "130")
-        elif (self.m_oCRT.m_iRGame == 0 and self.m_oCRT.m_iRSys != -90) or self.m_oCRT.m_iRSys == 90:
-            self.m_oCRT.m_sSide_Game = 'V3'
-            self.cfg_offsetx = -10
-            if self.m_dVideo["V_Res"] == 240:
-                self.cfg_offsety = 4
-            self.ra_config_create()
-        elif self.m_oCRT.m_iRSys == -90:
-            self.m_oCRT.m_sSide_Game = 'V1'
-            self.cfg_offsetx = -10
-            if self.m_dVideo["V_Res"] == 240:
-                self.cfg_offsety = 4
-            self.ra_config_create()
+        else:
+            if self.m_oCRT.m_iRSys != 0:
+                if self.m_oCRT.m_iRSys == 90:
+                    self.m_oCRT.m_sSide_Game = 'V1'
+                    self.cfg_offsetx = -10
+                    if self.m_dVideo["V_Res"] == 240:
+                        self.cfg_offsety = 4
+                    self.ra_config_create()
+                elif self.m_oCRT.m_iRSys == -90:
+                    self.m_oCRT.m_sSide_Game = 'V3'
+                    self.cfg_offsetx = -10
+                    if self.m_dVideo["V_Res"] == 240:
+                        self.cfg_offsety = 4
+                    self.ra_config_create()           
+            else:
+                if self.m_oCRT.m_iRGame == -90:
+                    self.m_oCRT.m_sSide_Game = 'H'
+                    self.cfg_hres = 1220
+                    self.ra_config_create(p_bSmooth = True)
+                    self.m_oCRT.timing_set("H_Pos", "130")
 
     def ra_config_create(self, p_bSmooth = False):
         self.ra_config_write(p_bSmooth)
@@ -120,15 +123,17 @@ class arcade(emulator):
         add_line(TMP_ARCADE_FILE, 'video_refresh_rate = "%s"' % self.m_dVideo["R_Rate"])
 
         # smooth vertical games on horizontal screens
-        add_line(TMP_ARCADE_FILE, 'video_smooth = "%s"' % str(p_bSmooth).lower())
+        modify_line(TMP_ARCADE_FILE, "video_smooth", 'video_smooth = "%s"' % str(p_bSmooth).lower())
 
         # Check orientation
+        logging.info("m_sSide_Game %s" % (self.m_oCRT.m_sSide_Game))
+        logging.info("m_iRSys %s" % (self.m_oCRT.m_iRSys))
         if self.m_oCRT.m_sSide_Game == "H":
             add_line(TMP_ARCADE_FILE, 'video_rotation = "0"')
         elif self.m_oCRT.m_sSide_Game == "V3":
-            add_line(TMP_ARCADE_FILE, 'video_rotation = "3"')
-        elif self.m_oCRT.m_sSide_Game == "V1":
             add_line(TMP_ARCADE_FILE, 'video_rotation = "1"')
+        elif self.m_oCRT.m_sSide_Game == "V1":
+            add_line(TMP_ARCADE_FILE, 'video_rotation = "3"')
 
     def adv_config_generate(self):
         display_ror = "no"
