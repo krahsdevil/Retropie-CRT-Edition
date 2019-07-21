@@ -65,9 +65,9 @@ class emulator(launcher):
         """
         try:
             self.emulatorcfg_add_systems()
-            if not self.emulatorcfg_per_game():
-                if self.emulatorcfg_default_check() == False:
-                     self.panic("selected invalid emulator", "try again!")
+            self.emulatorcfg_per_game()
+            if self.emulatorcfg_default_check() == False:
+                 self.panic("selected invalid emulator", "try again!")
         except IOError as e:
             infos = "File error at emulators.cfg [%s]" % self.m_sSystem
             infos2 = "Please, install at least one emulator or core"
