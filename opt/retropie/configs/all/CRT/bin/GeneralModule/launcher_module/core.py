@@ -63,6 +63,7 @@ class launcher(object):
     m_sBinarySelected = ""
     m_sNextValidBinary = ""
     m_lBinaryMasks = []
+    m_lBinaryUntouchable = []
     m_lBinaries = []
     m_lProcesses = []
 
@@ -130,6 +131,11 @@ class launcher(object):
     def runcommand_clean(self, p_sCMD):
         # first remove quotes
         p_sCMD = p_sCMD.replace('"', '')
+        # check if %ROM% or %BASENAME% is used
+        if '%BASENAME%' in p_sCMD:
+            p_sGameVar = " %BASENAME%"
+        else:
+            p_sGameVar = " %ROM%" 
         # "touch /path/lchtmp && sleep 1 && /path/retroarch ...
         # "/path/retroarch ...
         if "&&" in p_sCMD:
@@ -139,8 +145,8 @@ class launcher(object):
         if "--appendconfig" in p_sCMD:
             p_sCMD = p_sCMD.split("--appendconfig")[0]
         # add at the end
-        if "%ROM%" not in p_sCMD:
-            p_sCMD += "%ROM%"
+        if p_sGameVar not in p_sCMD:
+            p_sCMD += p_sGameVar
         # finally add quotes
         p_sCMD = '"' + p_sCMD.strip() + '"'
         return p_sCMD
