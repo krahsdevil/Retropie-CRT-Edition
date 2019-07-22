@@ -61,6 +61,7 @@ class launcher(object):
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
     m_sBinarySelected = ""
+    m_sNextValidBinary = ""
     m_lBinaryMasks = []
     m_lBinaries = []
     m_lProcesses = []
@@ -121,14 +122,13 @@ class launcher(object):
     # just called if need rebuild the CMD
     def runcommand_generate(self, p_sCMD):
         p_sCMD = p_sCMD.replace('"','').strip()
-        new_cmd = self.m_sBinarySelected + " = \""
+        new_cmd = self.m_sNextValidBinary + " = \""
         new_cmd += CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
         new_cmd += p_sCMD + "\""
         return new_cmd
 
     def runcommand_clean(self, p_sCMD):
         # first remove quotes
-        logging.info("p_sCMD incoming (%s)" % p_sCMD)
         p_sCMD = p_sCMD.replace('"', '')
         # "touch /path/lchtmp && sleep 1 && /path/retroarch ...
         # "/path/retroarch ...
@@ -143,7 +143,6 @@ class launcher(object):
             p_sCMD += "%ROM%"
         # finally add quotes
         p_sCMD = '"' + p_sCMD.strip() + '"'
-        logging.info("p_sCMD outgoing (%s)" % p_sCMD)
         return p_sCMD
 
     # check if runcommand has correct behaivor:
@@ -159,6 +158,7 @@ class launcher(object):
                 lValues = line.strip().split('=')
                 lValues = map(lambda s: s.strip(), lValues)
                 if lValues[0] == Binary:
+                    self.m_sNextValidBinary = lValues[0]
                     cmd_cleaned = self.runcommand_clean(lValues[1])
                     cmd_current = self.runcommand_generate(cmd_cleaned)
                     if cmd_current != line.strip(): # atm just force our cmd
