@@ -43,14 +43,11 @@ class arcade(arcade):
             self.m_oConfigureFunc = self.adv_config_generate
             self.m_lBinaryMasks = ["advmame"]
             self.m_lProcesses = ["advmame"] # default emulator process is retroarch
-        elif self.m_sSystem == "mame-libretro":
-            self.m_oConfigureFunc = self.adv_config_generate
-            self.m_lBinaryMasks = ["lr-"]
-            self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
         elif self.m_sSystem == "arcade":
-            self.m_oConfigureFunc = self.adv_config_generate
+            self.m_oConfigureFunc = self.adv_config_generate #we generate both configs, advmame and retroarch for last minute changes
+            self.m_oConfigureFunc = self.ra_config_generate
             self.m_lBinaryMasks = ["lr-", "advmame"]
-            self.m_lProcesses = ["retroarch", "advmame"] # default emulator process is retroarch or advmame
+            self.m_lProcesses = ["retroarch", "advmame", "mame", "fba2x"] # if BinaryMask doesn't match will try to close all these process
         else:
             self.m_oConfigureFunc = self.ra_config_generate
             self.m_lBinaryMasks = ["lr-"]
