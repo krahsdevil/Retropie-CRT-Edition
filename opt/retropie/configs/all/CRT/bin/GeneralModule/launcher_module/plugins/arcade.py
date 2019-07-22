@@ -69,6 +69,6 @@ class arcade(arcade):
                 return current_cmd
 
         # update system_custom_cfg, used in ra_check_version
-        append_cmd = " --appendconfig %s" % TMP_ARCADE_FILE
+        append_cmd = "--appendconfig %s" % TMP_ARCADE_FILE
         append_cmd += p_sGameVar
         return current_cmd.replace(p_sGameVar, append_cmd)
