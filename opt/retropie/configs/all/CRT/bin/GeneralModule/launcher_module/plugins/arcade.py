@@ -59,16 +59,12 @@ class arcade(arcade):
     # just called if need rebuild the CMD
     def runcommand_generate(self, p_sCMD):
         current_cmd = super(arcade, self).runcommand_generate(p_sCMD)
-        if '%BASENAME%' in current_cmd:
-            p_sGameVar = " %BASENAME%"
-        else:
-            p_sGameVar = " %ROM%"
 
-        for Binary in self.m_lBinaryUntouchable:
-            if Binary == self.m_sNextValidBinary:
-                return current_cmd
+        #Check if a VALID binary of the list must be excluded of the --appendconfig flag addition:
+        if self.m_sNextValidBinary in self.m_lBinaryUntouchable:
+            return current_cmd
 
         # update system_custom_cfg, used in ra_check_version
         append_cmd = "--appendconfig %s" % TMP_ARCADE_FILE
-        append_cmd += p_sGameVar
-        return current_cmd.replace(p_sGameVar, append_cmd)
+        append_cmd += " " + self.m_sFileNameVar
+        return current_cmd.replace(self.m_sFileNameVar, append_cmd)

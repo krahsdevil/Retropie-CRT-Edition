@@ -58,6 +58,7 @@ CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 class launcher(object):
     """ virtual class for crt launcher """
     m_sFileName = ""
+    m_sFileNameVar = "%ROM%"
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
     m_sBinarySelected = ""
@@ -131,11 +132,12 @@ class launcher(object):
     def runcommand_clean(self, p_sCMD):
         # first remove quotes
         p_sCMD = p_sCMD.replace('"', '')
-        # check if %ROM% or %BASENAME% is used
+        # check if %BASENAME% is used instead of %ROM%
         if '%BASENAME%' in p_sCMD:
-            p_sGameVar = " %BASENAME%"
-        else:
-            p_sGameVar = " %ROM%" 
+            self.m_sFileNameVar = "%BASENAME%"
+        elif '%ROM%' in p_sCMD:
+            self.m_sFileNameVar = "%ROM%"
+
         # "touch /path/lchtmp && sleep 1 && /path/retroarch ...
         # "/path/retroarch ...
         if "&&" in p_sCMD:
@@ -145,8 +147,8 @@ class launcher(object):
         if "--appendconfig" in p_sCMD:
             p_sCMD = p_sCMD.split("--appendconfig")[0]
         # add at the end
-        if p_sGameVar not in p_sCMD:
-            p_sCMD += p_sGameVar
+        if self.m_sFileNameVar not in p_sCMD:
+            p_sCMD += self.m_sFileNameVar
         # finally add quotes
         p_sCMD = '"' + p_sCMD.strip() + '"'
         return p_sCMD
