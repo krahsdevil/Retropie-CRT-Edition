@@ -73,8 +73,8 @@ class libretro(emulator):
             return current_cmd
         # update system_custom_cfg, used in ra_check_version
         append_cmd = "--appendconfig %s" % self.m_sSystemCfgPath
-        append_cmd += " %ROM%"
-        return current_cmd.replace("%ROM%", append_cmd)
+        append_cmd += " " + self.m_sFileNameVar
+        return current_cmd.replace(self.m_sFileNameVar, append_cmd)
 
     #  check if retroarch is lower than v1.7.5 because a change in aspect_ratio_index value
     def ra_check_version(self):
