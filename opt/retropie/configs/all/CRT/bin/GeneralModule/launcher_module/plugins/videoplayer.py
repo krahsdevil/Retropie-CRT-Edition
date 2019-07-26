@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, re, logging, commands, glob, subprocess
-from distutils.version import LooseVersion
+from launcher_module.utils import something_is_bad, splash_info
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.core import launcher, CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH, CFG_TIMINGS_FILE
 from launcher_module.screen import CRT
