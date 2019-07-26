@@ -25,8 +25,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, re, logging, commands, glob, subprocess
-from launcher_module.utils import something_is_bad, splash_info
+import os, re, sys, logging, commands, glob, subprocess
+from launcher_module.utils import splash_info
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.core import launcher, CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH, CFG_TIMINGS_FILE
 from launcher_module.screen import CRT
@@ -47,51 +47,14 @@ class videoplayer(launcher):
     m_lVideoEXT = ['avi', 'mkv', 'mp4', 'mpg', 'AVI', 'MKV', 'MP4', 'MPG']
     m_lVideoList = []
 
-    def launch_joy2key(self, left, right, up, down, a, b, x, y, start, select):
-        # get the first joystick device (if not already set)
-        if os.path.exists (JOY2KEY_VAR):
-            JOY2KEY_DEV = JOY2KEY_VAR
-        else:
-            JOY2KEY_DEV = "/dev/input/jsX"
-        output = commands.getoutput('ps -A')
-        if os.path.exists (JOY2KEY_PATH) and JOY2KEY_DEV != "none" and not 'joy2key.py' in output:
-            joy2key_command = "\"%s\" \"%s\" %s %s %s %s %s %s %s %s %s %s" % (JOY2KEY_PATH,JOY2KEY_DEV,left, right,up,down,a,b,x,y,start,select)
-            process = subprocess.Popen(joy2key_command, shell=True)
-            return process
-
-    def find_videos(self):
-        self.m_sFileDir
-        for extension in self.m_lVideoEXT:
-            self.m_lVideoList = self.m_lVideoList + glob.glob(("%s/*.%s")%(self.m_sFileDir,extension))
-        self.m_lVideoList = sorted(self.m_lVideoList)
-        
-        counter = 0
-        for video in self.m_lVideoList:
-            if video == self.m_sFilePath:
-                self.m_nVideoPosition = counter
-            counter += 1
-        self.m_nVideoFoundNumber = counter-1
-        if self.m_nVideoFoundNumber > 1:
-            logging.info("Detected %s videos in the same folder", counter)
-            return True
-        else:
-            logging.info("Only one video to play")
-            return False
-
-    def video_options(self):
-        ch = choices()
-        ch.set_title("MULTIPLE VIDEOS FOUND")
-        ch.load_choices([
-                ("Enough with this one!", "False"),
-                ("Have Time, Play ALL FROM This...", "True"),
-            ])
-        result = ch.run()
-        return result
-
     @staticmethod
     def get_system_list():
         return ["videoplayer"]
 
+    def pre_configure(self):
+        if not os.path.isfile(JOY2KEY_PATH):
+            logging.info("closing videoplayer: can't find file: %s" % JOY2KEY_PATH)
+            self.panic("can't find joy2key", "try again!")
     # system configure vars
     def configure(self):
         if self.m_sSystem == "videoplayer":
@@ -152,5 +115,44 @@ class videoplayer(launcher):
         os.system('clear')
         sys.exit()
 
+    def launch_joy2key(self, left, right, up, down, a, b, x, y, start, select):
+        # get the first joystick device (if not already set)
+        if os.path.exists (JOY2KEY_VAR):
+            JOY2KEY_DEV = JOY2KEY_VAR
+        else:
+            JOY2KEY_DEV = "/dev/input/jsX"
+        output = commands.getoutput('ps -A')
+        if os.path.exists (JOY2KEY_PATH) and JOY2KEY_DEV != "none" and not 'joy2key.py' in output:
+            joy2key_command = "\"%s\" \"%s\" %s %s %s %s %s %s %s %s %s %s" % (JOY2KEY_PATH,JOY2KEY_DEV,left, right,up,down,a,b,x,y,start,select)
+            process = subprocess.Popen(joy2key_command, shell=True)
+            return process
+
+    def find_videos(self):
+        self.m_sFileDir
+        for extension in self.m_lVideoEXT:
+            self.m_lVideoList = self.m_lVideoList + glob.glob(("%s/*.%s")%(self.m_sFileDir,extension))
+        self.m_lVideoList = sorted(self.m_lVideoList)
+        
+        counter = 0
+        for video in self.m_lVideoList:
+            if video == self.m_sFilePath:
+                self.m_nVideoPosition = counter
+            counter += 1
+        self.m_nVideoFoundNumber = counter-1
+        logging.info("Detected %s videos in the same folder", counter)
+        if self.m_nVideoFoundNumber > 1:
+            return True
+        else:
+            return False
+
+    def video_options(self):
+        ch = choices()
+        ch.set_title("MULTIPLE VIDEOS FOUND")
+        ch.load_choices([
+                ("Enough with this one!", "False"),
+                ("Have Time, Play ALL FROM This...", "True"),
+            ])
+        result = ch.run()
+        return result
 
         
