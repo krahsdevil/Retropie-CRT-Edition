@@ -70,7 +70,8 @@ class videoplayer(launcher):
             if video == self.m_sFilePath:
                 self.m_nVideoPosition = counter
             counter += 1
-        if counter > 0:
+        self.m_nVideoFoundNumber = counter-1
+        if self.m_nVideoFoundNumber > 1:
             logging.info("Detected %s videos in the same folder", counter)
             return True
         else:
@@ -81,8 +82,8 @@ class videoplayer(launcher):
         ch = choices()
         ch.set_title("MULTIPLE VIDEOS FOUND")
         ch.load_choices([
-                ("Play Only This!", "False"),
-                ("Have Time, Play All...", "True"),
+                ("Enough with this one!", "False"),
+                ("Have Time, Play ALL FROM This...", "True"),
             ])
         result = ch.run()
         return result
@@ -98,7 +99,8 @@ class videoplayer(launcher):
 
      # just called if need rebuild the CMD
     def prepare(self):
-        if self.find_videos():
+        #if more than one video and selected is not the last
+        if self.find_videos() and (self.m_nVideoFoundNumber != self.m_nVideoPosition):
             self.m_sMultipleVideos = self.video_options()
 
     def runcommand_start(self):
