@@ -91,6 +91,8 @@ class choices(object):
     m_oClock = None
     m_lOpts = []
     m_iCurrent = 0
+    m_iUpdateScreen = 1
+    m_bShowCursor = True
     m_sSkinPath = ""
     m_SndCursor = None
     m_SndLoad = None
@@ -249,6 +251,12 @@ class choices(object):
         pygame.display.quit()
         pygame.quit()
 
+    def show(self, p_iTimeOut = 2000, p_bShowCursor = False):
+        self.m_iUpdateScreen = 1
+        self.m_bShowCursor = p_bShowCursor
+        self._update_screen()
+        pygame.time.delay(p_iTimeOut)
+
     def run(self):
         if self.oJoyHandler.get_num() < 1:
             # TODO: no opts or no joys
@@ -272,6 +280,8 @@ class choices(object):
             if event & CRT_BUTTON:
                 self.m_SndLoad.play()
                 return self._choice_select()
+            if self.m_iUpdateScreen:
+                self._update_screen()
 
     def _choice_select(self):
         result = self.m_lOpts[self.m_iCurrent]['value']
@@ -294,10 +304,11 @@ class choices(object):
             self.m_iCurrent = 0
         elif self.m_iCurrent < 0:
             self.m_iCurrent = len(self.m_lOpts) - 1
-        self._update_screen()
+        self.m_iUpdateScreen = 1
 
     def _update_screen(self):
         self._draw_screen(self.m_iCurrent)
+        self.m_iUpdateScreen = 0
 
     def _draw_screen(self, p_iSelect):
         self.m_oScreen.fill(C_BLACK)
@@ -305,7 +316,8 @@ class choices(object):
         y = self.m_oTable.position.y + self.dCFG['border_height'] + (p_iSelect * self.dCFG['font_line'])
         if self.m_oTitle:
             y += self.m_iTitleSize
-        self.m_oScreen.blit(self.c, (self.m_oTable.position.x,y))
+        if self.m_bShowCursor:
+            self.m_oScreen.blit(self.c, (self.m_oTable.position.x,y))
         pygame.display.flip()
 
 
