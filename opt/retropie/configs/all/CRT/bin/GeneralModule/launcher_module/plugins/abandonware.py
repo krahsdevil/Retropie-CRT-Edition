@@ -70,9 +70,10 @@ class abandonware(emulator):
         ch = choices()
         #ch.set_title("KEYBOARD/MOUSE")
         ch.load_choices([
-                ("BETTER WITH KEYBOARD AND MOUSE", "OK"),
+                ("BETTER EXPERIENCE WITH KEYBOARD AND MOUSE", "OK"),
             ])
-        ch.run()
+        ch.show(4000)
+        ch.cleanup()
     
     def runcommand_start(self):
         """ launch_core: run emulator!"""
