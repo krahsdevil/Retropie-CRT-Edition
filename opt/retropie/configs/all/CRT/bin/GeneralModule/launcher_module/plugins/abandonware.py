@@ -54,7 +54,7 @@ class abandonware(emulator):
 
     def configure(self):
         super(abandonware, self).configure()
-        self.key_mouse_advise()
+        self.abandonware_show_info("Play better with keyboard and mouse!")
         
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
@@ -66,18 +66,20 @@ class abandonware(emulator):
         logging.info("clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
         
-    def key_mouse_advise(self):
+    def abandonware_show_info(self, m_sMessage, m_sTitle = None):
         ch = choices()
-        #ch.set_title("KEYBOARD/MOUSE")
+        if m_sTitle:
+            ch.set_title(m_sTitle)
         ch.load_choices([
-                ("BETTER EXPERIENCE WITH KEYBOARD AND MOUSE", "OK"),
+                (m_sMessage, "OK"),
             ])
-        ch.show(4000)
+        ch.show(3000)
         ch.cleanup()
     
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         if "+Start " in self.m_sGameName:
+            self.abandonware_show_info("Launching SCUMMVM Configurator!")
             commandline = "%s bash \"%s\" > /dev/null 2>&1" % (self.m_sSleeper, self.m_sFilePath)
             self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
             logging.info("Subprocess running: %s", commandline)
