@@ -78,7 +78,8 @@ class amiga(amiga):
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         if "+Start Amiberry" in self.m_sGameName:
-            commandline = "%s bash \"%s\" > /dev/null 2>&1" % (self.m_sSleeper, self.m_sFilePath)
+            self.amiberry_show_info("Launching AMIBERRY Configurator!")
+            commandline = "%s bash \"%s\"" % (self.m_sSleeper, self.m_sFilePath)
             self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
             logging.info("Subprocess running: %s", commandline)
             self.runcommand_wait()
