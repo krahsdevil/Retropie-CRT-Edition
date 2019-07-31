@@ -14,3 +14,4 @@ Boot, configure controls on ES and go to 'Screen Utilies' under 'CRT Config' for
 Maybe some professional monitors like SONY PVM, BVM or DTV could face some resolution problems, most of TV or monitors seems to work great with super-resolutions.
 
 _Please take a look to our [Wiki](https://github.com/krahsdevil/crt-for-retropie/wiki) (in progress)_
+_You can also follow at  [EOL Forum](https://www.elotrolado.net/hilo_retropie-crt-edition-raspberry-pi-2b-3b-3b-tv-15khz-vga666-pi2scart-rgb-pi_2328132)_
