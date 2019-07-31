@@ -156,8 +156,9 @@ class choices(object):
         self.m_lOpts = []
         self.m_oTitle = None
 
-    def load_choices(self, p_lOpts):
-        for opt in p_lOpts:
+    def load_choices(self, p_lRecevOpts):
+        self.m_lOpts = []
+        for opt in p_lRecevOpts:
             logging.info(str(opt))
             self._add_opt(opt)
         self._table_render()
