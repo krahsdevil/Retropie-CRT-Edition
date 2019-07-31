@@ -17,6 +17,8 @@ XMLStringCRT = "  <system>\n    <name>1CRT</name>\n    <fullname>CRT Utilities</
 
 XMLStringVideoPlayer = "  <system>\n    <name>videoplayer</name>\n    <fullname>Video Player</fullname>\n    <path>/home/pi/RetroPie/roms/videos</path>\n    <extension>.mkv .avi .mp4 .mpg .MKV .AVI .MP4 .MPG</extension>\n    <command>python /opt/retropie/configs/all/CRT/bin/GeneralModule/emulator_launcher.py %ROM% videoplayer dummy</command>\n    <platform>videoplayer</platform>\n    <theme>videoplayer</theme>\n  </system>\n"
 
+XMLStringRetropie = "  <system>\n    <name>retropie</name>\n    <fullname>RetroPie</fullname>\n    <path>/home/pi/RetroPie/retropiemenu</path>\n    <extension>.rp .sh</extension>\n    <command>sudo /home/pi/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% &lt;/dev/tty &gt;/dev/tty</command>\n    <platform/>\n    <theme>retropie</theme>\n    </system>\n"
+
 
 SYSTEMS = {
     "pcenginecd": { "core": "pcenginecd", "check": False, "xml": XMLStringPCEnginceCD, "theme": "pcenginecd" },
@@ -26,6 +28,6 @@ SYSTEMS = {
     "fba-tate": { "core": "fba", "check": False, "xml": XMLStringFBATate, "theme": "fba_libretro_tate" },
     "1CRT": { "core": "", "check": False, "xml": XMLStringCRT, "theme": "crt" },
     "videoplayer": { "core": "videoplayer", "check": False, "xml": XMLStringVideoPlayer, "theme": "videoplayer" },
-    "retropie": { "core": "", "check": False, "xml": None, "theme": "retropie" },
+    "retropie": { "core": "", "check": False, "xml": XMLStringRetropie, "theme": "retropie" },
 }
 
