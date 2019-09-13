@@ -74,9 +74,9 @@ RaspbianCFG = "/boot/config.txt"
 def draw_move_pattern(offsetX,offsetY,width):
     fullscreen.fill(black)
     patternPath = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/media/screen_center_utility_su_crosshatch.png')
-    patternPath = pygame.transform.smoothscale(patternPath,(x_screen_ui+(2*(width*2)),(y_screen_ui+(2*height))))
+    patternPath = pygame.transform.smoothscale(patternPath,((x_screen_ui+width+width)+(2*(width*2)),(y_screen_ui+(2*height))))
     patternPathPos = patternPath.get_rect()
-    patternPathPos.center = (((x_screen/2)+(offsetX*4)), ((y_screen/2)+offsetY))
+    patternPathPos.center = (((x_screen/2)+(offsetX*4)-int(8-(width/2))), ((y_screen/2)+offsetY))
     fullscreen.blit(patternPath, patternPathPos)
 
     myfont = pygame.font.Font("/opt/retropie/configs/all/CRT/config/PetMe64.ttf", 8)
@@ -341,7 +341,7 @@ def calculate_RAW_Resolution(H_Res, V_Res, R_Rate, H_Pos, H_Zoom, V_Pos, H_FP, H
     hdmi_timings = "raw %s 1 %s %s %s %s 1 %s %s %s 0 0 0 %s 0 %s 1" % (H_Res,H_FP,H_Sync,H_BP,V_Res,V_FP,V_Sync,V_BP,R_Rate,Pixel_Clock)
     return hdmi_timings
 
-def Find_Apply_Amplied_Res_RAW(CFGFile,CFGFile2,CFGFile3,ApplyRes):
+def Find_Apply_Amplied_Res_RAW(CFGFile,CFGFile2,ApplyRes):
     global x_screen_ui
     global y_screen_ui
     global x_screen
@@ -361,21 +361,14 @@ def Find_Apply_Amplied_Res_RAW(CFGFile,CFGFile2,CFGFile3,ApplyRes):
             line = line.strip().replace('=',' ').split(' ')
             if line[0] == srchoffsetx:
                 offsetX = int(line[1])
-            elif line[0] == srchsystem:
-                TimmingsA = line[1:] + line[11:]
             elif line[0] == srchoffsety:
                 offsetY = int(line[1])
             elif line[0] == srchwidth:
                 width = int(line[1])
             elif line[0] == srchheight:
                 height = int(line[1])
-                
-    with open (CFGFile2, 'r') as file:
-        for line in file:
-            line = line.strip().replace('=',' ').split(' ')
-            if line[0] == DefSystemRes:
+            elif line[0] == srchsystem:
                 timings = line
-                TimmingsB = line[1:] + line[11:]
                 # Get values from 'timings'
                 H_Res = int(timings[1])
                 V_Res = int(timings[2])
@@ -388,25 +381,20 @@ def Find_Apply_Amplied_Res_RAW(CFGFile,CFGFile2,CFGFile3,ApplyRes):
                 H_BP = int(timings[9])
                 V_Sync = int(timings[10])
                 H_Freq = int(timings[11])
-    #DISABLED PENDING OF NEW FIX MASK 
-    #if TimmingsA != TimmingsB:
-    #    sys.exit()
-    #APPLY VIDEO COMPATIBILITY MODE
-    if os.path.exists(CFGFile3):
-        with open(CFGFile3, 'r') as file:
+                
+    if os.path.exists(CFGFile2):
+        with open(CFGFile2, 'r') as file:
             for line in file:
                 line = line.strip().replace('=',' ').split(' ')
                 if line[0] == 'mode_default':
                     SelectedMode = line[1]
         if SelectedMode.lower() != 'default':
-            with open(CFGFile3, 'r') as file:
+            with open(CFGFile2, 'r') as file:
                 for line in file:
                     mask = line.strip().replace('=',' ').split(' ')
                     if mask[0] == '%s_game_mask'%SelectedMode:
                         GameMask = line.replace('%s_game_mask'%SelectedMode,'').strip().split(' ')
             GameMask[0] = int((int(H_Res)-(int(MaxXFact)*2)*int(GameMask[0]))/int(H_Res))
-            #GameMask[3] = int((int(H_Pos)*int(GameMask[3]))/int(H_Pos))
-            #GameMask[4] = int((int(H_Zoom)*int(GameMask[4]))/int(H_Zoom))
             GameMask[6] = int(ceil(((int(H_FP)-8)*int(GameMask[6]))/int(H_FP)))
             GameMask[7] = int(ceil(((int(H_Sync)-24)*int(GameMask[7]))/int(H_Sync)))+1
             GameMask[8] = int(ceil(((int(H_BP)-32)*int(GameMask[8]))/int(H_BP)))
@@ -425,12 +413,10 @@ def Find_Apply_Amplied_Res_RAW(CFGFile,CFGFile2,CFGFile3,ApplyRes):
 
     x_screen = H_Res
     y_screen = V_Res
-    H_Res = int(H_Res-(MaxXFact*2))
-    x_screen_ui = int(H_Res)
+    x_screen_ui = 1820
     y_screen_ui = int(V_Res)
-    H_Sync = int(H_Sync-24)
-    H_BP = int(H_BP-32)
-    H_FP = int(H_FP-8)
+
+    os.system('echo %s %s %s %s %s %s %s %s %s %s %s >> /tmp/prob.txt'%(H_Res,V_Res,R_Rate,H_Pos,H_Zoom,V_Pos,H_FP,H_Sync,H_BP,V_Sync,H_Freq))
 
     # Open Screen Function
     RAW_hdmi_timings = calculate_RAW_Resolution(H_Res, V_Res, R_Rate, H_Pos, H_Zoom, V_Pos, H_FP, H_Sync, H_BP, V_Sync, H_Freq)
@@ -458,21 +444,17 @@ def Find_Apply_Amplied_Res_RAW(CFGFile,CFGFile2,CFGFile3,ApplyRes):
     else:
         MaxYFact = int(t10-1)
     
-    MAXWidth = int(100/4)
-    MAXoffsetX = int(100/4)
+    MAXWidth = int(MaxXFact/4)
+    MAXoffsetX = int(MaxXFact/4)
     MAXHeight = 0
     MAXoffsetY = int(MaxYFact)
-    
-    t1 = int(t1+2*MaxXFact)
-    t3 = int(t3-MaxXFact)
-    t5 = int(t5-MaxXFact)
     
     t6 = int(t6+2*MaxYFact)
     t8 = int(t8-MaxYFact)
     t10 =int(t10-MaxYFact)
 
     hdmi_timings = "vcgencmd hdmi_timings %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s > /dev/null" % (t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17)
-    
+    os.system('echo %s >> /tmp/prob.txt' % hdmi_timings)
     os.system(hdmi_timings)
     os.system('fbset -depth 8 && fbset -depth 24')
     os.system('fbset -xres %s -yres %s'%(t1,t6))
@@ -488,7 +470,7 @@ srchoffsety = 'test60_offsetY'
 srchwidth = 'test60_width'
 srchheight = 'test60_height'
 
-Find_Apply_Amplied_Res_RAW(VideoUtilityCFG,BaseSystemsTimings,CompModesCFG,True)
+Find_Apply_Amplied_Res_RAW(VideoUtilityCFG,CompModesCFG,True)
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 pygame.display.init()
