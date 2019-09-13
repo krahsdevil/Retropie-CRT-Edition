@@ -53,7 +53,7 @@ class sega(selector):
 
     @staticmethod
     def get_system_list():
-        return ["none"]
+        return ["megadrive", "segacd", "sega32x", "mastersystem"]
 
     def post_configure(self):
         super(sega, self).post_configure()

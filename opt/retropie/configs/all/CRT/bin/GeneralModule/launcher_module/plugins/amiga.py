@@ -45,11 +45,7 @@ class amiga(amiga):
         return ["amiga"]
 
     def configure(self):
-        """
-        1) Identifies those emulators not need --append config, this only for retroarch
-        2) Preconfigure amiga50.cfg for lr-puae
-        """
-        self.m_lBinaryUntouchable = ["amiberry", "amiberry-a500", "amiberry-a1200"]
+        self.m_lBinaryUntouchable = ["amiberry", "amiberry-a500", "amiberry-a1200"] #Identifing emulators that is not necesary to change
         self.m_sSystemFreq = "amiga50"
         self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
         self.m_sSystemCfg = self.m_sSystemFreq + ".cfg"
@@ -66,22 +62,21 @@ class amiga(amiga):
 
     def runcommand_generate(self, p_sCMD):
         current_cmd = super(amiga, self).runcommand_generate(p_sCMD)
+
         #Check if a VALID binary of the list must be excluded of the --appendconfig flag addition:
         if (self.m_sNextValidBinary in self.m_lBinaryUntouchable) or (not self.m_sSystemCfgPath):
             return current_cmd
+
         # update system_custom_cfg, used in ra_check_version
         append_cmd = "--appendconfig %s" % self.m_sSystemCfgPath
         append_cmd += " " + self.m_sFileNameVar
+        
         #Save first VALID binary selection, later will be compared if change and close
         self.m_sAmigaFirstBinary = self.m_sBinarySelected
         return current_cmd.replace(self.m_sFileNameVar, append_cmd)
 
     def runcommand_start(self):
-        """ 
-        If launching Amiberry Configurator ensure Amiberry resolution
-        config even though selected emulator is lr-puae
-        Else, follow standar procedure
-        """
+        """ launch_core: run emulator!"""
         if "+Start Amiberry" in self.m_sGameName:
             self.amiberry_show_info("Launching AMIBERRY Configurator!")
             commandline = "%s bash \"%s\"" % (self.m_sSleeper, self.m_sFilePath)
