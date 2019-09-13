@@ -27,6 +27,7 @@ from math import ceil, floor
 from launcher_module.core_paths import CRTROOT_PATH, CRTBIN_PATH
 from launcher_module.file_helpers import ini_get, ini_getlist
 
+
 CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/utility.cfg")
 CFG_COMPMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
 DEFAULT_SCREEN_BIN = os.path.join(CRTROOT_PATH, "Datas/default.sh")
@@ -109,7 +110,6 @@ class CRT(object):
         self.p_sTimingPath = p_sTimingCfgPath
         lValues = self.get_values()
         self.timing_parse_arcade(lValues)
-        self._arcade_encapsulator()
         lValues = self.get_fix_tv('%s_game_mask')
         if lValues:
             self.timing_parse_calculated(lValues)
@@ -256,21 +256,6 @@ class CRT(object):
         os.system(DEFAULT_SCREEN_BIN) # show to user default resolution used
         return DEFAULT_RES
 
-    def _arcade_encapsulator(self):
-        # Center a little but don't launch the encapsulator
-        if self.m_dData["V_Res"] == 240:
-            self.m_dData["V_Pos"] -= 5
-
-        # Launch the encapsulator
-        if self.m_dData["V_Res"] > 240:
-            select = selector_encapsulate()
-            if select == 1: # Encapsulate
-                self.m_dData["H_Freq"] = 15840
-                self.m_dData["V_Pos"] += 10
-            elif self.m_dData["R_Rate"] < 55: # Cropped if is under 55Hz
-                self.m_dData["H_Freq"] = 15095
-                self.m_dData["V_Pos"] -= 10
-
     def _calculated_adjustement(self):
         # Scaling Front and back porch horizontals according to horizontal position and horizontal zoom settings.
         # H_Zoom*4 - H_Pos*4 MUST BE < to H_FP to not use negative value.
@@ -337,6 +322,3 @@ class CRT(object):
         os.system(p_sCMD)
         os.system("fbset -depth 8 && fbset -depth 24")
 
-
-def selector_encapsulate(self):
-    return 0

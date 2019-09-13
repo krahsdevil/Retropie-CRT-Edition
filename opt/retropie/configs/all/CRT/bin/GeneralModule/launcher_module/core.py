@@ -128,6 +128,8 @@ class launcher(object):
         new_cmd += CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
         new_cmd += p_sCMD + "\""
         return new_cmd
+        # --apendconfig must be added on each plugin if needed
+        # usually for retroarch.
 
     def runcommand_clean(self, p_sCMD):
         # first remove quotes
