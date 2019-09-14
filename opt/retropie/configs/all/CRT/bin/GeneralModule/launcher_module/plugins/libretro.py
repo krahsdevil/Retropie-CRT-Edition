@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, re, logging
+import os, re, logging, commands
 from distutils.version import LooseVersion
 from launcher_module.core import CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH
 from launcher_module.emulator import emulator
@@ -89,10 +89,11 @@ class libretro(emulator):
         f.close()
         ra_version = None
         for line in full_lines:
-            lValues = line.strip().split(' ')
-            if ra_hash == lValues[1]:
-                ra_version = lValues[2]
-                break
+            if line != "\n":
+                lValues = line.strip().split(' ')
+                if ra_hash == lValues[1]:
+                    ra_version = lValues[2]
+                    break
         # update file if not found
         if not ra_version:
             ra_output = commands.getoutput("%s --version" % RETROARCH_BINARY_FILE)
