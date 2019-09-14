@@ -62,6 +62,11 @@ class selector(libretro):
         # first i try to find an allowed freq
         if self.m_sSelectFreq in ALLOWED_FREQS:
             logging.info("Frequency selector always %sHz" % self.m_sSelectFreq)
+            if self.m_sSelectFreq == "50":
+                AutoSelection = "FORCED TO 50Hz / PAL"
+            elif self.m_sSelectFreq == "60":
+                AutoSelection = "FORCED TO 60Hz / NTSC"
+            self.show_auto_selection(AutoSelection)
         elif self.m_sSelectFreq == "100":
             logging.info("Frequency selector mode auto")
             self.m_sSelectFreq = self.frecuency_auto()
@@ -90,7 +95,7 @@ class selector(libretro):
                     AutoSelection = "AUTO: 50Hz / PAL"
                 elif sFrequency == "60":
                     AutoSelection = "AUTO: 60Hz / NTSC"
-                self.show_auto_selection(AutoSelection)                    
+                self.show_auto_selection(AutoSelection)
         return sFrequency
 
     def show_auto_selection(self, m_sMessage, m_sTitle = None):
