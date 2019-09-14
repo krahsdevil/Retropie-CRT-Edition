@@ -99,9 +99,6 @@ class arcade(emulator):
                     self.m_oCRT.m_sSide_Game = 'V1'
                 elif self.m_oCRT.m_iRSys == -90:
                     self.m_oCRT.m_sSide_Game = 'V3'
-                if self.cfg_vres == 240:
-                    #Vertal Centering for vertical games
-                    self.cfg_offsety -= 4
                 self.ra_config_create()
             else:
                 if self.m_oCRT.m_iRGame == -90:
@@ -113,9 +110,6 @@ class arcade(emulator):
                     self.ra_config_create(p_bSmooth = True)
                 else:
                     self.m_oCRT.m_sSide_Game = 'V1'
-                    if self.cfg_vres == 240:
-                        #Vertal Centering for vertical games
-                        self.cfg_offsety -= 4
                     self.ra_config_create()
                     
     def ra_config_create(self, p_bSmooth = False):
@@ -155,11 +149,8 @@ class arcade(emulator):
     def adv_config_generate(self):
         display_ror = "no"
         display_rol = "no"
-        skiplines = "auto"
+
         if self.m_oCRT.m_sSide_Game == 'V':
-            if self.m_dVideo["V_Res"] == 240 and self.m_oCRT.m_iRGame != -90:
-                #Vertal Centering for vertical games
-                skiplines = "4"
             if (self.m_oCRT.m_iRGame == 0 and self.m_oCRT.m_iRSys != -90) or self.m_oCRT.m_iRSys == 90:
                 display_ror = "yes"
             elif self.m_oCRT.m_iRSys == -90:
@@ -179,7 +170,6 @@ class arcade(emulator):
         modify_line(RC_ADVANCEDMAME_FILE, "display_resizeeffect ", "display_resizeeffect none")
         modify_line(RC_ADVANCEDMAME_FILE, "display_resize ", "display_resize none")
         modify_line(RC_ADVANCEDMAME_FILE, "display_mode ", "display_mode generate")
-        modify_line(RC_ADVANCEDMAME_FILE, "display_skiplines ", "display_skiplines %s" % skiplines)
         
     def arcade_config_generate(self):
         #Check if libretro core of advmame is selected whitin
@@ -192,10 +182,12 @@ class arcade(emulator):
             self.adv_config_generate()
 
     def arcade_encapsulator(self):
-        # Launch the encapsulator
-        #if self.m_dVideo["V_Res"] == 240:
-        #    self.m_dVideo["V_Pos"] -= int(4)
-            
+
+        # Small centering if vertical resolution is 240 lines
+        if self.m_dVideo["V_Res"] == 240:
+            self.m_dVideo["V_Pos"] -= int(1)
+
+        # Launch the encapsulator if vertical resolution is above 240 lines
         if self.m_dVideo["V_Res"] > 240:
             select = self.encapsulator_selector()
             if select == "FORCED": # Encapsulate
