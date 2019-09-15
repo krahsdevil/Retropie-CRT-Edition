@@ -349,15 +349,15 @@ def screen_center_utility_ingame():
 
 def test_suite():
     save()
-    TestSuiteRom = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/240pSuite.sfc"
+    TestSuiteRom = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/240pSuite.bin"
     timings_full_path = "/opt/retropie/configs/all/CRT/Resolutions/base_systems.cfg"
-    ra_cfg_path = "/opt/retropie/configs/all/CRT/Retroarch/configs/snes.cfg"
+    ra_cfg_path = "/opt/retropie/configs/all/CRT/Retroarch/configs/megadrive.cfg"
     ra_bin_path = "/opt/retropie/emulators/retroarch/bin/retroarch"
-    snes_core = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/snes9x2010_libretro.so"
+    retroarch_core = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/genesis_plus_gx_libretro.so"
     Check_RetroArch_Version(ra_cfg_path)
-    crt_open_screen_from_timings_cfg('snes',timings_full_path)
+    crt_open_screen_from_timings_cfg('megadrive',timings_full_path)
     pygame.quit()
-    commandline = "%s -L %s --config /opt/retropie/configs/snes/retroarch.cfg --appendconfig %s \"%s\" > /dev/null 2>&1" % (ra_bin_path,snes_core,ra_cfg_path,TestSuiteRom)
+    commandline = "%s -L %s --config /opt/retropie/configs/megadrive/retroarch.cfg --appendconfig %s \"%s\" > /dev/null 2>&1" % (ra_bin_path,retroarch_core,ra_cfg_path,TestSuiteRom)
     os.system(commandline)
     es_restore_screen()
     get_xy_screen()
