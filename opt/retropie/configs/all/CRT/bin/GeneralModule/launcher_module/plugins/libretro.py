@@ -41,7 +41,7 @@ class libretro(emulator):
 
     @staticmethod
     def get_system_list():
-        return ["sg-1000", "fds", "pcengine", "neogeo", "coleco", "atari7800",
+        return ["sg-1000", "fds", "pcengine", "coleco", "atari7800",
                 "vectrex", "pcenginecd", "zxspectrum", "amstradcpc"]
 
     # system configure vars
