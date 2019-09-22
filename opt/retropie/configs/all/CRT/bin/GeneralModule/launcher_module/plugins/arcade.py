@@ -34,7 +34,7 @@ class arcade(arcade):
 
     @staticmethod
     def get_system_list():
-        return ["arcade", "mame-advmame", "mame-libretro", "fba"]
+        return ["arcade", "mame-advmame", "mame-libretro", "fba", "neogeo"]
 
     def pre_configure(self):
         self.m_lBinaryUntouchable = ["advmame"] #Identifing emulators that is not necesary to change
