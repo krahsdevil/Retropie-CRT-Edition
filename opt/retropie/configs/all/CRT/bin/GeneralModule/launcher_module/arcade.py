@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, shutil
+import os, logging, shutil, math
 from launcher_module.core import RETROPIECFG_PATH, CRTROOT_PATH, TMP_LAUNCHER_PATH
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
@@ -55,6 +55,8 @@ class arcade(emulator):
     cfg_offsety = 0
     cfg_hres = 0
     cfg_vres = 0
+    cfg_scaleint = "false"
+    cfg_ghres = 0 #Real Horizontal Resolution of the game
 
     def start(self):
         self.get_screen_res_ready()
@@ -70,6 +72,8 @@ class arcade(emulator):
             self.m_sPathScreenDB = DB_MAME037
         elif "2010" in self.m_sBinarySelected:
             self.m_sPathScreenDB = DB_MAME139
+        elif "fbneo" in self.m_sBinarySelected:
+            self.m_sPathScreenDB = DB_FBALPHA
         elif "fbalpha" in self.m_sBinarySelected:
             self.m_sPathScreenDB = DB_FBALPHA
         elif "advmame" in self.m_sBinarySelected:
@@ -88,9 +92,10 @@ class arcade(emulator):
     def ra_config_generate(self):
         self.cfg_hres = self.m_dVideo["H_Res"]
         self.cfg_vres = self.m_dVideo["V_Res"]
+        self.cfg_ghres = self.m_dVideo["Game_H_Res"]
         self.cfg_offsetx = 0
         if self.m_oCRT.m_sSide_Game != 'V':
-            #self.arcade_encapsulator()
+            self.ra_integer_calculator()
             self.ra_config_create()
             return
         else:
@@ -116,11 +121,12 @@ class arcade(emulator):
         self.ra_config_write(p_bSmooth)
 
     def ra_config_write(self, p_bSmooth):
-        logging.info("result - w %s, h %s (%s/%s) - %sHz - s[%s] smooth{%s}" % (
+        logging.info("result - w %s, h %s (%s/%s) - scale integer{%s} - %sHz - s[%s] smooth{%s}" % (
             self.cfg_hres,
             self.cfg_vres,
             self.cfg_offsetx,
             self.cfg_offsety,
+            self.cfg_scaleint,
             self.m_dVideo["R_Rate"],
             self.m_oCRT.m_sSide_Game,
             p_bSmooth
@@ -145,6 +151,21 @@ class arcade(emulator):
             add_line(TMP_ARCADE_FILE, 'video_rotation = "1"')
         elif self.m_oCRT.m_sSide_Game == "V1":
             add_line(TMP_ARCADE_FILE, 'video_rotation = "3"')
+
+        # Video Scale Integer activation
+        modify_line(TMP_ARCADE_FILE, "video_scale_integer =", 'video_scale_integer = "%s"' % self.cfg_scaleint)
+
+    def ra_integer_calculator(self):
+        if self.cfg_ghres != 0:
+            int_multiplier = self.cfg_hres/(self.cfg_ghres*1.0)
+            self.cfg_hres = self.cfg_ghres*int(math.ceil(int_multiplier))
+            if (math.ceil(int_multiplier)-0.5) >= int_multiplier:
+                #manual center if divider from H_Res and Game_H_Res is below x.5
+                self.cfg_offsetx -= 64
+            else:
+                #Horizontal auto center through 'video_scale_integer'
+                self.cfg_scaleint = "true"
+            logging.info("game h_res: %s - Calculated Int_Multiplier: %s" % (self.cfg_ghres,int_multiplier))
 
     def adv_config_generate(self):
         display_ror = "no"
@@ -182,9 +203,8 @@ class arcade(emulator):
             self.adv_config_generate()
 
     def arcade_encapsulator(self):
-
         # Small centering if vertical resolution is 240 lines
-        if self.m_dVideo["V_Res"] == 240:
+        if self.m_dVideo["V_Res"] == 240 and self.m_oCRT.m_sSide_Game != "H":
             self.m_dVideo["V_Pos"] -= int(1)
 
         # Launch the encapsulator if vertical resolution is above 240 lines

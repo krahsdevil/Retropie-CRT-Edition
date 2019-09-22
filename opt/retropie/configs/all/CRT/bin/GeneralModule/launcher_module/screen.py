@@ -60,6 +60,7 @@ class CRT(object):
                 "V_Pos": 0,     # V_Pos   - Vertical position of the screen (-10 to 10)
                 "H_Freq": 0,    # H_Freq  - Horizontal frequency of the screen. (15500 to 16000)
                 # -------------------------------------
+                "Game_H_Res": 0,    # H_Res   - Real Horizontal resolution of the game                
 
                 # WARNING, all these values are intrinsically linked. If your screen is desynchronized, quickly reboot the RPI.
                 # Some values will be limited due to other values.
@@ -144,6 +145,11 @@ class CRT(object):
 
     def timing_parse_arcade(self, p_lTimings):
         self.m_sSide_Game = p_lTimings[12]
+        try:
+            self.m_dData["Game_H_Res"] += int(p_lTimings[13])
+            logging.info("found real H_Res of the game: %s" % str(self.m_dData["Game_H_Res"]))
+        except:
+            logging.info("not found in DB real H_Res of the game")
         self.timing_parse_calculated(p_lTimings)
         return self.m_dData
 
