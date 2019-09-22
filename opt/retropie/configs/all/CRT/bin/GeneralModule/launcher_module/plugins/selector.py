@@ -85,17 +85,22 @@ class selector(libretro):
 
 
     def frecuency_auto(self):
+        bFreqFound = False
         sFrequency = self.m_oFreqDB.find(self.m_sCompactedName)
-        if not sFrequency:
+        if sFrequency:
+            bFreqFound = True
+        else:
             sFrequency = self.frequency_by_name()
             if not sFrequency:
                 sFrequency = self.frequency_manual()
             else:
-                if sFrequency == "50":
-                    AutoSelection = "AUTO: 50Hz / PAL"
-                elif sFrequency == "60":
-                    AutoSelection = "AUTO: 60Hz / NTSC"
-                self.show_auto_selection(AutoSelection)
+                bFreqFound = True
+        if bFreqFound:
+            if sFrequency == "50":
+                AutoSelection = "AUTO: 50Hz / PAL"
+            elif sFrequency == "60":
+                AutoSelection = "AUTO: 60Hz / NTSC"
+            self.show_auto_selection(AutoSelection)
         return sFrequency
 
     def show_auto_selection(self, m_sMessage, m_sTitle = None):
