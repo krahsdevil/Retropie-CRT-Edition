@@ -153,9 +153,24 @@ class arcade(emulator):
             add_line(TMP_ARCADE_FILE, 'video_rotation = "3"')
 
         # Video Scale Integer activation
-        modify_line(TMP_ARCADE_FILE, "video_scale_integer =", 'video_scale_integer = "%s"' % self.cfg_scaleint)
+        modify_line(TMP_ARCADE_FILE, "video_scale_integer =",
+                    'video_scale_integer = "%s"' % self.cfg_scaleint)
 
     def ra_integer_calculator(self):
+        """
+        Integer scaling function.
+        This function find for the real horizontal size of the game in selected database,
+        and must be located just after game side:
+
+        Example:
+        gpilots 1920 224 60.000000 -4 -27 3 48 192 240 5 15734 mame078_libretro.so H [304] <- This last
+        
+        If exist and this option is enabled on config, system will find the exact multiplier for 
+        integer scale, just above of hardware horizontal resolution, tipically 1920.
+        Image will be oversized a little bit on sides but we can espect better internal performance
+        and horizontal pixel perfect.
+        If real resolution is found in DB then self.m_dVideo["Game_H_Res"] will be different of '0'.
+        """
         if self.cfg_ghres != 0:
             int_multiplier = self.cfg_hres/(self.cfg_ghres*1.0)
             self.cfg_hres = self.cfg_ghres*int(math.ceil(int_multiplier))
