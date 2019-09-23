@@ -31,6 +31,7 @@ from launcher_module.arcade import arcade, TMP_ARCADE_FILE
 
 class arcade(arcade):
     m_oConfigureFunc = None
+    m_bIntegerScale = False
 
     @staticmethod
     def get_system_list():
@@ -51,6 +52,10 @@ class arcade(arcade):
             self.m_oConfigureFunc = self.ra_config_generate
             self.m_lBinaryMasks = ["lr-"]
             self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
+            
+        if ini_get(CFG_VIDEOUTILITY_FILE, "integer_scale") == "1":
+            self.m_bIntegerScale = True
+            logging.info("enabled integer scale for arcade/neogeo")
 
     def config_generate(self):
         self.m_oConfigureFunc()

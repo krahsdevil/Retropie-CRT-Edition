@@ -134,8 +134,8 @@ def text_print(txt, xcoord, ycoord, r, g, b, center):
     else:
         fullscreen.blit(myfont.render(txt, 1, (r,g,b)), (xcoord, ycoord))
 
-def draw_arrow_left():
-    fullscreen.blit((myfont.render('<<', 1, (arrow_c))), (data_x-(len(str(opt[option][2]))*8)-18, (30+y_margin+LineMov)+y*Interline))
+def draw_arrow_left(add_space=0):
+    fullscreen.blit((myfont.render('<<', 1, (arrow_c))), (data_x-(len(str(opt[option][2]))*8)-18-(8*add_space), (30+y_margin+LineMov)+y*Interline))
 
 def draw_arrow_right():
     fullscreen.blit((myfont.render('>>', 1, (arrow_c))), (data_x+2, (30+y_margin+LineMov)+y*Interline))
@@ -147,6 +147,7 @@ def save():
     modificarLinea(VideoUtilityCFG,'frontend_rotation','frontend_rotation %s'%opt[1][2])
     modificarLinea(VideoUtilityCFG,'handheld_bezel','handheld_bezel %s'%opt[2][2])
     modificarLinea(VideoUtilityCFG,'freq_selector','freq_selector %s'%opt[3][2])
+    modificarLinea(VideoUtilityCFG,'integer_scale','integer_scale %s'%opt[6][2])
 def Check_BackGround_Music():
     global opt
     global ServiceRunning
@@ -159,7 +160,7 @@ def Check_BackGround_Music():
         ServiceExist = True
         if 'running' in CheckService:
             ServiceRunning = True
-            opt[5][2] = "ON"
+            opt[5][2] = "YES"
         else:
             ServiceRunning = False
             opt[5][2] = "OFF"
@@ -275,7 +276,7 @@ opt = [["1.GAMES ROTATION" , "Not PixelPerfect but playable on AdvMAME" , 0],
     ["4.FREQUENCY SELECTOR" , "Set Frequency at 50/60hz, Auto or Manual" , 0],
     ["5.VIDEO CONFIG>" , "Advanced Video Configuration"],
     ['6.BACKGROUND MUSIC' , 'Play your music with emulationstation', 0],
-    ['none' , 'none'],
+    ['7.INTEGER SCALE' , 'ONLY for Arcade and NEOGEO Games', 0],
     ['none' , 'none'],
     ["<EXIT" , "Save and Exit"]]
 
@@ -301,6 +302,8 @@ def get_config():
                 opt[2][2] = int(line[1])
             elif line[0] == 'freq_selector':
                 opt[3][2] = int(line[1])
+            elif line[0] == 'integer_scale':
+                opt[6][2] = int(line[1])
             elif line[0] == '240p_theme_horizontal':
                 HorTheme240p = line[1]
             elif line[0] == '270p_theme_horizontal':
@@ -374,7 +377,7 @@ def draw_menu():
     #title and credits
     title = myfont.render("Configuration Utility", 1, (165,165,255))
     fullscreen.blit(title, (32, y_margin+8))
-    text_print("v2.1", x_screen-62, y_margin+8, 110, 110, 255, False)
+    text_print("v3.0", x_screen-62, y_margin+8, 110, 110, 255, False)
 
     #last options
     #text_print('last rotation = ' + str(opt[4][3]), 0, 0, 255, 0, 0)
@@ -386,11 +389,11 @@ def draw_menu():
     #list
     for i in range(0,9):
         option = y+y_slide
-        if (i+y_slide <= 5 or i+y_slide == 8) and RotateFrontEnd == False:
+        if (i+y_slide <= 6 or i+y_slide == 8) and RotateFrontEnd == False:
             opt[8][0] = '<EXIT'
             opt[8][1] = 'Save and Exit'
             fullscreen.blit((myfont.render(opt[i+y_slide][0], 1, (165,165,255))), (list_x, (30+y_margin+LineMov)+i*Interline))
-        elif (i+y_slide <= 5 or i+y_slide == 8) and RotateFrontEnd == True:
+        elif (i+y_slide <= 6 or i+y_slide == 8) and RotateFrontEnd == True:
             opt[8][0] = '<RESTART'
             opt[8][1] = 'Restart FrontEnd for TATE Mode'
             if i+y_slide == 1 or i+y_slide == 8:
@@ -404,7 +407,25 @@ def draw_menu():
     for i in range(0,9):
         option = y+y_slide
         if RotateFrontEnd == False:
-            if i == 3:
+            if i == 0:
+                if opt[0][2] == 0:
+                    select = myfont.render("OFF", 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                else:
+                    select = myfont.render(str(opt[i][2]), 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 1:
+                if opt[1][2] == 0:
+                    select = myfont.render("OFF", 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 2:
+                if opt[2][2] == 0:
+                    select = myfont.render("OFF", 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[2][2] == 1:
+                    select = myfont.render("YES", 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 3:
                 if opt[3][2] == 0:
                     select = myfont.render("MAN", 1, (165,165,255))
                     fullscreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
@@ -414,13 +435,32 @@ def draw_menu():
                 else:
                     select = myfont.render(str(opt[3][2]), 1, (165,165,255))
                     fullscreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 6:
+                if opt[6][2] == 0:
+                    select = myfont.render("NO", 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len("NO")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[6][2] == 1:
+                    select = myfont.render("YES", 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
             elif i < 3 or i == 5:
                 strpor = myfont.render(str(opt[i][2]), 1, (165,165,255))
                 fullscreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
+
         else:
-            if i == 1:
+            if i == 0:
+                if opt[0][2] == 0:
+                    select = myfont.render("OFF", 1, (110,110,255))
+                    fullscreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 1:
                 strpor = myfont.render(str(opt[i][2]), 1, (165,165,255))
                 fullscreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 2:
+                if opt[2][2] == 0:
+                    select = myfont.render("OFF", 1, (110,110,255))
+                    fullscreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[2][2] == 1:
+                    select = myfont.render("YES", 1, (110,110,255))
+                    fullscreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
             elif i == 3:
                 if opt[3][2] == 0:
                     select = myfont.render("MAN", 1, (110,110,255))
@@ -431,6 +471,13 @@ def draw_menu():
                 else:
                     select = myfont.render(str(opt[3][2]), 1, (110,110,255))
                     fullscreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 6:
+                if opt[6][2] == 0:
+                    select = myfont.render("NO", 1, (110,110,255))
+                    fullscreen.blit(select, (data_x-(len("NO")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[6][2] == 1:
+                    select = myfont.render("YES", 1, (110,110,255))
+                    fullscreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
             elif i < 3 or i == 5:
                 strpor = myfont.render(str(opt[i][2]), 1, (110,110,255))
                 fullscreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
@@ -449,13 +496,31 @@ def draw_menu():
     fullscreen.blit((myfont.render(opt[option][0], 1, (66,66,231))), (list_x, (30+y_margin+LineMov)+y*Interline))
 
     # data redraw
-    if y < 4 or y == 5:
-        if opt[3][2] == 0 and y == 3:
+    if y < 4 or y == 5 or y == 6:
+        if opt[0][2] == 0 and y == 0:
+            listrndr = myfont.render("OFF", 1, (66,66,231))
+            fullscreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
+        elif opt[1][2] == 0 and y == 1:
+            listrndr = myfont.render("OFF", 1, (66,66,231))
+            fullscreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
+        elif opt[2][2] == 0 and y == 2:
+            listrndr = myfont.render("OFF", 1, (66,66,231))
+            fullscreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
+        elif opt[2][2] == 1 and y == 2:
+            listrndr = myfont.render("YES", 1, (66,66,231))
+            fullscreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+y*Interline))
+        elif opt[3][2] == 0 and y == 3:
             listrndr = myfont.render("MAN", 1, (66,66,231))
             fullscreen.blit(listrndr, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+y*Interline))
         elif opt[3][2] == 100 and y == 3:
             listrndr = myfont.render("AUT", 1, (66,66,231))
             fullscreen.blit(listrndr, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+y*Interline))
+        elif opt[6][2] == 0 and y == 6:
+            listrndr = myfont.render("NO", 1, (66,66,231))
+            fullscreen.blit(listrndr, (data_x-(len("NO")*8), (30+y_margin+LineMov)+y*Interline))
+        elif opt[6][2] == 1 and y == 6:
+            listrndr = myfont.render("YES", 1, (66,66,231))
+            fullscreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+y*Interline))
         else:
             listrndr = myfont.render(str(opt[option][2]), 1, (66,66,231))
             fullscreen.blit(listrndr, (data_x-(len(str(opt[option][2]))*8), (30+y_margin+LineMov)+y*Interline))
@@ -464,7 +529,7 @@ def draw_menu():
     if y == 0 and opt[0][2] < 0:
         draw_arrow_right()
     elif y == 0 and opt[0][2] == 0 and opt[1][2] == 0:
-        draw_arrow_left()
+        draw_arrow_left(2)
     #elif y == 0 and opt[1][2] != 0:
     #    fullscreen.blit((myfont.render(opt[option][0], 1, (136,136,255))), (list_x, (30+y_margin+LineMov)+y*Interline))
 
@@ -473,14 +538,14 @@ def draw_menu():
         draw_arrow_right()
     elif y == 1 and opt[1][2] == 0:
         draw_arrow_right()
-        draw_arrow_left()
+        draw_arrow_left(2)
     elif y == 1 and opt[1][2] > 0:
         draw_arrow_left()
 
     #option 3
     if y == 2:
         if opt[2][2] == 1:
-            draw_arrow_left()
+            draw_arrow_left(2)
         else:
             draw_arrow_right()
 
@@ -498,9 +563,16 @@ def draw_menu():
             draw_arrow_left()
     #option 6
     if y == 5:
-        if opt[5][2] == "ON":
+        if opt[5][2] == "YES":
             draw_arrow_left()
-        if opt[5][2] == "OFF":
+        elif opt[5][2] == "OFF":
+            draw_arrow_right()
+
+    #option 7
+    if y == 6:
+        if opt[6][2] == 1:
+            draw_arrow_left(2)
+        elif opt[6][2] == 0:
             draw_arrow_right()
 
     #option 8
@@ -552,6 +624,8 @@ while True:
                 opt[3][2] = 100
             elif y == 5 and opt[5][2] == "OFF":
                 InstallServiceBackGroundMusic()
+            elif y == 6 and opt[6][2] == 0:
+                opt[6][2] = 1
         #left
         elif action == 'LEFTKEYBOARD' or action == 'JOYHATLEFT' or action == 'AXISLEFT':
             if y == 0 and opt[0][2] > -90 and opt[1][2] == 0:
@@ -567,8 +641,10 @@ while True:
                 opt[3][2] = 50
             elif y == 3 and opt[3][2] == 50:
                 opt[3][2] = 0
-            elif y == 5 and opt[5][2] == "ON":
+            elif y == 5 and opt[5][2] == "YES":
                 DesInstallServiceBackGroundMusic()
+            elif y == 6 and opt[6][2] == 1:
+                opt[6][2] = 0
         #up            
         elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
             if RotateFrontEnd == True:
@@ -578,7 +654,7 @@ while True:
                 if y == 0:
                     y = 8
                 elif y == 8:
-                    y = 5
+                    y = 6
                 elif y > 0:
                     y = y - 1
         #down
@@ -587,7 +663,7 @@ while True:
                 if y == 1:
                     y = 8
             else:
-                if y == 5:
+                if y == 6:
                     y = 8
                 elif y == 8:
                     y = 0

@@ -95,7 +95,8 @@ class arcade(emulator):
         self.cfg_ghres = self.m_dVideo["Game_H_Res"]
         self.cfg_offsetx = 0
         if self.m_oCRT.m_sSide_Game != 'V':
-            self.ra_integer_calculator()
+            if self.m_bIntegerScale:
+                self.ra_integer_calculator()
             self.ra_config_create()
             return
         else:
