@@ -42,7 +42,7 @@ TMP_ARCADE_FILE = os.path.join(__ARCADE_PATH, __ARCADE_FILE)
 DB_MAME037 = os.path.join(CRTROOT_PATH, "Resolutions/mame037b5_games.txt")
 DB_MAME078 = os.path.join(CRTROOT_PATH, "Resolutions/mame078_games.txt")
 DB_MAME139 = os.path.join(CRTROOT_PATH, "Resolutions/mame0139_games.txt")
-DB_FBALPHA = os.path.join(CRTROOT_PATH, "Resolutions/fbalpha_games.txt")
+DB_FINALBURN = os.path.join(CRTROOT_PATH, "Resolutions/fbneo_games.txt")
 DB_ADVMAME = os.path.join(CRTROOT_PATH, "Resolutions/advmame_games.txt")
 
 
@@ -73,9 +73,9 @@ class arcade(emulator):
         elif "2010" in self.m_sBinarySelected:
             self.m_sPathScreenDB = DB_MAME139
         elif "fbneo" in self.m_sBinarySelected:
-            self.m_sPathScreenDB = DB_FBALPHA
+            self.m_sPathScreenDB = DB_FINALBURN
         elif "fbalpha" in self.m_sBinarySelected:
-            self.m_sPathScreenDB = DB_FBALPHA
+            self.m_sPathScreenDB = DB_FINALBURN
         elif "advmame" in self.m_sBinarySelected:
             self.m_sPathScreenDB = DB_ADVMAME
 
@@ -98,7 +98,6 @@ class arcade(emulator):
             if self.m_bIntegerScale:
                 self.ra_integer_calculator()
             self.ra_config_create()
-            return
         else:
             if self.m_oCRT.m_iRSys != 0:
                 if self.m_oCRT.m_iRSys == 90:
@@ -172,7 +171,7 @@ class arcade(emulator):
         and horizontal pixel perfect.
         If real resolution is found in DB then self.m_dVideo["Game_H_Res"] will be different of '0'.
         """
-        if self.cfg_ghres != 0:
+        if self.cfg_ghres != 0: #H_Res of the game is present
             int_multiplier = self.cfg_hres/(self.cfg_ghres*1.0)
             self.cfg_hres = self.cfg_ghres*int(math.ceil(int_multiplier))
             if (math.ceil(int_multiplier)-0.5) >= int_multiplier:
@@ -181,7 +180,7 @@ class arcade(emulator):
             else:
                 #Horizontal auto center through 'video_scale_integer'
                 self.cfg_scaleint = "true"
-            logging.info("game h_res: %s - Calculated Int_Multiplier: %s" % (self.cfg_ghres,int_multiplier))
+            logging.info("game h_res %s - Calculated Int_Multiplier %s" % (self.cfg_ghres,int_multiplier))
 
     def adv_config_generate(self):
         display_ror = "no"
@@ -205,7 +204,7 @@ class arcade(emulator):
         modify_line(RC_ADVANCEDMAME_FILE, "misc_safequit ", "misc_safequit no")
         modify_line(RC_ADVANCEDMAME_FILE, "misc_quiet ", "misc_quiet yes")
         modify_line(RC_ADVANCEDMAME_FILE, "display_resizeeffect ", "display_resizeeffect none")
-        modify_line(RC_ADVANCEDMAME_FILE, "display_resize ", "display_resize none")
+        modify_line(RC_ADVANCEDMAME_FILE, "display_resize ", "display_resize integer")
         modify_line(RC_ADVANCEDMAME_FILE, "display_mode ", "display_mode generate")
         
     def arcade_config_generate(self):
@@ -219,12 +218,21 @@ class arcade(emulator):
             self.adv_config_generate()
 
     def arcade_encapsulator(self):
+
         # Small centering if vertical resolution is 240 lines
         if self.m_dVideo["V_Res"] == 240 and self.m_oCRT.m_sSide_Game != "H":
             self.m_dVideo["V_Pos"] -= int(1)
 
-        # Launch the encapsulator if vertical resolution is above 240 lines
-        if self.m_dVideo["V_Res"] > 240:
+        if (self.m_dVideo["V_Res"] > 240 and self.m_dVideo["R_Rate"] == 60):
+            # for games with high v_res at 60hz
+            logging.info("INFO: high V_Res game found %sx%s@%sHz" % (self.m_dVideo["H_Res"],
+                          self.m_dVideo["V_Res"],self.m_dVideo["R_Rate"]))
+            self.adv_config_generate()
+            if self.m_dVideo["V_Res"] == 448:
+                self.m_dVideo["V_Res"] = 224
+            else:
+                self.m_dVideo["V_Res"] = 240
+        elif self.m_dVideo["V_Res"] > 240: # Classic encapsulator
             select = self.encapsulator_selector()
             if select == "FORCED": # Encapsulate
                 self.m_dVideo["H_Freq"] = int(15840)
@@ -243,3 +251,13 @@ class arcade(emulator):
             ])
         result = ch.run()
         return result
+        
+    def encapsulator_show_info(self, m_sMessage, m_sTitle = None):
+        ch = choices()
+        if m_sTitle:
+            ch.set_title(m_sTitle)
+        ch.load_choices([
+                (m_sMessage, "OK"),
+            ])
+        ch.show(3000)
+        ch.cleanup()
