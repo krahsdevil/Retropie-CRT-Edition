@@ -394,10 +394,10 @@ def Find_Apply_Amplied_Res_RAW(CFGFile,CFGFile2,ApplyRes):
                     mask = line.strip().replace('=',' ').split(' ')
                     if mask[0] == '%s_game_mask'%SelectedMode:
                         GameMask = line.replace('%s_game_mask'%SelectedMode,'').strip().split(' ')
-            GameMask[0] = int((int(H_Res)-(int(MaxXFact)*2)*int(GameMask[0]))/int(H_Res))
-            GameMask[6] = int(ceil(((int(H_FP)-8)*int(GameMask[6]))/int(H_FP)))
-            GameMask[7] = int(ceil(((int(H_Sync)-24)*int(GameMask[7]))/int(H_Sync)))+1
-            GameMask[8] = int(ceil(((int(H_BP)-32)*int(GameMask[8]))/int(H_BP)))
+            #GameMask[0] = int((int(H_Res)-(int(MaxXFact)*2)*int(GameMask[0]))/int(H_Res))
+            #GameMask[6] = int(ceil(((int(H_FP)-8)*int(GameMask[6]))/int(H_FP)))
+            #GameMask[7] = int(ceil(((int(H_Sync)-24)*int(GameMask[7]))/int(H_Sync)))+1
+            #GameMask[8] = int(ceil(((int(H_BP)-32)*int(GameMask[8]))/int(H_BP)))
             H_Res = int(H_Res)+int(GameMask[0])
             V_Res = int(V_Res)+int(GameMask[1])
             R_Rate = float(R_Rate)+float(GameMask[2])
