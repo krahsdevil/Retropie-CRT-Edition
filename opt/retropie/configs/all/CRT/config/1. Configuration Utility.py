@@ -276,7 +276,7 @@ opt = [["1.GAMES ROTATION" , "Not PixelPerfect but playable on AdvMAME" , 0],
     ["4.FREQUENCY SELECTOR" , "Set Frequency at 50/60hz, Auto or Manual" , 0],
     ["5.VIDEO CONFIG>" , "Advanced Video Configuration"],
     ['6.BACKGROUND MUSIC' , 'Play your music with emulationstation', 0],
-    ['7.INTEGER SCALE' , 'ONLY for Arcade and NEOGEO Games', 0],
+    ['7.INTEGER SCALE' , 'ONLY for LibRetro Arcade and NEOGEO Games', 0],
     ['none' , 'none'],
     ["<EXIT" , "Save and Exit"]]
 
