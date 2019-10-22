@@ -149,8 +149,8 @@ class videoplayer(launcher):
         ch = choices()
         ch.set_title("MULTIPLE VIDEOS FOUND")
         ch.load_choices([
-                ("Enough with this one!", "False"),
-                ("Have Time, Play ALL FROM This...", "True"),
+                ("Play only this video", "False"),
+                ("Play ALL from this", "True"),
             ])
         result = ch.run()
         return result
