@@ -69,7 +69,7 @@ audio_pwm_mode=3
 
 # 15Khz using GPIO
 overscan_scale=1
-framebuffer_depth=24
+framebuffer_depth=32
 enable_dpi_lcd=1
 display_default_lcd=1
 dpi_group=2
