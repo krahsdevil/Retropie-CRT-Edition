@@ -9,7 +9,7 @@ hdmi_timings=450 1 50 32 94 270 1 12 5 26 0 0 0 50 0 9600000 1
 
 # uncomment this if your display has a black border of unused pixels visible
 # and your display can output without overscan
-#disable_overscan=1
+disable_overscan=1
 
 # uncomment the following to adjust overscan. Use positive numbers if console
 # goes off screen, and negative if there is too much border
