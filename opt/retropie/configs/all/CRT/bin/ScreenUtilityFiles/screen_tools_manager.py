@@ -221,7 +221,7 @@ def quit_manager():
     if ResModeChange == True or SaveModes == True:
         save()
         pygame.quit()
-        commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_center_utility_es.py force"
+        commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_center_utility.py force"
         os.system(commandline)
         output = commands.getoutput('ps -A')
         # Restart ES if it is running
@@ -334,7 +334,7 @@ def get_output_video_mode():
 def screen_center_utility_es():
     save()
     pygame.quit()
-    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_center_utility_es.py"
+    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_center_utility.py system"
     os.system(commandline)
     get_xy_screen()
     os.execl(sys.executable, sys.executable, *sys.argv)
@@ -342,7 +342,7 @@ def screen_center_utility_es():
 def screen_center_utility_ingame():
     save()
     pygame.quit()
-    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_center_utility_ingame.py"
+    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_center_utility.py test60"
     os.system(commandline)
     get_xy_screen()
     os.execl(sys.executable, sys.executable, *sys.argv)

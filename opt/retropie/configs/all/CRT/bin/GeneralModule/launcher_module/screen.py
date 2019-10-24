@@ -107,6 +107,25 @@ class CRT(object):
             self.timing_parse_raw(lValues)
         self.resolution_call(**self.m_dData)
 
+    def pattern_data(self, p_sTimingCfgPath):
+        self.p_sTimingPath = p_sTimingCfgPath
+        lValues = self.get_values()
+        logging.info("number of timings found in resolution: %s" % str(len(lValues)))
+        """Detect if raw or extended resolution parsed"""
+        if int(len(lValues)) < 17: #Extended resolution
+            self.timing_parse_calculated(lValues)
+            lValues = self.get_fix_tv('%s_game_mask')
+            if lValues:
+                self.timing_parse_calculated(lValues)
+            self.set_timing_unk()
+            self._calculated_adjustement()
+        else: #Raw system resolution
+            self.timing_parse_raw(lValues)  
+            lValues = self.get_fix_tv('%s_'+self.m_sSystem.replace('_timings', ''))
+            if lValues:
+                self.timing_parse_raw(lValues)
+        return self.m_dData
+        
     def arcade_data(self, p_sTimingCfgPath):
         self.p_sTimingPath = p_sTimingCfgPath
         lValues = self.get_values()
@@ -326,5 +345,8 @@ class CRT(object):
     def _command_call(self, p_sCMD):
         logging.info("CMD: %s" % p_sCMD)
         os.system(p_sCMD)
-        os.system("fbset -depth 8 && fbset -depth 24")
+        os.system("fbset -depth 8 && fbset -depth 32")
+        os.system("fbset -xres %s -yres %s" % (self.m_dData["H_Res"],self.m_dData["V_Res"]))
+        #logging.info("%s x %s" % (self.m_dData["H_Res"],self.m_dData["V_Res"]))
+        
 
