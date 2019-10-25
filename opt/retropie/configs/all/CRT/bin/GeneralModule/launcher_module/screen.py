@@ -146,6 +146,7 @@ class CRT(object):
         self.timing_reset()
         self.timing_parse_raw(lValues)
         self.resolution_call(**self.m_dData)
+        self.force_geometry()
 
     def get_fix_tv(self, p_sFindMask):
         sSelected = ini_get(CFG_COMPMODES_FILE, "mode_default")
@@ -346,7 +347,11 @@ class CRT(object):
         logging.info("CMD: %s" % p_sCMD)
         os.system(p_sCMD)
         os.system("fbset -depth 8 && fbset -depth 32")
-        os.system("fbset -xres %s -yres %s" % (self.m_dData["H_Res"],self.m_dData["V_Res"]))
+
+    def force_geometry(self):
+        os.system("fbset -xres %s -yres %s -vxres %s -vyres %s"%
+                 (self.m_dData["H_Res"],self.m_dData["V_Res"],
+                  self.m_dData["H_Res"],self.m_dData["V_Res"]))
         #logging.info("%s x %s" % (self.m_dData["H_Res"],self.m_dData["V_Res"]))
         
 

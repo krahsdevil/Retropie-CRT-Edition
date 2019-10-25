@@ -111,6 +111,7 @@ class center(object):
 
     def screen_set(self):
         self.m_oCRT.resolution_set()
+        self.m_oCRT.force_geometry()
 
     def panic(self, p_sErrorLine1, p_sErrorLine2 = "-", p_bForceQuit = True):
         """ stop the program and show error to the user """
