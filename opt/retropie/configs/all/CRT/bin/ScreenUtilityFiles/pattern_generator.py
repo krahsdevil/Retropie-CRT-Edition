@@ -121,9 +121,7 @@ class generate(object):
         pygame.mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
         self.m_PGoClock = pygame.time.Clock()
-        logging.info("INFO: ENTRO")
         self.m_PGoJoyHandler = joystick()
-        logging.info("INFO: SALGO")
         self._init_screen()
         self._init_sounds()
 

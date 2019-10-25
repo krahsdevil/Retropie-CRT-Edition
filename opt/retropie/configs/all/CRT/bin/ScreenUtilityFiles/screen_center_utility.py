@@ -111,10 +111,6 @@ class center(object):
 
     def screen_set(self):
         self.m_oCRT.resolution_set()
-        try:
-            splash_info("black") # clean screen
-        except Exception as e:
-            logging.error("splash failed: %s" % e)
 
     def panic(self, p_sErrorLine1, p_sErrorLine2 = "-", p_bForceQuit = True):
         """ stop the program and show error to the user """
