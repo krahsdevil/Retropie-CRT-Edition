@@ -437,8 +437,8 @@ def draw_menu():
                     fullscreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
             elif i == 6:
                 if opt[6][2] == 0:
-                    select = myfont.render("NO", 1, (165,165,255))
-                    fullscreen.blit(select, (data_x-(len("NO")*8), (30+y_margin+LineMov)+i*Interline))
+                    select = myfont.render("OFF", 1, (165,165,255))
+                    fullscreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
                 elif opt[6][2] == 1:
                     select = myfont.render("YES", 1, (165,165,255))
                     fullscreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
@@ -473,8 +473,8 @@ def draw_menu():
                     fullscreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
             elif i == 6:
                 if opt[6][2] == 0:
-                    select = myfont.render("NO", 1, (110,110,255))
-                    fullscreen.blit(select, (data_x-(len("NO")*8), (30+y_margin+LineMov)+i*Interline))
+                    select = myfont.render("OFF", 1, (110,110,255))
+                    fullscreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
                 elif opt[6][2] == 1:
                     select = myfont.render("YES", 1, (110,110,255))
                     fullscreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
@@ -516,8 +516,8 @@ def draw_menu():
             listrndr = myfont.render("AUT", 1, (66,66,231))
             fullscreen.blit(listrndr, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+y*Interline))
         elif opt[6][2] == 0 and y == 6:
-            listrndr = myfont.render("NO", 1, (66,66,231))
-            fullscreen.blit(listrndr, (data_x-(len("NO")*8), (30+y_margin+LineMov)+y*Interline))
+            listrndr = myfont.render("OFF", 1, (66,66,231))
+            fullscreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
         elif opt[6][2] == 1 and y == 6:
             listrndr = myfont.render("YES", 1, (66,66,231))
             fullscreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+y*Interline))
