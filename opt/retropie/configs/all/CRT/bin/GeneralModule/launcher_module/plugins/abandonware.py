@@ -54,7 +54,7 @@ class abandonware(emulator):
 
     def configure(self):
         super(abandonware, self).configure()
-        self.abandonware_show_info("Play better with keyboard and mouse!")
+        self.abandonware_show_info("Better with keyboard and mouse")
         
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
