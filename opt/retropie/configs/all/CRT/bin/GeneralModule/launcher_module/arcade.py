@@ -203,9 +203,11 @@ class arcade(emulator):
         modify_line(RC_ADVANCEDMAME_FILE, "display_vsync ", "display_vsync yes")
         modify_line(RC_ADVANCEDMAME_FILE, "misc_safequit ", "misc_safequit no")
         modify_line(RC_ADVANCEDMAME_FILE, "misc_quiet ", "misc_quiet yes")
-        modify_line(RC_ADVANCEDMAME_FILE, "display_resizeeffect ", "display_resizeeffect none")
+        modify_line(RC_ADVANCEDMAME_FILE, "display_resizeeffect ", "display_resizeeffect auto")
         modify_line(RC_ADVANCEDMAME_FILE, "display_resize ", "display_resize integer")
-        modify_line(RC_ADVANCEDMAME_FILE, "display_mode ", "display_mode generate")
+        modify_line(RC_ADVANCEDMAME_FILE, "display_mode ", "display_mode auto")
+        modify_line(RC_ADVANCEDMAME_FILE, "display_aspect ", "display_aspect 4/3")
+        modify_line(RC_ADVANCEDMAME_FILE, "display_expand ", "display_expand 1.0")
         
     def arcade_config_generate(self):
         #Check if libretro core of advmame is selected whitin

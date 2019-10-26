@@ -347,6 +347,7 @@ class CRT(object):
         logging.info("CMD: %s" % p_sCMD)
         os.system(p_sCMD)
         os.system("fbset -depth 8 && fbset -depth 32")
+        self.force_geometry()
 
     def force_geometry(self):
         os.system("fbset -xres %s -yres %s -vxres %s -vyres %s"%
