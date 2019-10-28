@@ -29,7 +29,7 @@ import logging
 CRT_PATH = "/opt/retropie/configs/all/CRT"
 
 TEST_IMGPATTERN_PATH = "" #Assign Pattern to draw
-TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/media")
+TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
 PATTERN_INGAME_PATH = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_crosshatch.png")
 PATTERN_SYSTEM_PATH = os.path.join(TEST_MEDIA_PATH,

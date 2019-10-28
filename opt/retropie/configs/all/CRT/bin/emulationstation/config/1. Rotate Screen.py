@@ -18,7 +18,6 @@ import filecmp
 import subprocess
 from pygame.locals import *
 
-sys.path.append('/opt/retropie/configs/all/CRT/bin/SelectorsModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/')
 
@@ -38,7 +37,7 @@ ES_Res_60hz = 'system60'
 CurTheme = "none"
 VerTheme = "V270P-CRT-BASE"
 HorTheme = "270P-CRT-BASE"
-VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
+VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/utility.cfg"
 EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
 
 def get_config():
@@ -186,33 +185,33 @@ get_retropie_joy_map()
 # VARIABLES
 
 # FF files
-wait = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/wait_%s.png'%RotationCurrentMode)
+wait = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/wait_%s.png'%RotationCurrentMode)
 waitPos = wait.get_rect()
 waitPos.center = ((x_screen/2), (y_screen/2))
 
-option1 = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/rotate_yes_%s.png'%RotationCurrentMode)
+option1 = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_yes_%s.png'%RotationCurrentMode)
 option1Pos = option1.get_rect()
 option1Pos.center = ((x_screen/2), (y_screen/2))
-option1_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/rotate_yes_ena_%s.png'%RotationCurrentMode)
+option1_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_yes_ena_%s.png'%RotationCurrentMode)
 option1_ENAPos = option1_ENA.get_rect()
 option1_ENAPos.center = ((x_screen/2), (y_screen/2))
 
-option2 = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/rotate_180_%s.png'%RotationCurrentMode)
+option2 = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_180_%s.png'%RotationCurrentMode)
 option2Pos = option2.get_rect()
 option2Pos.center = ((x_screen/2), (y_screen/2))
-option2_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/rotate_180_ena_%s.png'%RotationCurrentMode)
+option2_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_180_ena_%s.png'%RotationCurrentMode)
 option2_ENAPos = option2_ENA.get_rect()
 option2_ENAPos.center = ((x_screen/2), (y_screen/2))
 
-option3 = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/rotate_cancel_%s.png'%RotationCurrentMode)
+option3 = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_cancel_%s.png'%RotationCurrentMode)
 option3Pos = option3.get_rect()
 option3Pos.center = ((x_screen/2), (y_screen/2))
-option3_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/rotate_cancel_ena_%s.png'%RotationCurrentMode)
+option3_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_cancel_ena_%s.png'%RotationCurrentMode)
 option3_ENAPos = option3_ENA.get_rect()
 option3_ENAPos.center = ((x_screen/2), (y_screen/2))
 
-cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/cursor.wav")
-load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/rotatescreen/load.wav")
+cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/cursor.wav")
+load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/load.wav")
 os.system('clear')
 
 

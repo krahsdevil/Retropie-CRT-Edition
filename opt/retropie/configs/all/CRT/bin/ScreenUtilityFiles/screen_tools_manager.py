@@ -19,7 +19,6 @@ import math
 import filecmp
 
 #sys.path.insert(0, '/opt/retropie/configs/all/CRT/')
-sys.path.append('/opt/retropie/configs/all/CRT/bin/SelectorsModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/')
 from selector_module_functions import get_retropie_joy_map
@@ -130,9 +129,9 @@ SelectedMode = (['DEFAULT', "Timings presets for better compatibility"])
 
 #files
 sucfg = '/opt/retropie/configs/all/CRT/su.cfg'
-VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
+VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/utility.cfg"
 EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
-CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/modes.cfg'
+CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/modes.cfg'
 MainConfPath = '/opt/retropie/configs'
 LaunchImgPath = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images_modes'
 IconsImgPathSrc = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/crt_icons'
@@ -349,11 +348,11 @@ def screen_center_utility_ingame():
 
 def test_suite():
     save()
-    TestSuiteRom = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/240pSuite.bin"
+    TestSuiteRom = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/addons/addon_240p_suite/240pSuite.bin"
     timings_full_path = "/opt/retropie/configs/all/CRT/Resolutions/base_systems.cfg"
     ra_cfg_path = "/opt/retropie/configs/all/CRT/Retroarch/configs/megadrive.cfg"
     ra_bin_path = "/opt/retropie/emulators/retroarch/bin/retroarch"
-    retroarch_core = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/genesis_plus_gx_libretro.so"
+    retroarch_core = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/addons/addon_240p_suite/genesis_plus_gx_libretro.so"
     Check_RetroArch_Version(ra_cfg_path)
     crt_open_screen_from_timings_cfg('megadrive',timings_full_path)
     pygame.quit()

@@ -36,7 +36,7 @@ def plugin_load(p_oPlugin):
 #
 def something_is_bad(infos,infos2):
     time.sleep(2)
-    problem = "/opt/retropie/configs/all/CRT/Datas/problem.sh \"%s\" \"%s\"" % (infos, infos2)
+    problem = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/info_splash_screen/problem.sh \"%s\" \"%s\"" % (infos, infos2)
     os.system(problem)
 
 def get_xy_screen():
@@ -59,8 +59,13 @@ def splash_info(SplashImagePath):
     pygame.display.init()
     pygame.mouse.set_visible(0)
 
-    fullscreen = pygame.display.set_mode([x_screen, y_screen], PYGAME_FLAGS)
-    fullscreen.fill(black)
+    """Try to fill black, sometimes error because big superresolution"""
+    try:
+        fullscreen = pygame.display.set_mode([x_screen, y_screen], PYGAME_FLAGS)
+        fullscreen.fill(black)
+    except:
+        pygame.quit()
+        raise
 
     if SplashImagePath != "black":
         SplashImagePath = pygame.image.load(SplashImagePath)

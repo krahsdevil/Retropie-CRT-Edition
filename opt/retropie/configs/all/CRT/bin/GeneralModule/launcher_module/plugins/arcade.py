@@ -57,14 +57,21 @@ class arcade(arcade):
             self.m_bIntegerScale = True
             logging.info("enabled integer scale for arcade/neogeo")
 
-    def config_generate(self):
-        self.m_oConfigureFunc()
+    def arcade_config_generate(self):
+        #Check if libretro core of advmame is selected whitin
+        #arcade system to generate configuration
+        if "lr-" in self.m_sBinarySelected:
+            logging.info("INFO: generating retroarch configuration for ARCADE binary selected (%s)" % self.m_sBinarySelected)
+            self.ra_config_generate()
+        elif "advmame" in self.m_sBinarySelected:
+            logging.info("INFO: generating advmame configuration for ARCADE binary selected (%s)" % self.m_sBinarySelected)
+            self.adv_config_generate()
 
     # just called if need rebuild the CMD
     def runcommand_generate(self, p_sCMD):
         current_cmd = super(arcade, self).runcommand_generate(p_sCMD)
 
-        #Check if a VALID binary of the list must be excluded of the --appendconfig flag addition:
+        #Check if a VALID binary of the list must be excluded of the --appendconfig flag addition (non RetroArch emulators):
         if self.m_sNextValidBinary in self.m_lBinaryUntouchable:
             return current_cmd
 

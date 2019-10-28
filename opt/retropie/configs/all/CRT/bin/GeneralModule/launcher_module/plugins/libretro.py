@@ -29,10 +29,10 @@ import os, re, logging, commands
 from distutils.version import LooseVersion
 from launcher_module.core import CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH
 from launcher_module.emulator import emulator
-from launcher_module.file_helpers import md5_file, add_line, modify_line, ini_get
+from launcher_module.file_helpers import md5_file, add_line, modify_line, ini_get, touch_file
 
 RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
-RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "HashRetroarchVersionDB.txt")
+RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/config_files/retroarchdb.txt")
 RETROARCH_BINARY_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
 
 class libretro(emulator):
@@ -83,6 +83,10 @@ class libretro(emulator):
     def ra_check_version(self):
         if not self.m_sSystemCfgPath:
             return
+        if not os.path.isfile(RETROARCH_DB_FILE):
+            touch_file(RETROARCH_DB_FILE)
+            logging.info("Created retroarch database")
+            
         ra_hash = md5_file(RETROARCH_BINARY_FILE)
         f = open(RETROARCH_DB_FILE, "r")
         full_lines = f.readlines()

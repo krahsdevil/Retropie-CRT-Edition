@@ -18,7 +18,6 @@ import filecmp
 import subprocess
 from pygame.locals import *
 
-sys.path.append('/opt/retropie/configs/all/CRT/bin/SelectorsModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/')
 
@@ -79,68 +78,68 @@ threshold = 1000 # Analogic middle to debounce
 joystick = 0 # 0 is the 1sf joystick
 
 # FF files
-wait = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/wait_%s.png'%RotationCurrentMode)
+wait = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/wait_%s.png'%RotationCurrentMode)
 waitPos = wait.get_rect()
 waitPos.center = ((x_screen/2), (y_screen/2))
 
-extract = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/extract_%s.png'%RotationCurrentMode)
+extract = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/extract_%s.png'%RotationCurrentMode)
 extractPos = extract.get_rect()
 extractPos.center = ((x_screen/2), (y_screen/2))
 
-enabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/enabled_%s.png'%RotationCurrentMode)
+enabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/enabled_%s.png'%RotationCurrentMode)
 enabledPos = enabled.get_rect()
 enabledPos.center = ((x_screen/2), (y_screen/2))
 
-disabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/disabled_%s.png'%RotationCurrentMode)
+disabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/disabled_%s.png'%RotationCurrentMode)
 disabledPos = disabled.get_rect()
 disabledPos.center = ((x_screen/2), (y_screen/2))
 
-cancel = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/cancel_%s.png'%RotationCurrentMode)
+cancel = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/cancel_%s.png'%RotationCurrentMode)
 cancelPos = cancel.get_rect()
 cancelPos.center = ((x_screen/2), (y_screen/2))
 
-yes = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/yes_%s.png'%RotationCurrentMode)
+yes = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/yes_%s.png'%RotationCurrentMode)
 yesPos = yes.get_rect()
 yesPos.center = ((x_screen/2), (y_screen/2))
 
-cancelenabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/cancelenabled_%s.png'%RotationCurrentMode)
+cancelenabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/cancelenabled_%s.png'%RotationCurrentMode)
 cancelenabledPos = cancelenabled.get_rect()
 cancelenabledPos.center = ((x_screen/2), (y_screen/2))
 
-yesenabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/yesenabled_%s.png'%RotationCurrentMode)
+yesenabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/yesenabled_%s.png'%RotationCurrentMode)
 yesenabledPos = yesenabled.get_rect()
 yesenabledPos.center = ((x_screen/2), (y_screen/2))
 
-enabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/enabled_wej_%s.png'%RotationCurrentMode)
+enabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/enabled_wej_%s.png'%RotationCurrentMode)
 enabled_wejPos = enabled_wej.get_rect()
 enabled_wejPos.center = ((x_screen/2), (y_screen/2))
 
-cancel_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/cancel_wej_%s.png'%RotationCurrentMode)
+cancel_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/cancel_wej_%s.png'%RotationCurrentMode)
 cancel_wejPos = cancel_wej.get_rect()
 cancel_wejPos.center = ((x_screen/2), (y_screen/2))
 
-yes_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/yes_wej_%s.png'%RotationCurrentMode)
+yes_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/yes_wej_%s.png'%RotationCurrentMode)
 yes_wejPos = yes_wej.get_rect()
 yes_wejPos.center = ((x_screen/2), (y_screen/2))
 
-cancelenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/cancelenabled_wej_%s.png'%RotationCurrentMode)
+cancelenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/cancelenabled_wej_%s.png'%RotationCurrentMode)
 cancelenabled_wejPos = cancelenabled_wej.get_rect()
 cancelenabled_wejPos.center = ((x_screen/2), (y_screen/2))
 
-yesenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/yesenabled_wej_%s.png'%RotationCurrentMode)
+yesenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/yesenabled_wej_%s.png'%RotationCurrentMode)
 yesenabled_wejPos = yesenabled_wej.get_rect()
 yesenabled_wejPos.center = ((x_screen/2), (y_screen/2))
 
-eject_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/eject_wej_%s.png'%RotationCurrentMode)
+eject_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/eject_wej_%s.png'%RotationCurrentMode)
 eject_wejPos = eject_wej.get_rect()
 eject_wejPos.center = ((x_screen/2), (y_screen/2))
 
-ejectenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/ejectenabled_wej_%s.png'%RotationCurrentMode)
+ejectenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/ejectenabled_wej_%s.png'%RotationCurrentMode)
 ejectenabled_wejPos = ejectenabled_wej.get_rect()
 ejectenabled_wejPos.center = ((x_screen/2), (y_screen/2))
 
-cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/cursor.wav")
-load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automountrotated/load.wav")
+cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/cursor.wav")
+load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount_rotated/load.wav")
 os.system('clear')
 def InstallServiceAutomount():
     if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.py'):

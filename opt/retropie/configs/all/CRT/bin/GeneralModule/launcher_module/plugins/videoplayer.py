@@ -31,10 +31,10 @@ from launcher_module.core_choices_dynamic import choices
 from launcher_module.core import launcher, CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH, CFG_TIMINGS_FILE
 from launcher_module.screen import CRT
 
-OMXPLAYER_FONT = '--font="/opt/retropie/configs/all/CRT/bin/VideoPlayer/Ubuntu_MOD_WIDE.ttf'
+OMXPLAYER_FONT = '--font="/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_videoplayer/Ubuntu_MOD_WIDE.ttf'
 OMXPLAYER_COMMAND = 'omxplayer -b --align center --layer 10000 --font-size 72 %s" \"%s\" > /dev/null 2>&1' % (OMXPLAYER_FONT, "%s")
 JOY2KEY_DEV = "none"
-JOY2KEY_PATH = "/opt/retropie/configs/all/CRT/bin/VideoPlayer/joy2key.py"
+JOY2KEY_PATH = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_videoplayer/joy2key.py"
 JOY2KEY_VAR = commands.getoutput('$__joy2key_dev')
 
 class videoplayer(launcher):
@@ -149,8 +149,8 @@ class videoplayer(launcher):
         ch = choices()
         ch.set_title("MULTIPLE VIDEOS FOUND")
         ch.load_choices([
-                ("Play only this video", "False"),
-                ("Play ALL from this", "True"),
+                ("Play only this video.", "False"),
+                ("Play ALL from this!", "True"),
             ])
         result = ch.run()
         return result

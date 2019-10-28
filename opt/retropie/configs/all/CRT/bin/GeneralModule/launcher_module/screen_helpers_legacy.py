@@ -6,8 +6,8 @@
 import os
 from math import *
 
-CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/modes.cfg'
-VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
+CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/modes.cfg'
+VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/utility.cfg"
 
 def crt_open_screen(H_Res, V_Res, R_Rate, H_Pos, H_Zoom, V_Pos, H_FP, H_Sync, H_BP, V_Sync, H_Freq):
     # H_Res   - Horizontal resolution (1600 to 1920)

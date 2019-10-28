@@ -44,17 +44,19 @@ pygame.display.init()
 pygame.mouse.set_visible(0)
 
 pygame.display.set_mode((x_screen,y_screen), FULLSCREEN)
-sucfg= '/opt/retropie/configs/all/CRT/su.cfg'
+sucfg = '/opt/retropie/configs/all/CRT/su.cfg'
 timings_full_path = "/opt/retropie/configs/all/CRT/Resolutions/base_systems.cfg"
-libretro_path = "/opt/retropie/libretrocores"
-ra_cfg_path ="/opt/retropie/configs/all/CRT/Retroarch/configs/credits.cfg"
+libretro_core_path = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/addons/addon_credits/mgba_libretro.so"
+game_path = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/addons/addon_credits/flappybird.gba"
+ra_cfg_path = "/opt/retropie/configs/all/CRT/Retroarch/configs/credits.cfg"
 configgen_retroarchcustom = "/opt/retropie/configs/all/retroarch.cfg"
 retroarcharcade = "/tmp/retroarcharcade.cfg"
 
 Check_RetroArch_Version(ra_cfg_path)
 
 crt_open_screen_from_timings_cfg('test',timings_full_path)
-commandline = "/opt/retropie/emulators/retroarch/bin/retroarch -L %s/%s_libretro.so --config %s --appendconfig %s \"%s\"" % (libretro_path,"/lr-mgba/mgba",configgen_retroarchcustom,ra_cfg_path,"/opt/retropie/configs/all/CRT/Datas/flappybird.gba")
+commandline = "/opt/retropie/emulators/retroarch/bin/retroarch -L \"%s\" --config %s --appendconfig %s \"%s\"" % (libretro_core_path, configgen_retroarchcustom, ra_cfg_path, game_path)
+print commandline
 os.system(commandline)
 es_restore_screen()
 pygame.quit()

@@ -31,7 +31,7 @@ from launcher_module.plugins.libretro import libretro, CRTROOT_PATH, RETROARCH_C
 from launcher_module.file_helpers import ini_get, add_line, remove_line, touch_file
 from launcher_module.utils import compact_rom_name
 
-AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "AutoFreqDB.cfg")
+AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/config_files/autofreqdb.cfg")
 
 LABELS50HZ = ["pal","nl","e","s","sw","fn","g","uk","gr","i","h","eu",
                 "europe","europa","spain","germany","france","italy"]

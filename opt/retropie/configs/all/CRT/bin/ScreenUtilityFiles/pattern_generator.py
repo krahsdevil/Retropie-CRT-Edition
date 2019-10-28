@@ -45,12 +45,12 @@ __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
-CENTER_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/utility.cfg")
-COMPMODES_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/modes.cfg")
+CENTER_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/config_files/utility.cfg")
+COMPMODES_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/config_files/modes.cfg")
 BOOTCFG_FILE = "/boot/config.txt"
 BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
 
-TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/media")
+TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
 TEST_SNDCURSOR_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_cursor.wav")
 TEST_SNDLOAD_FILE = os.path.join(TEST_MEDIA_PATH,

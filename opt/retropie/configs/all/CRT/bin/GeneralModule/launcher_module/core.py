@@ -49,9 +49,9 @@ RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcomma
 
 CFG_VIDEOMODES_FILE = os.path.join(RETROPIECFG_PATH, "all/videomodes.cfg")
 
-CFG_FIXMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
-CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH,"ScreenUtilityFiles/utility.cfg")
-CFG_NETPLAY_FILE = os.path.join(CRTROOT_PATH, "netplay.cfg")
+CFG_FIXMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/config_files/modes.cfg")
+CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH,"ScreenUtilityFiles/config_files/utility.cfg")
+CFG_NETPLAY_FILE = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/config_files/netplay.cfg")
 CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 
 

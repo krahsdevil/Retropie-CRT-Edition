@@ -50,7 +50,7 @@ from .core_paths import CRTROOT_PATH
 from .screen import CRT
 from .core_controls import joystick, CRT_UP, CRT_DOWN, CRT_BUTTON
 
-SKINSELECTOR_PATH = os.path.join(CRTROOT_PATH, "Datas/FreqSelectorSkins")
+SKINSELECTOR_PATH = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/resources/media")
 
 # BASE COLORS
 BG_COLOR = (128, 120, 211)
@@ -62,7 +62,7 @@ BG_DEGRADE = 2
 
 
 DEFAULT_CFG = {
-    'style': "choice_dynamic",
+    'style': "skin_choice_dynamic",
 
     'border': "border.png",
     'border_corner': "border_corner.png",
@@ -259,10 +259,10 @@ class choices(object):
         pygame.time.delay(p_iTimeOut)
 
     def run(self):
-        if self.oJoyHandler.get_num() < 1:
-            # TODO: no opts or no joys
-            logging.error("no joysticks found, using default opt.")
-            return self._choice_select()
+        #if self.oJoyHandler.get_num() < 1:
+        #    # TODO: no opts or no joys
+        #    logging.error("no joysticks found, using default opt.")
+        #    return self._choice_select()
         self._update_screen()
         result = self.loop()
         return result

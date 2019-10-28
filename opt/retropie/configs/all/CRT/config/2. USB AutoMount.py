@@ -17,7 +17,6 @@ import commands
 import subprocess
 from pygame.locals import *
 
-sys.path.append('/opt/retropie/configs/all/CRT/bin/SelectorsModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/')
 
@@ -57,29 +56,29 @@ threshold = 1000 # Analogic middle to debounce
 joystick = 0 # 0 is the 1sf joystick
 
 # FF files
-wait = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/wait.png')
+wait = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/wait.png')
 waitPos = wait.get_rect()
 waitPos.center = ((x_screen/2), (y_screen/2))
-extract = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/extract.png')
-nojoy = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/nojoy.png')
+extract = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/extract.png')
+nojoy = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/nojoy.png')
 
-enabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/enabled.png')
-disabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/disabled.png')
-cancel = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/cancel.png')
-yes = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/yes.png')
-cancelenabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/cancelenabled.png')
-yesenabled = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/yesenabled.png')
+enabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/enabled.png')
+disabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/disabled.png')
+cancel = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/cancel.png')
+yes = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/yes.png')
+cancelenabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/cancelenabled.png')
+yesenabled = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/yesenabled.png')
 
-enabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/enabled_wej.png')
-cancel_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/cancel_wej.png')
-yes_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/yes_wej.png')
-cancelenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/cancelenabled_wej.png')
-yesenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/yesenabled_wej.png')
-eject_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/eject_wej.png')
-ejectenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/ejectenabled_wej.png')
+enabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/enabled_wej.png')
+cancel_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/cancel_wej.png')
+yes_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/yes_wej.png')
+cancelenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/cancelenabled_wej.png')
+yesenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/yesenabled_wej.png')
+eject_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/eject_wej.png')
+ejectenabled_wej = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/ejectenabled_wej.png')
 
-cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/cursor.wav")
-load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/Datas/FreqSelectorSkins/automount/load.wav")
+cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/cursor.wav")
+load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_automount/load.wav")
 os.system('clear')
 def InstallServiceAutomount():
     if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/CRT-Automount.py'):

@@ -25,8 +25,8 @@ sys.path.append('/opt/retropie/configs/all/CRT/bin/SelectorsModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/')
 
-CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/modes.cfg'
-VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
+CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/modes.cfg'
+VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/utility.cfg"
 
 #logging.basicConfig(filename="/tmp/CRT_Launcher.log", level=logging.INFO, format='%(asctime)s %(message)s')
 
@@ -156,16 +156,16 @@ def launch_joy2key(left, right, up, down, a, b, x, y, start, select):
 def splash():
 
     if 'vga666' in open('/boot/config.txt').read():
-        os.system("/opt/retropie/configs/all/CRT/Datas/splash.sh & sleep 23")
+        os.system("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/info_splash_screen/splash.sh & sleep 23")
 
     elif not 'dpi_output_format=6' in open('/boot/config.txt').read():
-        os.system("/opt/retropie/configs/all/CRT/Datas/splash.sh & sleep 23")
+        os.system("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/info_splash_screen/splash.sh & sleep 23")
 
 def something_is_bad(infos,infos2):
 
 #    infos = "It's a try !!!"
     time.sleep(2)
-    problem = "/opt/retropie/configs/all/CRT/Datas/problem.sh \"%s\" \"%s\"" % (infos, infos2)
+    problem = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/info_splash_screen/problem.sh \"%s\" \"%s\"" % (infos, infos2)
     os.system(problem)
     #sys.exit()
 
@@ -1273,7 +1273,7 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
 #################################################################################################################
 def Check_RetroArch_Version(configfile):
     RetroarchPath = "/opt/retropie/emulators/retroarch/bin/retroarch"
-    HashRetroarchVersionDB = "/opt/retropie/configs/all/CRT/HashRetroarchVersionDB.txt"
+    HashRetroarchVersionDB = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/retroarchdb.txt"
     DBUpdate = "none"
     RetroarchIDENT = "none"
     RetroarchIDENTFound = False

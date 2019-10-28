@@ -16,7 +16,6 @@ import sys
 import os
 import commands
 import subprocess
-sys.path.append('/opt/retropie/configs/all/CRT/bin/SelectorsModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
 sys.path.append('/opt/retropie/configs/all/CRT/')
 from pygame.locals import *
@@ -111,7 +110,7 @@ y_slide = 0
 
 #files
 JoyAutoconfigPath = "/opt/retropie/configs/all/retroarch/autoconfig/"
-VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/utility.cfg"
+VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/utility.cfg"
 EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
 MusicPath = "/opt/retropie/configs/music"
 

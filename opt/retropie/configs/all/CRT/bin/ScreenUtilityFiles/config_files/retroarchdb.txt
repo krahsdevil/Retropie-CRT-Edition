@@ -1,0 +1,1 @@
+RetroArch 8b672e66ec5ec81dfbb048548124dae4 v1.7.6

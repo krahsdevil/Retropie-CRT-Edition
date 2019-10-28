@@ -28,9 +28,9 @@ from launcher_module.core_paths import CRTROOT_PATH, CRTBIN_PATH
 from launcher_module.file_helpers import ini_get, ini_getlist
 
 
-CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/utility.cfg")
-CFG_COMPMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/modes.cfg")
-DEFAULT_SCREEN_BIN = os.path.join(CRTROOT_PATH, "Datas/default.sh")
+CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/config_files/utility.cfg")
+CFG_COMPMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/config_files/modes.cfg")
+DEFAULT_SCREEN_BIN = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/resources/media/info_splash_screen/default.sh")
 
 DEFAULT_RES = ["1920", "224", "60.000000", "-4", "-27", "3", "48", "192", "240", "5", "15734", "screen_lib", "H"]
 

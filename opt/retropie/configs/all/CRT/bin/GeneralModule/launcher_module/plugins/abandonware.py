@@ -33,10 +33,6 @@ from launcher_module.emulator import emulator
 from launcher_module.screen import CRT
 from launcher_module.file_helpers import remove_file
 
-RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
-RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "HashRetroarchVersionDB.txt")
-RETROARCH_BINARY_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
-
 class abandonware(emulator):
     m_sSleeper = CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
 

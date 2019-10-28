@@ -31,8 +31,6 @@ from launcher_module.core_paths import CRTROOT_PATH
 from launcher_module.amiga import amiga
 
 RETROARCH_CONFIGS_PATH = os.path.join(CRTROOT_PATH, "Retroarch/configs")
-RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "HashRetroarchVersionDB.txt")
-RETROARCH_BINARY_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
 
 class amiga(amiga):
     m_sSleeper = CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE

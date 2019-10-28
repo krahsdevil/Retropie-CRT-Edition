@@ -44,7 +44,7 @@ __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
-CENTER_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/utility.cfg")
+CENTER_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/config_files/utility.cfg")
 
 tests = ["system", "test60", "force"]
 
