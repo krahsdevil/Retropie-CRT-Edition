@@ -28,11 +28,11 @@ import logging
 
 CRT_PATH = "/opt/retropie/configs/all/CRT"
 
-TEST_IMGPATTERN_PATH = "" #Assign Pattern to draw
 TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
-PATTERN_INGAME_PATH = os.path.join(TEST_MEDIA_PATH,
+IMG_TEST_PATTERN_FILE = "" #Assign Pattern to draw
+IMG_TEST_INGAME_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_crosshatch.png")
-PATTERN_SYSTEM_PATH = os.path.join(TEST_MEDIA_PATH,
+IMG_TEST_SYSTEM_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_pattern.png")
 
 RED = pygame.Color(255, 0, 0)
@@ -91,7 +91,7 @@ class datas(object):
 
     def get_pattern_datas(self):
         self.prepare_pattern()
-        return self.m_lPattern, TEST_IMGPATTERN_PATH
+        return self.m_lPattern, IMG_TEST_PATTERN_FILE
 
     def update(self, p_iMaxOffsetX, p_iMaxOffsetY):
         self.m_iMaxOffSetX = p_iMaxOffsetX
@@ -321,12 +321,12 @@ class datas(object):
         self._generate_info(self.m_lBox_Idx, self.m_lBox_Var, "self.m_lBox")
 
     def prepare_pattern(self):
-        global TEST_IMGPATTERN_PATH
+        global IMG_TEST_PATTERN_FILE
         VOverscan = 0
         HOverscan = 0
         """ Init and refresh pattern size and position data during centering """
         if self.m_sEnv == "test60":
-            TEST_IMGPATTERN_PATH = PATTERN_INGAME_PATH #Select pattern for ingame 60hz
+            IMG_TEST_PATTERN_FILE = IMG_TEST_INGAME_FILE #Select pattern for ingame 60hz
             PatternResizeX = (self.m_dPatternAdj["PatternHSize"]+
                              (6*self.m_dConfigFile["width"]))
             PatternResizeY = (self.m_dPatternAdj["PatternVSize"]+
@@ -339,7 +339,7 @@ class datas(object):
 
         elif self.m_sEnv == "system50" or self.m_sEnv == "system60":
             #Select pattern for system (EmulationStation)
-            TEST_IMGPATTERN_PATH = PATTERN_SYSTEM_PATH
+            IMG_TEST_PATTERN_FILE = IMG_TEST_SYSTEM_FILE
 
             """Apply overscan if 320x240"""
             if self.m_dPatternAdj["PatternHSize"] == 320 and \

@@ -37,6 +37,7 @@ sys.path.append(RESOURCES_PATH)
 from launcher_module.screen import CRT
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
+from launcher_module.core import CFG_VIDEOUTILITY_FILE, LOG_PATH, CFG_FIXMODES_FILE
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
 from pattern_datas import *
@@ -44,18 +45,15 @@ from pattern_datas import *
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
-CENTER_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/config_files/utility.cfg")
-COMPMODES_CFG_FILE = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/config_files/modes.cfg")
-BOOTCFG_FILE = "/boot/config.txt"
-BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
-
 TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
 TEST_SNDCURSOR_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_cursor.wav")
 TEST_SNDLOAD_FILE = os.path.join(TEST_MEDIA_PATH,
                     "screen_center_utility_load.wav")
 TEST_FONT_FILE = os.path.join(TEST_MEDIA_PATH,"PetMe64.ttf")
+
+BOOTCFG_FILE = "/boot/config.txt"
+BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
 
 FPS = 30
 
@@ -163,7 +161,7 @@ class generate(object):
         offsetX, offsetY, width, height
         """
         for item in self.m_dConfigFile:
-            modify_line(CENTER_CFG_FILE, "%s_%s" % (self.m_sEnv, item),
+            modify_line(CFG_VIDEOUTILITY_FILE, "%s_%s" % (self.m_sEnv, item),
                         "%s_%s %s" %
                         (self.m_sEnv, item, self.m_dConfigFile[item]))
 
@@ -248,13 +246,13 @@ class generate(object):
 
     def prepare_cfg(self):
         """ Take config from utility.cfg """
-        self.m_dConfigFile["offsetX"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["offsetX"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                             self.m_sEnv+"_offsetX"))
-        self.m_dConfigFile["offsetY"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["offsetY"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                             self.m_sEnv+"_offsetY"))
-        self.m_dConfigFile["width"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["width"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                           self.m_sEnv+"_width"))
-        self.m_dConfigFile["height"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["height"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                            self.m_sEnv+"_height"))
 
     def prepare_screen_timings(self):
@@ -506,8 +504,8 @@ class saveboot(object):
 
     def _get_boot_timing(self):
         """ Take current system base timings from utility.cfg"""
-        self.m_sEnv = ini_get(CENTER_CFG_FILE, "default")
-        self.m_lBootTimings = ini_getlist(CENTER_CFG_FILE,
+        self.m_sEnv = ini_get(CFG_VIDEOUTILITY_FILE, "default")
+        self.m_lBootTimings = ini_getlist(CFG_VIDEOUTILITY_FILE,
                                           "%s_timings" % self.m_sEnv)
         self.m_lBootTimings = map(int, self.m_lBootTimings)
         if not self._apply_fix_tv():
@@ -515,10 +513,10 @@ class saveboot(object):
         logging.info("INFO: default system resolution: %s"%self.m_sEnv)
 
     def _apply_fix_tv(self):
-        sSelected = ini_get(COMPMODES_CFG_FILE, "mode_default")
+        sSelected = ini_get(CFG_FIXMODES_FILE, "mode_default")
         if not sSelected or sSelected.lower() == "default":
             return False
-        DiffTimings = ini_getlist(COMPMODES_CFG_FILE, 
+        DiffTimings = ini_getlist(CFG_FIXMODES_FILE, 
                                   "%s_%s"%(sSelected, self.m_sEnv))
         DiffTimings = map(int, DiffTimings)
         if len(DiffTimings) != 17: #If not 17 timings, not valid
@@ -532,13 +530,13 @@ class saveboot(object):
 
     def _prepare_cfg(self):
         """ Take config from utility.cfg """
-        self.m_dConfigFile["offsetX"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["offsetX"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                                     self.m_sEnv+"_offsetX"))
-        self.m_dConfigFile["offsetY"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["offsetY"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                                     self.m_sEnv+"_offsetY"))
-        self.m_dConfigFile["width"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["width"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                                   self.m_sEnv+"_width"))
-        self.m_dConfigFile["height"] = int(ini_get(CENTER_CFG_FILE,
+        self.m_dConfigFile["height"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
                                                    self.m_sEnv+"_height"))
 
     def save(self):

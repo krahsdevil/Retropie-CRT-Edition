@@ -31,17 +31,17 @@ y_screen = 0
 RotationCurrentMode = 0
 def get_config():
     global RotationCurrentMode
-    ESLauncher = filecmp.cmp('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/default_emulationstation.sh', '/opt/retropie/supplementary/emulationstation/emulationstation.sh')
+    ESLauncher = filecmp.cmp('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh', '/opt/retropie/supplementary/emulationstation/emulationstation.sh')
     if not os.path.exists('/opt/retropie/supplementary/emulationstation/emulationstation.sh') or ESLauncher == False:
         os.system('sudo cp /opt/retropie/supplementary/emulationstation/emulationstation.sh /opt/retropie/supplementary/emulationstation/backup.emulationstation.sh >> /dev/null 2>&1')
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
+        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
         os.system('sudo chmod +x /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
 
-    if os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate1'):
+    if os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1'):
         RotationCurrentMode = 1
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate3'):
+    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3'):
         RotationCurrentMode = 3
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-yoko'):
+    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko'):
         RotationCurrentMode = 0
     else:
         RotationCurrentMode = 0

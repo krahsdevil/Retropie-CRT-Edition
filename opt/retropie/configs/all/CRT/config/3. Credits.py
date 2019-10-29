@@ -56,7 +56,6 @@ Check_RetroArch_Version(ra_cfg_path)
 
 crt_open_screen_from_timings_cfg('test',timings_full_path)
 commandline = "/opt/retropie/emulators/retroarch/bin/retroarch -L \"%s\" --config %s --appendconfig %s \"%s\"" % (libretro_core_path, configgen_retroarchcustom, ra_cfg_path, game_path)
-print commandline
 os.system(commandline)
 es_restore_screen()
 pygame.quit()

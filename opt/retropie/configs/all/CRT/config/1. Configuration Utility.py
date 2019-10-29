@@ -184,57 +184,57 @@ def DesInstallServiceBackGroundMusic():
     Check_BackGround_Music()
 def rotate_frontend():
     if RotateFrontEnd == True:
-        os.system('rm /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate1 >> /dev/null 2>&1')
-        os.system('rm /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate3 >> /dev/null 2>&1')
-        os.system('rm /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-yoko >> /dev/null 2>&1')
+        os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1 >> /dev/null 2>&1')
+        os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3 >> /dev/null 2>&1')
+        os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko >> /dev/null 2>&1')
         if opt[1][2] == 0:
-            os.system('touch /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-yoko')
+            os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko')
             os.system('sudo rm /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
             os.system('sudo mv /etc/emulationstation/disabled.themes /etc/emulationstation/themes >> /dev/null 2>&1')
             os.system('sudo rm -R /opt/retropie/configs/all/emulationstation/themes/V270P-CRT-BASE/ >> /dev/null 2>&1')
             if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbah_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbah_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmameh_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmameh_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mameh_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mameh_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxh_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_H.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxh_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
+            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_H.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
             modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme)
         if opt[1][2] == 90:
-            os.system('touch /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate1')
-            os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
+            os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1')
+            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
             os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
             if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
                 os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-            os.system('cp -R /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
+            os.system('cp -R /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
             if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbav1_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbav1_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev1_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmamev1_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev1_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mamev1_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv1_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V1.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxv1_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
+            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V1.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
             modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
         if opt[1][2] == -90:
-            os.system('touch /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate3')
-            os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
+            os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3')
+            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
             os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
             if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
                 os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-            os.system('cp -R /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
+            os.system('cp -R /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
             if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/fbav3_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbav3_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/advmamev3_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmamev3_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/mamev3_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mamev3_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
             if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images/psxv3_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V3.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
+                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxv3_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
+            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V3.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
             modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
 
 def quit_utility():
@@ -253,7 +253,7 @@ def video_config():
     save()
     #crt_open_screen_raw('test',timings_full_path)
     pygame.quit()
-    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/screen_tools_manager.py"
+    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_screen_tools_manager/screen_tools_manager.py"
     os.system(commandline)
     #es_restore_screen()
     get_xy_screen()
@@ -331,27 +331,27 @@ def get_config():
                     CurTheme = line[2]
 
     if not os.path.exists('/opt/retropie/supplementary/emulationstation/emulationstation.sh'):
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
-    ESLauncher = filecmp.cmp('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/default_emulationstation.sh', '/opt/retropie/supplementary/emulationstation/emulationstation.sh')
+        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
+    ESLauncher = filecmp.cmp('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh', '/opt/retropie/supplementary/emulationstation/emulationstation.sh')
     if ESLauncher == False:
         os.system('sudo cp /opt/retropie/supplementary/emulationstation/emulationstation.sh /opt/retropie/supplementary/emulationstation/backup.emulationstation.sh >> /dev/null 2>&1')
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
+        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
         os.system('sudo chmod +x /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
         infos = "System needs to reboot, please wait..."
         infos2 = ""
         something_is_bad(infos,infos2)
         os.system('sudo reboot')
-    if os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate1'):
+    if os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1'):
         opt[1][2] = 90
         opt[1][3] = 90
         opt[0][2] = 0
         modificarLinea(VideoUtilityCFG, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-tate3'):
+    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3'):
         opt[1][2] = -90
         opt[1][3] = -90
         opt[0][2] = 0
         modificarLinea(VideoUtilityCFG, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/configs/es-select-yoko'):
+    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko'):
         opt[1][2] = 0
         opt[1][3] = 0
         modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
