@@ -3,9 +3,9 @@
 
 ![img](https://github.com/krahsdevil/crt-for-retropie/blob/d398fe53a9e550c6aca72b926ea8c8a312aed028/logo.png?raw=true)
 ***
-| Current Version  | Legacy 1.0  | FINAL | Retropie 4.5 | RPi 2B/3B/3B+ | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs-Retropie-CRT-Edition)  |
+| Current Version  | Legacy | FINAL 1.0 | Retropie 4.5 | RPi 2B/3B/3B+ | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs-Retropie-CRT-Edition)  |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| Developing | EVO 1.0  | Alpha 1.0 | Retropie 4.5 | RPi 2B/3B/3B+ | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs-Retropie-CRT-Edition)  |
+| Developing | EVO | Alpha 1.0 | Retropie 4.5 | RPi 2B/3B/3B+ | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs-Retropie-CRT-Edition)  |
 
 
 
