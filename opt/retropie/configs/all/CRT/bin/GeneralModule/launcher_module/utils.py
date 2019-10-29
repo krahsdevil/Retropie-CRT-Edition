@@ -35,7 +35,7 @@ def plugin_load(p_oPlugin):
 # CRT Team functions
 #
 def something_is_bad(infos,infos2):
-    time.sleep(2)
+    time.sleep(0.5)
     problem = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/info_splash_screen/problem.sh \"%s\" \"%s\"" % (infos, infos2)
     os.system(problem)
 
