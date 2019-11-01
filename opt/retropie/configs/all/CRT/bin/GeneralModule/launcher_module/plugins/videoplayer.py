@@ -140,7 +140,7 @@ class videoplayer(launcher):
             counter += 1
         self.m_nVideoFoundNumber = counter-1
         logging.info("Detected %s videos in the same folder", counter)
-        if self.m_nVideoFoundNumber > 1:
+        if self.m_nVideoFoundNumber >= 1:
             return True
         else:
             return False
