@@ -269,7 +269,7 @@ class choices(object):
 
     def loop(self):
         while True:
-            self.m_oClock.tick(FPS)
+            #self.m_oClock.tick(FPS)
             event = self.oJoyHandler.event_wait()
             #logging.info("event %s" % str(event))
             if event & CRT_UP:

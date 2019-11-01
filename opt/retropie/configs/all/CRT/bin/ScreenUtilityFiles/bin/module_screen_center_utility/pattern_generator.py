@@ -55,7 +55,7 @@ TEST_FONT_FILE = os.path.join(TEST_MEDIA_PATH,"PetMe64.ttf")
 BOOTCFG_FILE = "/boot/config.txt"
 BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
 
-FPS = 30
+FPS = 0
 
 class generate(object):
     """ virtual class for centering pattern """
@@ -315,7 +315,7 @@ class generate(object):
 
     def loop(self):
         while True:
-            self.m_PGoClock.tick(FPS)
+            #self.m_PGoClock.tick(FPS)
             event = self.m_PGoJoyHandler.event_wait()
             #logging.info("event %s" % str(event))
             if event & CRT_UP:

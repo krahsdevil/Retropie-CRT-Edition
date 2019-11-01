@@ -63,7 +63,8 @@ HAT_CFG = {
     (0,-1)  : CRT_DOWN,
 }
 
-ABS_DIF     = 0.7
+ABS_DIF     = 0.55
+ABS_RELEASED= 0.25
 
 class joystick(object):
     """
@@ -72,6 +73,7 @@ class joystick(object):
     """
     m_lJoys = []
     m_iNumJoys = 0
+    m_iAxisTriggered = False
     def __init__(self):
         pygame.joystick.init()
         try:
@@ -81,16 +83,18 @@ class joystick(object):
         except:
             pass
         logging.info("joysticks found: %i" % self.m_iNumJoys)
-        #print str(self.m_lJoys)
+        # print str(self.m_lJoys)
 
     def _initialize(self, p_iJoy):
         pygame.joystick.Joystick(p_iJoy).init()
         sJoyName = pygame.joystick.Joystick(p_iJoy).get_name()
+        print sJoyName
         sCfgFile = os.path.join(JOYCONFIG_PATH, sJoyName + '.cfg')
         jData = {'x': {}, 'y': {}}
         axis_tmp = ini_get(sCfgFile, 'input_l_x_minus_axis')
         if not axis_tmp:
             axis_tmp = ini_get(sCfgFile, 'input_left_axis')
+        jData['axis_trigger'] = False
         jData['x']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
         jData['x']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
         axis_tmp = ini_get(sCfgFile, 'input_l_y_minus_axis')
@@ -98,7 +102,6 @@ class joystick(object):
             axis_tmp = ini_get(sCfgFile, 'input_up_axis')
         jData['y']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
         jData['y']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
-
         jData['ok'] = int(ini_get(sCfgFile, 'input_a_btn').replace('"', ''), 10)
         jData['cancel'] = int(ini_get(sCfgFile, 'input_b_btn').replace('"', ''), 10)
         self.m_lJoys.append(jData)
@@ -117,23 +120,32 @@ class joystick(object):
             return CRT_OK
         elif self.m_lJoys[p_iDevice]['cancel'] == p_iButton:
             return CRT_CANCEL
-        logging.info("jb-ign: %i %i" % (p_iDevice, p_iButton))
+        #logging.info("jb-ign: %i %i" % (p_iDevice, p_iButton))
         return CRT_NONE
 
-    def get_axis(self, p_iDevice, p_iAxis, p_fValue):
+    def check_axis(self, p_iDevice, p_fValue, p_iButton):
         if abs(p_fValue) < ABS_DIF:
             return CRT_NONE
+        self.m_lJoys[p_iDevice]['axis_trigger'] = True
+        return p_iButton
+        
+    def get_axis(self, p_iDevice, p_iAxis, p_fValue):
         if self.m_lJoys[p_iDevice]['x']['axis'] == p_iAxis:
             if p_fValue > self.m_lJoys[p_iDevice]['x']['value']:
-                return CRT_RIGHT
+                return self.check_axis(p_iDevice, p_fValue, CRT_RIGHT)
             else:
-                return CRT_LEFT
+                return self.check_axis(p_iDevice, p_fValue, CRT_LEFT)
         if self.m_lJoys[p_iDevice]['y']['axis'] == p_iAxis:
+            if self.m_lJoys[p_iDevice]['axis_trigger']:
+                if abs(p_fValue) < ABS_RELEASED:
+                    self.m_lJoys[p_iDevice]['axis_trigger'] = False
+                    return CRT_NONE
+                else:
+                    return CRT_NONE
             if p_fValue > self.m_lJoys[p_iDevice]['y']['value']:
-                return CRT_DOWN
+                return self.check_axis(p_iDevice, p_fValue, CRT_DOWN)
             else:
-                return CRT_UP
-        logging.info("jb-ign: %i %i %s" % (p_iDevice, p_iAxis, str(p_fValue)))
+                return self.check_axis(p_iDevice, p_fValue, CRT_UP)
         return CRT_NONE
 
     def get_hat(self, p_lValue):
@@ -146,7 +158,7 @@ class joystick(object):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    logging.info("keyb: %s %s" % (event.key, str(event)))
+                    #logging.info("keyb: %s %s" % (event.key, str(event)))
                     return self.get_key(event.key)
                 elif event.type == pygame.JOYBUTTONDOWN:
                     return self.get_button(event.joy, event.button)
