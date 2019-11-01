@@ -3,8 +3,12 @@
 
 # unlicense.org
 
-import os, time, imp, subprocess, re, logging
+import os, time, imp, subprocess, re, logging, commands
 import pygame
+
+from launcher_module.core_paths import CRTROOT_PATH, RETROPIEEMU_PATH
+from launcher_module.file_helpers import md5_file, ini_get, touch_file, add_line, modify_line
+from distutils.version import LooseVersion
 
 PYGAME_FLAGS = (pygame.FULLSCREEN|pygame.HWSURFACE)
 
@@ -76,6 +80,46 @@ def splash_info(SplashImagePath):
         pygame.display.flip()
         time.sleep(5)
     pygame.quit()
+
+#  check if retroarch is lower than v1.7.5 because a change in aspect_ratio_index value
+def ra_check_version(p_sSystemCfgPath = None):
+    p_sRetroarchDB = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/config_files/retroarchdb.txt")
+    p_sRetroarchBin = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
+    logging.info("checking retroarch version")
+    if not p_sSystemCfgPath:
+        return
+    if not os.path.isfile(p_sRetroarchDB):
+        touch_file(p_sRetroarchDB)
+        logging.info("Created retroarch database")
+        
+    ra_hash = md5_file(p_sRetroarchBin)
+    f = open(p_sRetroarchDB, "r")
+    full_lines = f.readlines()
+    f.close()
+    ra_version = None
+    for line in full_lines:
+        if line != "\n":
+            lValues = line.strip().split(' ')
+            if ra_hash == lValues[1]:
+                ra_version = lValues[2]
+                break
+    # update file if not found
+    if not ra_version:
+        ra_output = commands.getoutput("%s --version" % p_sRetroarchBin)
+        for line in ra_output.splitlines():
+            lValues = line.strip().split(' ')
+            if 'RetroArch' in lValues[0]:
+                ra_version = lValues[5]
+                add_line(p_sRetroarchDB, "RetroArch %s %s" % (ra_hash,ra_version))
+
+    ratio = "23" # default 1.7.5 value
+    if LooseVersion(ra_version) < LooseVersion("v1.7.5"):
+        logging.info("early retroarch version, fixing ratio number - %s"%LooseVersion(ra_version))
+        ratio = "22"
+    ratio_value = ini_get(p_sSystemCfgPath, "aspect_ratio_index")
+    if ratio != ratio_value.replace('"', ''):
+        modify_line(p_sSystemCfgPath, "aspect_ratio_index", "aspect_ratio_index = \"%s\"" % ratio)
+        logging.info("fixed: %s version: %s ratio: %s (%s)" % (p_sSystemCfgPath, ra_version, ratio, ratio_value))
 
 def compact_rom_name(p_sRomName):
     sPreCleanedGame = re.sub('[^a-zA-Z0-9-_]+','', p_sRomName )

@@ -30,7 +30,8 @@ from distutils.version import LooseVersion
 from launcher_module.core import RETROPIECFG_PATH, CRTROOT_PATH, TMP_LAUNCHER_PATH, RETROPIEEMU_PATH
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
-from launcher_module.file_helpers import add_line, modify_line, md5_file, ini_get, touch_file
+from launcher_module.utils import ra_check_version
+from launcher_module.file_helpers import add_line, modify_line
 from launcher_module.screen import CRT
 
 RC_ADVANCEDMAME_FILE = os.path.join(RETROPIECFG_PATH, "mame-advmame/advmame.rc")
@@ -156,9 +157,8 @@ class arcade(emulator):
         # Video Scale Integer activation
         modify_line(TMP_ARCADE_FILE, "video_scale_integer =",
                     'video_scale_integer = "%s"' % self.cfg_scaleint)
-                    
         # Check retroarch version
-        self.ra_check_version()
+        ra_check_version(TMP_ARCADE_FILE)
 
     def ra_integer_calculator(self):
         """
@@ -236,41 +236,6 @@ class arcade(emulator):
                 if self.m_dVideo["R_Rate"] < 55:
                     self.m_dVideo["H_Freq"] = int(15269)
                 self.m_dVideo["V_Pos"] -= int(10)
-
-    def ra_check_version(self):
-        if not TMP_ARCADE_FILE:
-            return
-        if not os.path.isfile(RETROARCH_DB_FILE):
-            touch_file(RETROARCH_DB_FILE)
-            logging.info("Created retroarch database")
-
-        ra_hash = md5_file(RETROARCH_BINARY_FILE)
-        f = open(RETROARCH_DB_FILE, "r")
-        full_lines = f.readlines()
-        f.close()
-        ra_version = None
-        for line in full_lines:
-            if line != "\n":
-                lValues = line.strip().split(' ')
-                if ra_hash == lValues[1]:
-                    ra_version = lValues[2]
-                    break
-        # update file if not found
-        if not ra_version:
-            ra_output = commands.getoutput("%s --version" % RETROARCH_BINARY_FILE)
-            for line in ra_output.splitlines():
-                lValues = line.strip().split(' ')
-                if 'RetroArch' in lValues[0]:
-                    ra_version = lValues[5]
-                    add_line(RETROARCH_DB_FILE, "RetroArch %s %s" % (ra_hash,ra_version))
-
-        ratio = "23" # default 1.7.5 value
-        if LooseVersion(ra_version) < LooseVersion("v1.7.5"):
-            ratio = "22"
-        ratio_value = ini_get(TMP_ARCADE_FILE, "aspect_ratio_index")
-        if ratio != ratio_value.replace('"', ''):
-            modify_line(TMP_ARCADE_FILE, "aspect_ratio_index", "aspect_ratio_index = \"%s\"" % ratio)
-            logging.info("fixed: %s version: %s ratio: %s (%s)" % (TMP_ARCADE_FILE, ra_version, ratio, ratio_value))
 
     def encapsulator_selector(self):
         ch = choices()
