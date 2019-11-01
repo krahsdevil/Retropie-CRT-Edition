@@ -88,7 +88,7 @@ class joystick(object):
     def _initialize(self, p_iJoy):
         pygame.joystick.Joystick(p_iJoy).init()
         sJoyName = pygame.joystick.Joystick(p_iJoy).get_name()
-        print sJoyName
+        #print sJoyName
         sCfgFile = os.path.join(JOYCONFIG_PATH, sJoyName + '.cfg')
         jData = {'x': {}, 'y': {}}
         axis_tmp = ini_get(sCfgFile, 'input_l_x_minus_axis')
