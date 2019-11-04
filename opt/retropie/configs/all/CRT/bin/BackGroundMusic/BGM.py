@@ -1,305 +1,288 @@
-# Modified version of BGM script version 1.03 made by Livewire
-# BGM Overlay code added by madmodder123
-# Version 1.01 - Changed song_title.png to write to RAM instead of the SD Card (Thanks zerojay!)
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-import os
-import time
-import random
-import commands
-#import pygame # if you don't have pygame: sudo apt-get install python-pygame
-#also that line is commented out as we import the mixer specifically a bit further down.
-import re
-import subprocess # used to grab screen resolution
-    
-###CONFIG SECTION###
-startdelay = 0 # Value (in seconds) to delay audio start.  If you have a splash screen with audio and the script is playing music over the top of it, increase this value to delay the script from starting.
-musicdir = '/opt/retropie/configs/music' # "~/" is the equivalent to "/home/pi"
-maxvolume = 0.75
-volumefadespeed = 0.02
-restart = False #If true, this will cause the script to fade the music out and -stop- the song rather than pause it.
-startsong = "" # if this is not blank, this is the EXACT, CaSeSeNsAtIvE filename of the song you always want to play first on boot.
-esStarted = False #Variable for EmulationStation control initialized to False
 
-### if ~ is used, change it to home directory (EXAMPLE: "~/BGM" to "/home/pi/BGM")
-if "~/" in musicdir:
-    musicdir = os.path.expanduser(musicdir)
+"""
+bgm.py.
 
-# Read screen resolution for overlay settings
-fbset_exists = os.path.isfile('/bin/fbset')
-tvservice_exists = os.path.isfile('/usr/bin/tvservice')
+Background music script by -krahs- for emulationstation in raspberry pi
+based on original idea of BGM script version 1.03 by Livewire.
 
-if fbset_exists:
-    screen_width = subprocess.check_output("fbset -fb /dev/fb0 | grep '\".*\"' | grep -m 1 -o '[0-9][0-9][0-9]\+x' | tr -d 'x'", shell=True)
-    screen_width = screen_width.rstrip() # remove extra lines
-    screen_height = subprocess.check_output("fbset -fb /dev/fb0 | grep '\".*\"' | grep -m 1 -o 'x[0-9][0-9][0-9]\+' | tr -d 'x'", shell=True)
-    screen_height = screen_height.rstrip() # remove extra lines
-elif tvservice_exists:
-    screen_width = subprocess.check_output("tvservice -s | grep -m 1 -o '[0-9][0-9][0-9]\+x[0-9][0-9][0-9]\+' | grep -m 1 -o '[0-9][0-9][0-9]\+x' | grep -m 1 -o '[0-9][0-9][0-9]\+'", shell=True)
-    screen_width = screen_width.rstrip() # remove extra lines
-    screen_height = subprocess.check_output("tvservice -s | grep -m 1 -o '[0-9][0-9][0-9]\+x[0-9][0-9][0-9]\+' | grep -m 1 -o 'x[0-9][0-9][0-9]\+' | grep -m 1 -o '[0-9][0-9][0-9]\+'", shell=True)
-    screen_height = screen_height.rstrip() # remove extra lines
-else:
-    print "ERROR COUDLN'T FIND FBSET OR TVSERVICE! Please contact madmodder123 for help!"
-    
-#print "Resolution - " + resolution + " - " + screen_width + "x" + screen_height
+https://github.com/krahsdevil/crt-for-retropie/
 
-if int(screen_height) >= 900:
-    resolution = "1080p"
-elif int(screen_height) >= 600 and int(screen_height) <= 800:
-    resolution = "720p"
-elif int(screen_height) <= 599:
-    resolution = "SD"
-else:
-    resolution = "ERROR"
+Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
-###Overlay Config###
-overlay_enable = False # Enable or disable the overlay
-overlay_fade_out = True # Change to "False" to have the overlay remain on the screen until an emulator/application is launched
-overlay_fade_out_time = 8 # Hide the overlay after X seconds
-overlay_pngview_location = '/opt/retropie/configs/all/CRT/bin/BackGroundMusic/pngview'
-overlay_background_color = 'White' #White is default
-overlay_text_color = 'DimGray' #DimGray is default
-#overlay_text_font = '/usr/share/fonts/opentype/Pixel.otf' # Pixel font included by default
-overlay_text_font = '/opt/retropie/configs/all/CRT/config/PetMe64.ttf' # Pixel font included by default
-#overlay_text_font = 'FreeSans' # Default system font
-overlay_rounded_corners = False #Set to "True" round the corners of the overlay
-overlay_replace_newline = True # Set to "True" to turn all " - " symbols in song title to new line characters. (Mostly for OGST Display)
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 2 of the License, or (at your option) any
+later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# The code below adjusts the size/location of the overlay depending upon the screen resolution
-# Adjust these to your needs
-if resolution == "1080p":
-    overlay_size = '600x32'
-    overlay_x_offset = '0'
-    overlay_y_offset = '0'
-elif resolution == "720p":
-    overlay_size = '300x21'
-    overlay_x_offset = '0'
-    overlay_y_offset = '0'
-else:
-    # Any resolution lower than 720p
-    overlay_size = '150x14'
-    overlay_x_offset = '0'
-    overlay_y_offset = '0'
+"""
 
-# Get the user's name
-user = os.path.expanduser('~')          
-user = os.path.split(user)[-1]  
-OGST_exists = False # Don't change this. It will automatically detect if OGST is used.
-if user == "pi":
-    HOST_SYSTEM = "Raspberry Pi"
-    #print "Raspberry Pi"
-elif user == "pigaming":
-    HOST_SYSTEM = "ODROID"
-    #print "ODROID"
-    #Check if the OGST case is being used (ODROID ONLY)
-    framebuffer1_exists = os.path.exists('/dev/fb1')
-    ogstdir = os.path.expanduser("~/ogst")
-    OGST_dir_exists = os.path.isdir(ogstdir)
-    if framebuffer1_exists == OGST_dir_exists == True:
-        OGST_exists = True
-        #print "OGST CONFIRMED"
-else:
-    HOST_SYSTEM = "Linux"
-    #print "Linux System"
+import os, sys, time, random, commands, subprocess, re
+import logging, traceback
+from pygame import mixer
 
-## ~~~~~~~~~ODROID OGST SETTINGS~~~~~~~~~~~~~~~~~~
-if OGST_exists == True:
-    overlay_size = '320x240' # Change me to adjust overlay size (ONLY FOR OGST CASE!) [OGST SCREEN IS 320x240]
-    overlay_rounded_corners = True
+MUSIC_PATH = '/opt/retropie/configs/music'
+TMP_LAUNCHER_PATH = '/dev/shm'
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"BGM.log")
+EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
-if overlay_rounded_corners == True:
-    overlay_rounded = "-alpha set -virtual-pixel transparent -channel A -blur 0x8 -threshold 50% +channel " # Add code for rounded corners if enabled.
-else:
-    overlay_rounded = "" # Add nothing to code if not enabled.
+__VERSION__ = '0.1'
+__DEBUG__ = logging.INFO # logging.ERROR
+CLEAN_LOG_ONSTART = True
 
-###Local Variables###
-bgm = [mp3 for mp3 in os.listdir(musicdir) if mp3[-4:] == ".mp3" or mp3[-4:] == ".ogg"] # Find everything that's .mp3 or .ogg
-lastsong = -1
-currentsong = -1
-from pygame import mixer # import PyGame's music mixer
-mixer.pre_init(44100, -16, 2, 2048)
-mixer.init() # Prep that bad boy up.
-random.seed()
-volume = maxvolume # Store this for later use to handle fading out.
+class BGM(object):
+    m_dEmulatorsName = ["retroarch", "ags", "uae4all2", "uae4arm", "capricerpi",
+                        "linapple", "hatari", "stella", "atari800", "xroar",
+                        "vice", "daphne", "reicast", "pifba", "osmose", "gpsp",
+                        "jzintv", "basiliskll", "mame", "advmame", "dgen",
+                        "openmsx", "mupen64plus", "gngeo", "dosbox", "ppsspp",
+                        "simcoupe", "scummvm", "snes9x", "pisnes", "frotz",
+                        "fbzx", "fuse", "gemrb", "cgenesis", "zdoom", "eduke32",
+                        "lincity", "love", "kodi", "alephone", "micropolis",
+                        "openbor", "openttd", "opentyrian", "cannonball",
+                        "tyrquake", "ioquake3", "residualvm", "xrick", "sdlpop",
+                        "uqm", "stratagus", "wolf4sdl", "solarus", "drastic",
+                        "coolcv", "PPSSPPSDL", "moonlight", "Xorg", "smw",
+                        "omxplayer.bin", "wolf4sdl-3dr-v14", "wolf4sdl-gt-v14",
+                        "wolf4sdl-spear", "wolf4sdl-sw-v14", "xvic",
+                        "xvic cart", "xplus4", "xpet", "x128", "x64sc", "x64",
+                        "prince", "fba2x", "steamlink", "pcsx-rearmed",
+                        "limelight", "sdltrs", "ti99sm", "dosbox-sdl2",
+                        "minivmac", "quasi88", "xm7", "yabause", "abuse",
+                        "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
+                        "love", "love-0.10.2", "openblok", "openfodder", "srb2",
+                        "yquake2", "amiberry", "zesarux", "dxx-rebirth",
+                        "zesarux"]
 
-shm_exists = os.path.isdir('/dev/shm') 
-if shm_exists == True:
-    overlay_tmp_file = '/dev/shm/song_title.png'
-    tmp_folder= '/dev/shm/'
-else:
-    overlay_tmp_file = '/tmp/song_title.png'
-    tmp_folder= '/tmp/'
+    m_dCRTLaunchProcess = ["crt_launcher.py", "emulator_launcher.py",
+                           "emulator_launcher_legacy.py"]
 
-# Create song_title.png if it doesn't exist
-if not os.path.exists(overlay_tmp_file):
-    os.mknod(overlay_tmp_file)
+    m_sCRTProcessFound = ""
 
-#TODO: Fill in all of the current RetroPie Emulator process names in this list.
-emulatornames = ["retroarch","ags","uae4all2","uae4arm","capricerpi","linapple","hatari","stella","atari800","xroar","vice","daphne","reicast","pifba","osmose","gpsp","jzintv","basiliskll","mame","advmame","dgen","openmsx","mupen64plus","gngeo","dosbox","ppsspp","simcoupe","scummvm","snes9x","pisnes","frotz","fbzx","fuse","gemrb","cgenesis","zdoom","eduke32","lincity","love","kodi","alephone","micropolis","openbor","openttd","opentyrian","cannonball","tyrquake","ioquake3","residualvm","xrick","sdlpop","uqm","stratagus","wolf4sdl","solarus","drastic","coolcv","PPSSPPSDL","moonlight","Xorg","smw","omxplayer.bin","wolf4sdl-3dr-v14","wolf4sdl-gt-v14","wolf4sdl-spear","wolf4sdl-sw-v14","xvic","xvic cart","xplus4","xpet","x128","x64sc","x64","prince","fba2x","steamlink","pcsx-rearmed","limelight","sdltrs","ti99sm","dosbox-sdl2","minivmac","quasi88","xm7","yabause","abuse","cdogs-sdl","cgenius","digger","gemrb","hcl","love","love-0.10.2","openblok","openfodder","srb2","yquake2","amiberry","zesarux","dxx-rebirth","zesarux"]
+    m_iStartDelay = 0       # Value (in seconds) to delay audio start.  If you
+                            # have a splash screen with audio and the script is
+                            # playing music over the top of it, increase this
+                            # value to delay the script from starting.
 
-crtprocesses = ["crt_launcher.py", "emulator_launcher.py", "emulator_launcher_legacy.py"]
+    m_iMaxVolume = 0.75
+    m_iVolume = m_iMaxVolume # Store this for later use to handle fading out.
+    m_iFadeSpeed = 0.02
 
-def wait_ES(timeR):
-    #test: Ran into some issues with script crashing on a cold boot, so we're camping for emulationstation (if ES can start, so can we!)
-    time.sleep(timeR)
-    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-    for pid in pids:
-        try:
-            procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-            if procname[:-1] == "emulationstatio": # Emulation Station's actual process name is apparently short 1 letter.
-                return True
-        except IOError:
-            return False
-    return False
+    m_bMusicRestart = False # If true, this will cause the script to fade the
+                            # music out and -stop- the song rather than pause it
 
-#ES Should be going, see if we need to delay our start
+    m_sMusicState = 'stop'  # Can be 'stop', 'pause' or 'play'
+    m_sTrackInit = ""       # if this is not blank, this is the EXACT,
+                            # CaSeSeNsAtIvE filename of the song you always want
+                            # to play first on boot.
 
-while not esStarted:
-    esStarted = wait_ES(1)
+    m_iTrackLast = -1
+    m_iTrackCurr = -1
+    m_lTrackList = []
 
-if startdelay > 0:
-    time.sleep(startdelay) # Delay audio start per config option above
+    def __init__(self):
+        self.__temp()
+        self.__clean()
+        logging.info("INFO: Initializating BGM service")
 
-#Look for OMXplayer - if it's running, someone's got a splash screen going!
-pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-for pid in pids:
-    try:
-        procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-        if procname[:-1] == "omxplayer" or procname[:-1] == "omxplayer.bin": # Looking for a splash screen!
-            while os.path.exists('/proc/'+pid):
-                time.sleep(1) #OMXPlayer is running, sleep 1 to prevent the need for a splash.
-    except IOError:    
-        continue
+        self.prepare()
+        self.run() # launch, wait and cleanup
 
-#Check for a starting song
-if not startsong == "":
-    try:
-        currentsong = bgm.index(startsong) #Set the currentsong to the index in BGM that is our startingsong.
-    except:
-        currentsong = -1 #If this triggers, you probably screwed up the filename, because our startsong wasn't found in the list.
+    def prepare(self):
+        random.seed() #Initialize random function
+        self._init_pygame()
+        self._check_paths
+        self._get_playlist()
 
-#This is where the magic happens.
-while True:
-    while not esStarted: #New check (4/23/16) - Make sure EmulationStation is actually started.  There is code further down that, as part of the emulator loop, makes sure eS is running.
+    def run(self):
+        self.start()
+        self.cleanup()
+
+    def start(self):
+        self._loop()
+
+    def _init_pygame(self):
+        mixer.pre_init(44100, -16, 2, 2048)
+        mixer.init()
+
+    def _check_paths(self):
+        """if ~ is used, change it to home directory
+        (EXAMPLE: "~/BGM" to "/home/pi/BGM")"""
+        global MUSIC_PATH
+        if "~/" in MUSIC_PATH:
+            MUSIC_PATH = os.path.expanduser(MUSIC_PATH)
+
+    def _get_playlist(self):
+        """ This will find everything that's .mp3 or .ogg """
+        self.m_lTrackList = [track for track in os.listdir(MUSIC_PATH) \
+                            if track[-4:] == ".mp3" or track[-4:] == ".ogg"]
+
+        logging.info("INFO: found %s songs in music path" %
+                     len(self.m_lTrackList))
+        # Try to configure if exist the starting song
+        if self.m_sTrackInit:
+            try:
+                self.m_iTrackCurr = self.m_lTrackList.index(self.m_sTrackInit)
+                logging.info("INFO: found starting song \"%s\" in list" %
+                             self.m_sTrackInit)
+            except:
+                logging.info("INFO: can't locate found starting song \"%s\" in \
+                             list" % self.m_sTrackInit)
+
+    def music_start(self):
+        if not mixer.music.get_busy():
+            self._seek_track()
+            mixer.music.set_volume(self.m_iMaxVolume)
+            logging.info("INFO: playing music")
+            mixer.music.play()
+        else:
+            if self.m_sMusicState == 'pause':
+                logging.info("INFO: resuming music")
+                mixer.music.unpause() #resume
+                time.sleep(0.3)
+                self._fade_in()
+        self.m_sMusicState = 'play'
+
+    def music_stop(self, p_bRestart = m_bMusicRestart):
+        """
+        You can change stop mode in function, by default will take
+        value from m_bMusicRestart, but you can change for stop
+        instead of pause on ES exiting.
+
+        """
         if mixer.music.get_busy():
-            mixer.music.stop(); #halt the music, emulationStation is not running!
-        esStarted = wait_ES(10)
-                
-    #Check to see if the DisableMusic file exists; if it does, stop doing everything!
-    #disablefile = os.path.expanduser('~/DisableMusic')
-    #if os.path.exists(disablefile):
-        #print "Music Disabled - Exiting"
-    #    exit()
-
-    if not mixer.music.get_busy(): # We aren't currently playing any music
-        while currentsong == lastsong and len(bgm) > 1:    #If we have more than one BGM, choose a new one until we get one that isn't what we just played.
-            currentsong = random.randint(0,len(bgm)-1)
-        song = os.path.join(musicdir,bgm[currentsong])
-        mixer.music.load(song)
-        if overlay_enable == True :
-            if HOST_SYSTEM == "Raspberry Pi":
-                os.system("sudo killall -q " + overlay_pngview_location + " &") # Kill song overlay if it is open
-                #print "Killing pngview overlay if it is open before starting"
-        lastsong=currentsong
-        mixer.music.set_volume(maxvolume) # Pygame sets this to 1.0 on new song; in case max volume -isnt- 1, set it to max volume.
-        mixer.music.play()
-        #print "BGM Now Playing: " + song
-        song_title = re.sub(r"(" + musicdir + "/|\.\w*$)", "", song) # Remove directory and extension from song
-        song_title = song_title.upper()
-        if overlay_replace_newline == True:
-            song_title = song_title.replace(" - ","\n")
-        if overlay_enable == True:
-            if HOST_SYSTEM == "Raspberry Pi":
-                #print "Starting Raspberry Pi overlay"
-                generate_image = "sudo convert " + overlay_rounded + "-background " + overlay_background_color + " -fill " + overlay_text_color + " -font " + overlay_text_font + " -gravity center -size " + overlay_size + " label:\"" + song_title + "\" " + overlay_tmp_file # Generate png from text 
-                os.system(generate_image)
-                show_overlay = overlay_pngview_location + " -d 0 -b 0x0000 -l 15000 -y " + overlay_y_offset + " -x " + overlay_x_offset + " " + overlay_tmp_file + " &" # ( -n cmd doesn't seem to work)
-                time.sleep(1)
-                os.system(show_overlay)
-                if overlay_fade_out == True:
-                    time.sleep(overlay_fade_out_time)
-                    os.system("sudo killall -q " + overlay_pngview_location + " &") # Kill song overlay
-            elif HOST_SYSTEM == "ODROID":
-                #ODROID
-                #print "Starting ODROID (or other linux) overlay"
-                generate_image = "sudo convert " + overlay_rounded + "-background " + overlay_background_color + " -fill " + overlay_text_color + " -font " + overlay_text_font + " -gravity center -size " + overlay_size + " label:\"" + song_title + "\" " + overlay_tmp_file # Generate png from text
-                os.system(generate_image)
-                if OGST_exists == True:
-                    #OGST SCREEN
-                    #print "Starting OGST overlay"
-                    OGST_display_code = "cat /dev/fb1 > " + tmp_folder + "image.raw; img2fb -i " + overlay_tmp_file + "; sleep " + str(overlay_fade_out_time) + "; cat " + tmp_folder + "image.raw > /dev/fb1"
-                    os.system(OGST_display_code) 
-                else:
-                    print "framebuffer write for ODROID"
+            self._fade_out()
+            if p_bRestart:
+                #we aren't going to resume the audio, so stop it outright.
+                mixer.music.stop()
+                self.m_sMusicState = 'stop'
+                logging.info("INFO: halted music as {%s}"%self.m_sMusicState)
             else:
-                #LINUX HOST
-                print "framebuffer write linux"
-        
-    #Emulator check
-    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()] 
-    emulator = -1;
-    esStarted=False #New check 4-23-16 - set this to False (assume ES is no longer running until proven otherwise)
-    for pid in pids:
-        try:
-            procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-            if procname[:-1] == "emulationstatio": # Killing 2 birds with one stone, while we look for emulators, make sure EmulationStation is still running.
-                    esStarted=True # And turn it back to True, because it wasn't done running.  This will prevent the loop above from stopping the music.
-            
-            if procname[:-1] in emulatornames: #If the process name is in our list of known emulators
-                emulator = pid;
-                #Turn down the music
-                ##print "Emulator found! " + procname[:-1] + " Muting the music..."
-                if overlay_enable == True:
-                    if HOST_SYSTEM == "Raspberry Pi":
-                        os.system("sudo killall -q " + overlay_pngview_location + " &") # Kill song overlay
-                while volume > 0:
-                    volume = volume - volumefadespeed
-                    if volume < 0:
-                        volume=0
-                    mixer.music.set_volume(volume);
-                    time.sleep(0.05)            
-                if restart:
-                    mixer.music.stop() #we aren't going to resume the audio, so stop it outright.
-                else:
-                    mixer.music.pause() #we are going to resume, so pause it.
-                #Identifying Launcher
-                output = commands.getoutput('ps -fe')
-                for item in crtprocesses:
-                    if item in output:
-                        CRTProcess = item
-                #print("Muted.  Monitoring emulator.")
-                while os.path.exists("/proc/" + pid):
-                    time.sleep(1); # Delay 1 second and check again.
-                #Turn up the music
-                #print "Emulator finished, resuming audio..."
-                #Wait to CRT Launcher to exit
-                while True:
-                    output = commands.getoutput('ps -fe')
-                    if not CRTProcess in output:
-                        while not esStarted:
-                            esStarted = wait_ES(1)
-                        break
-                if not restart:
-                    mixer.music.unpause() #resume
-                    time.sleep(0.3)
-                    while volume < maxvolume:
-                        volume = volume + volumefadespeed;
-                        if volume > maxvolume:
-                            volume=maxvolume
-                        mixer.music.set_volume(volume);
-                        time.sleep(0.05)
-                    if overlay_enable == True:
-                        if HOST_SYSTEM == "Raspberry Pi":
-                            os.system(show_overlay) # Display generated PNG
-                            if overlay_fade_out == True:
-                                time.sleep(overlay_fade_out_time)
-                                os.system("sudo killall -q " + overlay_pngview_location + " &") # Kill song overlay    
-                #print "Music Resumed"
-                volume=maxvolume # ensures that the volume is manually set (if restart is True, volume would be at zero)
-        except IOError: #proc has already terminated, ignore.
-            continue
+                #we are going to resume, so pause it.
+                mixer.music.pause()
+                self.m_sMusicState = 'pause'
+                logging.info("INFO: halted music as {%s}"%self.m_sMusicState)
+        else:
+            self.m_sMusicState = 'stop'
 
-    time.sleep(1);
-    #end of the main while loop
-    
-print "An error has occurred that has stopped BGM.py from executing." #theoretically you should never get this far.
+    def _seek_track(self):
+        """ If music is stopped will seek for a new random track """
+        # If we have more than one BGM, choose a new one until we get one that
+        # isn't what we just played.
+        while self.m_iTrackCurr == self.m_iTrackLast and \
+              len(self.m_lTrackList) > 1:
+            logging.info("INFO: changing to random song")
+            self.m_iTrackCurr = random.randint(0, len(self.m_lTrackList)-1)
+        p_lTrack = os.path.join(MUSIC_PATH, self.m_lTrackList[self.m_iTrackCurr])
+        mixer.music.load(p_lTrack)
+        logging.info("INFO: track list loaded on mixer, ready to play")
+        self.m_iTrackLast = self.m_iTrackCurr
+
+    def _fade_out(self):
+        logging.info("INFO: fading out music")
+        while self.m_iVolume > 0:
+            self.m_iVolume -= self.m_iFadeSpeed
+            if self.m_iVolume < 0:
+                self.m_iVolume = 0
+            mixer.music.set_volume(self.m_iVolume);
+            time.sleep(0.05)
+
+    def _fade_in(self):
+        logging.info("INFO: fading in music")
+        while self.m_iVolume < self.m_iMaxVolume:
+            self.m_iVolume += self.m_iFadeSpeed;
+            if self.m_iVolume > self.m_iMaxVolume:
+                self.m_iVolume = self.m_iMaxVolume
+            mixer.music.set_volume(self.m_iVolume);
+            time.sleep(0.05)
+
+    def wait_process(self, p_sProcess, p_sState = 'start', p_iTime = 1):
+        bProcessFound = None
+        bCondition = True
+        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
+        if p_sState != 'start':
+            bCondition = False
+        while bProcessFound != bCondition:
+            bProcessFound = self.check_process(p_sProcess)
+            time.sleep(p_iTime)
+        logging.info("INFO: wait finished")
+
+    def check_process(self, p_sProcess):
+        pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+        for pid in pids:
+            try:
+                procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
+                if type(p_sProcess) is list:
+                    if procname[:-1] in p_sProcess:
+                        return True
+                elif type(p_sProcess) is str:
+                    if procname[:-1] == p_sProcess:
+                        return True
+            except IOError:
+                pass
+        return False
+
+    def check_launch_script(self):
+        self.m_sCRTProcessFound = ""
+        output = commands.getoutput('ps -fe')
+        for binary in self.m_dCRTLaunchProcess:
+            if binary in output:
+                self.m_sCRTProcessFound = binary
+                return True
+        return False
+
+    def wait_launch_script(self, p_iTime = 1):
+        logging.info("INFO: waiting to finish CRT launching script: %s" %
+                     self.m_sCRTProcessFound)
+        while self.check_launch_script:
+            time.sleep(p_iTime)
+        logging.info("INFO: CRT launching script finished")
+
+    def _loop(self):
+        """ Main loop of BGM service"""
+        while True:
+            if not self.check_process("emulationstatio"):
+                logging.info("INFO: ES is not running, stopping music")
+                self.music_stop(True)
+                self.wait_process("emulationstatio")
+            self.music_start()
+            if self.check_process(self.m_dEmulatorsName):
+                logging.info("INFO: emulator - omxplayer found!")
+                self.music_stop()
+                self.wait_process(self.m_dEmulatorsName, 'stop')
+                if self.check_launch_script():
+                    self.wait_launch_script()
+            else:
+                time.sleep(1)
+
+    def cleanup(self):
+        os.system('clear')
+        pygame.quit()
+        self.__clean()
+        sys.exit()
+
+    # clean system
+    def __clean(self):
+        pass
+
+    def __temp(self):
+        if CLEAN_LOG_ONSTART:
+            os.system('rm %s' % LOG_PATH)
+        logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
+        format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
+
+""" Load and launch BGM class for background music"""
+try:
+    oBackGrounMusic = BGM()
+except Exception as e:
+    with open(EXCEPTION_LOG, 'a') as f:
+        f.write(str(e))
+        f.write(traceback.format_exc())
