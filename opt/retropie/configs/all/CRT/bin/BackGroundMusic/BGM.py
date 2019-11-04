@@ -67,26 +67,31 @@ class BGM(object):
 
     m_sCRTProcessFound = ""
 
-    m_iStartDelay = 0       # Value (in seconds) to delay audio start.  If you
-                            # have a splash screen with audio and the script is
-                            # playing music over the top of it, increase this
-                            # value to delay the script from starting.
+    m_iStartDelay = 0           # Value (in seconds) to delay audio start.  If
+                                # you have a splash screen with audio and the 
+                                # script is playing music over the top of it, 
+                                # increase this value to delay the script from
+                                # starting.
 
     m_iMaxVolume = 0.75
-    m_iVolume = m_iMaxVolume # Store this for later use to handle fading out.
+    m_iVolume    = m_iMaxVolume # Store this for later use to handle fading out.
     m_iFadeSpeed = 0.02
 
-    m_bMusicRestart = False # If true, this will cause the script to fade the
-                            # music out and -stop- the song rather than pause it
+    m_bMusicRestart = False     # If true, this will cause the script to fade 
+                                # the music out and -stop- the song rather 
+                                # than pause it.
 
-    m_sMusicState = 'stop'  # Can be 'stop', 'pause' or 'play'
-    m_sTrackInit = ""       # if this is not blank, this is the EXACT,
-                            # CaSeSeNsAtIvE filename of the song you always want
-                            # to play first on boot.
+    m_sMusicState = 'stop'      # Can be 'stop', 'pause' or 'play'
+    m_sTrackInit = ""           # If this is not blank, this is the EXACT,
+                                # CaSeSeNsAtIvE filename of the song you 
+                                # always want to play first on boot.
 
     m_iTrackLast = -1
     m_iTrackCurr = -1
     m_lTrackList = []
+    m_lTrackCtrl = []
+    m_bTrackRept = True         # If True will play all songs randomly 
+                                # withouth repeat.
 
     def __init__(self):
         self.__temp()
@@ -131,17 +136,18 @@ class BGM(object):
         if self.m_sTrackInit:
             try:
                 self.m_iTrackCurr = self.m_lTrackList.index(self.m_sTrackInit)
+                self.m_lTrackCtrl.append(self.m_iTrackCurr)
                 logging.info("INFO: found starting song \"%s\" in list" %
                              self.m_sTrackInit)
             except:
-                logging.info("INFO: can't locate found starting song \"%s\" in \
-                             list" % self.m_sTrackInit)
+                logging.info("INFO: can't locate found starting song \"%s\" in list" \
+                             % self.m_sTrackInit)
 
     def music_start(self):
         if not mixer.music.get_busy():
             self._seek_track()
             mixer.music.set_volume(self.m_iMaxVolume)
-            logging.info("INFO: playing music")
+            logging.info("INFO: playing music and setting max volume")
             mixer.music.play()
         else:
             if self.m_sMusicState == 'pause':
@@ -174,17 +180,51 @@ class BGM(object):
             self.m_sMusicState = 'stop'
 
     def _seek_track(self):
-        """ If music is stopped will seek for a new random track """
+        """ If music is stopped will seek for the next song """
         # If we have more than one BGM, choose a new one until we get one that
         # isn't what we just played.
-        while self.m_iTrackCurr == self.m_iTrackLast and \
-              len(self.m_lTrackList) > 1:
-            logging.info("INFO: changing to random song")
-            self.m_iTrackCurr = random.randint(0, len(self.m_lTrackList)-1)
+        if len(self.m_lTrackList) > 1:
+            if self.m_iTrackLast == self.m_iTrackCurr:
+                i = 1
+                logging.info("INFO: changing to random song")
+                self.m_iTrackCurr = random.randint(0, len(self.m_lTrackList)-1)
+                while self._random_control(self.m_iTrackCurr):
+                    self.m_iTrackCurr = random.randint(0, len(self.m_lTrackList)-1)
+                    i += 1
+                logging.info("INFO: %s attempts to locate next non played song" \
+                             % i)
         p_lTrack = os.path.join(MUSIC_PATH, self.m_lTrackList[self.m_iTrackCurr])
         mixer.music.load(p_lTrack)
-        logging.info("INFO: track list loaded on mixer, ready to play")
+        logging.info("INFO: song loaded on mixer, ready to play")
         self.m_iTrackLast = self.m_iTrackCurr
+
+    def _random_control(self, p_Song):
+        """
+        This function will create a database with the position number of the songs
+        to check and avoid to repeat until to play all of them.
+        It's possible to disable this feature changing m_bTrackRept to False.
+        
+        """
+        if self.m_bTrackRept == False:
+            self.m_lTrackCtrl.append(p_Song)
+            logging.info("INFO: no repeat control enabled")
+            return False
+        
+        if len(self.m_lTrackList) > len(self.m_lTrackCtrl):
+            try:
+                p_TrackPosCtrl = self.m_lTrackCtrl.index(p_Song)
+                #logging.info("INFO: found song \"%s\" at reproduction number [%s]" \
+                #              % (self.m_lTrackList[p_Song], p_TrackPosCtrl))
+                return True
+            except:
+                self.m_lTrackCtrl.append(p_Song)
+                logging.info("INFO: first time for song \"%s\"" \
+                              % self.m_lTrackList[p_Song])
+                return False
+        else:
+            self.m_lTrackCtrl = []
+            logging.info("INFO: clearing song reproduction db")
+            return False
 
     def _fade_out(self):
         logging.info("INFO: fading out music")
@@ -205,10 +245,18 @@ class BGM(object):
             time.sleep(0.05)
 
     def wait_process(self, p_sProcess, p_sState = 'start', p_iTime = 1):
+        """
+        This function will wait to start or stop for only one process or a 
+        list of them like emulators. By default will wait to start with
+        p_sState parameter, but you can change it on call to 'stop'.
+        If a list is passed, function will validate that at least one of
+        them started or all are stopped.
+        
+        """
         bProcessFound = None
         bCondition = True
         logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
-        if p_sState != 'start':
+        if p_sState == 'stop':
             bCondition = False
         while bProcessFound != bCondition:
             bProcessFound = self.check_process(p_sProcess)
@@ -231,6 +279,11 @@ class BGM(object):
         return False
 
     def check_launch_script(self):
+        """
+        Check if custom launcher script from CRT Edition by -krahs- is
+        running.
+        
+        """
         self.m_sCRTProcessFound = ""
         output = commands.getoutput('ps -fe')
         for binary in self.m_dCRTLaunchProcess:
@@ -240,6 +293,13 @@ class BGM(object):
         return False
 
     def wait_launch_script(self, p_iTime = 1):
+        """
+        Will wait to stop if custom launcher script from CRT Edition 
+        by -krahs- is running.
+        After emulator stops it's useful for waiting them stops before
+        music starts.
+        
+        """
         logging.info("INFO: waiting to finish CRT launching script: %s" %
                      self.m_sCRTProcessFound)
         while self.check_launch_script:
@@ -247,7 +307,7 @@ class BGM(object):
         logging.info("INFO: CRT launching script finished")
 
     def _loop(self):
-        """ Main loop of BGM service"""
+        """ Main program loop of BGM service"""
         while True:
             if not self.check_process("emulationstatio"):
                 logging.info("INFO: ES is not running, stopping music")
