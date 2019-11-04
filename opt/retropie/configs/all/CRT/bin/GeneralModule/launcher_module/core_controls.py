@@ -63,8 +63,8 @@ HAT_CFG = {
     (0,-1)  : CRT_DOWN,
 }
 
-ABS_DIF     = 0.55
-ABS_RELEASED= 0.25
+ABS_DIF        = 0.5
+ABS_CTRL_STATE = False
 
 class joystick(object):
     """
@@ -124,25 +124,23 @@ class joystick(object):
         return CRT_NONE
 
     def check_axis(self, p_iDevice, p_fValue, p_iButton):
-        if abs(p_fValue) < ABS_DIF:
-            return CRT_NONE
-        self.m_lJoys[p_iDevice]['axis_trigger'] = True
-        return p_iButton
+        global ABS_CTRL_STATE
+        if abs(p_fValue) > ABS_DIF:
+            if not ABS_CTRL_STATE:
+                ABS_CTRL_STATE = True
+                return p_iButton
+        else:
+            ABS_CTRL_STATE = False
+        return CRT_NONE
         
     def get_axis(self, p_iDevice, p_iAxis, p_fValue):
         if self.m_lJoys[p_iDevice]['x']['axis'] == p_iAxis:
-            if p_fValue > self.m_lJoys[p_iDevice]['x']['value']:
+            if p_fValue > 0:
                 return self.check_axis(p_iDevice, p_fValue, CRT_RIGHT)
             else:
                 return self.check_axis(p_iDevice, p_fValue, CRT_LEFT)
         if self.m_lJoys[p_iDevice]['y']['axis'] == p_iAxis:
-            if self.m_lJoys[p_iDevice]['axis_trigger']:
-                if abs(p_fValue) < ABS_RELEASED:
-                    self.m_lJoys[p_iDevice]['axis_trigger'] = False
-                    return CRT_NONE
-                else:
-                    return CRT_NONE
-            if p_fValue > self.m_lJoys[p_iDevice]['y']['value']:
+            if p_fValue > 0:
                 return self.check_axis(p_iDevice, p_fValue, CRT_DOWN)
             else:
                 return self.check_axis(p_iDevice, p_fValue, CRT_UP)
@@ -155,14 +153,14 @@ class joystick(object):
             return CRT_NONE
 
     def event_wait(self):
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    #logging.info("keyb: %s %s" % (event.key, str(event)))
-                    return self.get_key(event.key)
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    return self.get_button(event.joy, event.button)
-                if event.type == pygame.JOYAXISMOTION:
-                    return self.get_axis(event.joy, event.axis, event.value)
-                elif event.type == pygame.JOYHATMOTION:
-                    return self.get_hat(event.value)
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                #logging.info("keyb: %s %s" % (event.key, str(event)))
+                return self.get_key(event.key)
+            elif event.type == pygame.JOYBUTTONDOWN:
+                return self.get_button(event.joy, event.button)
+            elif event.type == pygame.JOYHATMOTION:
+                return self.get_hat(event.value)
+            elif event.type == pygame.JOYAXISMOTION:
+                return self.get_axis(event.joy, event.axis, event.value)
+        return CRT_NONE
