@@ -88,8 +88,8 @@ class BGM(object):
 
     m_iTrackLast = -1
     m_iTrackCurr = -1
-    m_lTrackList = []
-    m_lTrackCtrl = []
+    m_lTrackList = []           # List of all found songs
+    m_lTrackCtrl = []           # Random sequence for playing without repeat
     m_bTrackRept = True         # If True will play all songs randomly 
                                 # withouth repeat.
 
@@ -115,7 +115,7 @@ class BGM(object):
         self._loop()
 
     def _init_pygame(self):
-        mixer.pre_init(44100, -16, 2, 2048)
+        mixer.pre_init(44100, -16, 2, 1024)
         mixer.init()
 
     def _check_paths(self):
@@ -132,6 +132,7 @@ class BGM(object):
 
         logging.info("INFO: found %s songs in music path" %
                      len(self.m_lTrackList))
+        self._get_random_sequence()
         # Try to configure if exist the starting song
         if self.m_sTrackInit:
             try:
@@ -142,6 +143,12 @@ class BGM(object):
             except:
                 logging.info("INFO: can't locate found starting song \"%s\" in list" \
                              % self.m_sTrackInit)
+
+    def _get_random_sequence(self):
+        # Create random order for reproduction
+        logging.info("INFO: generating random track sequence db")
+        self.m_lTrackCtrl = range(len(self.m_lTrackList))
+        random.shuffle(self.m_lTrackCtrl)        
 
     def music_start(self):
         if not mixer.music.get_busy():
@@ -181,51 +188,43 @@ class BGM(object):
 
     def _seek_track(self):
         """ If music is stopped will seek for the next song """
-        # If we have more than one BGM, choose a new one until we get one that
+        # If we have more than one song, choose a new one until we get one that
         # isn't what we just played.
         if len(self.m_lTrackList) > 1:
             if self.m_iTrackLast == self.m_iTrackCurr:
-                i = 1
-                logging.info("INFO: changing to random song")
-                self.m_iTrackCurr = random.randint(0, len(self.m_lTrackList)-1)
-                while self._random_control(self.m_iTrackCurr):
-                    self.m_iTrackCurr = random.randint(0, len(self.m_lTrackList)-1)
-                    i += 1
-                logging.info("INFO: %s attempts to locate next non played song" \
-                             % i)
+                logging.info("INFO: taking next song in sequence")
+                self.m_iTrackCurr = self._next_song()
+        logging.info("INFO: next song: file [%s] - seq [%s]" \
+                     % (self.m_lTrackList[self.m_iTrackCurr], self.m_iTrackCurr))
         p_lTrack = os.path.join(MUSIC_PATH, self.m_lTrackList[self.m_iTrackCurr])
         mixer.music.load(p_lTrack)
         logging.info("INFO: song loaded on mixer, ready to play")
         self.m_iTrackLast = self.m_iTrackCurr
 
-    def _random_control(self, p_Song):
+    def _next_song(self):
         """
         This function will create a database with the position number of the songs
         to check and avoid to repeat until to play all of them.
         It's possible to disable this feature changing m_bTrackRept to False.
         
         """
+        if os.path.getsize(LOG_PATH) > 524288:
+            open(LOG_PATH, "w").close()
+            logging.info("WARNING: previous log events were cleared")
+    
         if self.m_bTrackRept == False:
-            self.m_lTrackCtrl.append(p_Song)
-            logging.info("INFO: no repeat control enabled")
-            return False
-        
-        if len(self.m_lTrackList) > len(self.m_lTrackCtrl):
+            p_Song = random.randint(0, len(self.m_lTrackCtrl)-1)
+            logging.info("WARNING: no repeat control enabled")
+            return p_Song
+            
+        while True:
             try:
-                p_TrackPosCtrl = self.m_lTrackCtrl.index(p_Song)
-                #logging.info("INFO: found song \"%s\" at reproduction number [%s]" \
-                #              % (self.m_lTrackList[p_Song], p_TrackPosCtrl))
-                return True
+                p_Song = self.m_lTrackCtrl.pop()
+                return p_Song
             except:
-                self.m_lTrackCtrl.append(p_Song)
-                logging.info("INFO: first time for song \"%s\"" \
-                              % self.m_lTrackList[p_Song])
-                return False
-        else:
-            self.m_lTrackCtrl = []
-            logging.info("INFO: clearing song reproduction db")
-            return False
-
+                logging.info("INFO: END OF SEQUENCE, restarting reproduction")
+                self._get_random_sequence()
+                
     def _fade_out(self):
         logging.info("INFO: fading out music")
         while self.m_iVolume > 0:
@@ -335,7 +334,8 @@ class BGM(object):
 
     def __temp(self):
         if CLEAN_LOG_ONSTART:
-            os.system('rm %s' % LOG_PATH)
+            if os.path.exists (LOG_PATH):
+                os.system('rm %s' % LOG_PATH)
         logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
         format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
 
