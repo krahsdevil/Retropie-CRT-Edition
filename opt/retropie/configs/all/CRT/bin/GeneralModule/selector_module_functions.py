@@ -120,7 +120,7 @@ def check_joy_event(event):
             movement = 'JOYHATLEFT'
         else:
             movement = 'JOYHAT'
-    elif event.type == pygame.JOYAXISMOTION:
+    elif event.type == pygame.JOYAXISMOTION and event.axis < 2:
         AxisMov = round(event.value, 2)
         if event.axis == abs(l_axis_x):
             if AxisMov > 0.7:
