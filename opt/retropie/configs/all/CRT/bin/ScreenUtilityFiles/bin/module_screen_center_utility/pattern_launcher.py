@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os, sys
+import os, sys, traceback
 import subprocess, commands
 import logging
 
@@ -33,7 +33,8 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from launcher_module.core import CFG_VIDEOUTILITY_FILE, LOG_PATH
+from launcher_module.core import CFG_VIDEOUTILITY_FILE 
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.screen import CRT
 from launcher_module.utils import splash_info
 from launcher_module.file_helpers import *
@@ -42,6 +43,9 @@ from pattern_generator import *
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
+
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Screen_Center.log")
+EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 tests = ["system", "test60", "force"]
 
@@ -139,12 +143,12 @@ class center(object):
 
 try:
     argument = sys.argv[1]
-except:
-    print("No argument found for Screen Center Utility launching")
-    sys.exit()
-    
-if argument in tests:
+    if not argument in tests:
+        print ('ERROR: some of these arguments expected:\n %s' % tests)
+        raise Exception('ERROR: some of these arguments expected: %s' % tests)
     oLaunch = center()
-else:
-    print("No valid argument, expecting %s"%tests)
-    sys.exit()
+except Exception as e:
+    with open(EXCEPTION_LOG, 'a') as f:
+        f.write(str(e))
+        f.write(traceback.format_exc())
+sys.exit()
