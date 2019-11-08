@@ -63,7 +63,7 @@ HAT_CFG = {
     (0,-1)  : CRT_DOWN,
 }
 
-ABS_DIF        = 0.5
+ABS_DIF        = 0.2
 ABS_CTRL_STATE = False
 
 class joystick(object):
@@ -86,25 +86,40 @@ class joystick(object):
         # print str(self.m_lJoys)
 
     def _initialize(self, p_iJoy):
+        jData = self._base_joy_config() #setting most standard parameters
         pygame.joystick.Joystick(p_iJoy).init()
         sJoyName = pygame.joystick.Joystick(p_iJoy).get_name()
-        #print sJoyName
         sCfgFile = os.path.join(JOYCONFIG_PATH, sJoyName + '.cfg')
-        jData = {'x': {}, 'y': {}}
-        axis_tmp = ini_get(sCfgFile, 'input_l_x_minus_axis')
-        if not axis_tmp:
-            axis_tmp = ini_get(sCfgFile, 'input_left_axis')
-        jData['axis_trigger'] = False
-        jData['x']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
-        jData['x']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
-        axis_tmp = ini_get(sCfgFile, 'input_l_y_minus_axis')
-        if not axis_tmp:
-            axis_tmp = ini_get(sCfgFile, 'input_up_axis')
-        jData['y']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
-        jData['y']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
-        jData['ok'] = int(ini_get(sCfgFile, 'input_a_btn').replace('"', ''), 10)
-        jData['cancel'] = int(ini_get(sCfgFile, 'input_b_btn').replace('"', ''), 10)
+
+        if not os.path.exists(sCfgFile):
+            logging.info("joy config not found: %s" % sCfgFile)
+        else:
+            #getting ES custom config for joy
+            axis_tmp = ini_get(sCfgFile, 'input_l_x_minus_axis')
+            if not axis_tmp:
+                axis_tmp = ini_get(sCfgFile, 'input_left_axis')
+            jData['x']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
+            jData['x']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
+            axis_tmp = ini_get(sCfgFile, 'input_l_y_minus_axis')
+            if not axis_tmp:
+                axis_tmp = ini_get(sCfgFile, 'input_up_axis')
+            jData['y']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
+            jData['y']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
+            jData['ok'] = int(ini_get(sCfgFile, 'input_a_btn').replace('"', ''), 10)
+            jData['cancel'] = int(ini_get(sCfgFile, 'input_b_btn').replace('"', ''), 10)
         self.m_lJoys.append(jData)
+
+    def _base_joy_config(self):
+        #if config file is not found will apply this axis and 'standard' buttons
+        jData = {'x': {}, 'y': {}}
+        jData['axis_trigger'] = False
+        jData['x']['axis'] = 0
+        jData['x']['value'] = -ABS_DIF
+        jData['y']['axis'] = 1
+        jData['y']['value'] = -ABS_DIF
+        jData['ok'] = 1
+        jData['cancel'] = 0
+        return jData
 
     def get_num(self):
         return len(self.m_lJoys)
