@@ -239,10 +239,10 @@ class arcade(emulator):
 
     def encapsulator_selector(self):
         ch = choices()
-        #ch.set_title("GAME WITH MORE THAN 240 LINES")
+        ch.set_title("Arcade Encapsulator")
         ch.load_choices([
-                ("CROPPED", "CROPPED"),
-                ("FORCED", "FORCED"),
+                ("Play CROPPED", "CROPPED"),
+                ("Play FORCED", "FORCED"),
             ])
         result = ch.run()
         return result
