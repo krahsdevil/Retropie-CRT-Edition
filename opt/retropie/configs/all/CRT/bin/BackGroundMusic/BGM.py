@@ -277,34 +277,6 @@ class BGM(object):
                 pass
         return False
 
-    def check_launch_script(self):
-        """
-        Check if custom launcher script from CRT Edition by -krahs- is
-        running.
-        
-        """
-        self.m_sCRTProcessFound = ""
-        output = commands.getoutput('ps -fe')
-        for binary in self.m_dCRTLaunchProcess:
-            if binary in output:
-                self.m_sCRTProcessFound = binary
-                return True
-        return False
-
-    def wait_launch_script(self, p_iTime = 1):
-        """
-        Will wait to stop if custom launcher script from CRT Edition 
-        by -krahs- is running.
-        After emulator stops it's useful for waiting them stops before
-        music starts.
-        
-        """
-        logging.info("INFO: waiting to finish CRT launching script: %s" %
-                     self.m_sCRTProcessFound)
-        while self.check_launch_script:
-            time.sleep(p_iTime)
-        logging.info("INFO: CRT launching script finished")
-
     def _loop(self):
         """ Main program loop of BGM service"""
         while True:
@@ -317,8 +289,6 @@ class BGM(object):
                 logging.info("INFO: emulator - omxplayer found!")
                 self.music_stop()
                 self.wait_process(self.m_dEmulatorsName, 'stop')
-                if self.check_launch_script():
-                    self.wait_launch_script()
             else:
                 time.sleep(1)
 
