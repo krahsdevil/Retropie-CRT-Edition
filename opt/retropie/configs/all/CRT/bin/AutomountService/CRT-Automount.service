@@ -3,7 +3,7 @@ Description=This service search for external USB with almost roms folder and loa
 DefaultDependencies=no
 
 [Service]
-ExecStart=/usr/bin/python3 -u CRT-Automount.py
+ExecStart=/usr/bin/python -u CRT-Automount.py
 WorkingDirectory=/opt/retropie/configs/all/CRT/bin/AutomountService
 StandardOutput=inherit
 StandardError=inherit

@@ -1,177 +1,371 @@
-#!/usr/bin/env python3
-# coding: utf-8
-#
-# Retropie code/integration by -krahs- (2019)
-#
-# unlicense.org
-#
-# This script can be heavily optimized.
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
+
+"""
+USB automount main service code
+
+USB Automount service code for Retropie by -krahs-
+
+https://github.com/krahsdevil/crt-for-retropie/
+
+Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2019 dskywalk - http://david.dantoine.org
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 2 of the License, or (at your option) any
+later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
 import os
-import subprocess
+import subprocess, commands
+import logging, traceback
 import time
 
-def get_mountedlist():
-    return [(item.split()[0].replace("├─", "").replace("└─", ""),
-             item[item.find("/"):]) for item in subprocess.check_output(
-            ["lsblk"]).decode("utf-8").split("\n") if "/" in item]
+CRT_PATH = "/opt/retropie/configs/all/CRT"
+RETROPIE_PATH = "/home/pi/RetroPie"
+ES_PATH = "/opt/retropie/configs/all/emulationstation"
+TMP_LAUNCHER_PATH = '/dev/shm'
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_USBAutoMount.log")
+EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
-def identify(disk):
-    cmd = "find /dev/disk -ls | grep /"+disk
-    output = subprocess.check_output(["/bin/bash", "-c", cmd]).decode("utf-8")
-    return True if "usb" in output else False
+ROMS_FOLDER = "roms"
+ROMS_PATH = os.path.join(RETROPIE_PATH, ROMS_FOLDER)
 
-done = []; check = []
-dt = "/home/pi/RetroPie/roms"
-# Remove mounted points on first boot
-os.system("sudo umount -l /home/pi/RetroPie/roms > /dev/null 2>&1")
-os.system("sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1")
-os.system("sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1")
-# First Cleaning
-os.system("rm /opt/retropie/configs/all/CRT/bin/AutomountService/mounted.cfg > /dev/null 2>&1")
-os.system("rm /opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg > /dev/null 2>&1")
-os.system("touch /opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg > /dev/null 2>&1")
-MountedUSB = False
-while True:
-    mnt = get_mountedlist(); mount_check = [item[1] for item in mnt]
-    for item in check:
-        if not item in mount_check:
+BIOS_FOLDER = "BIOS"
+BIOS_PATH = os.path.join(RETROPIE_PATH, BIOS_FOLDER)
+
+CRT_OPT_FOLDER = "1CRT"
+RETROPIE_OPT_FOLDER = "retropie"
+GAMELIST_FOLDER = "gamelists"
+GAMELIST_PATH = os.path.join(ES_PATH, GAMELIST_FOLDER)
+
+USBAUTO_PATH = os.path.join(CRT_PATH, "bin/AutomountService")
+TRG_MNT_FILE = os.path.join(USBAUTO_PATH, "mounted.cfg") #Trigger USB is mounted
+TRG_UMNT_FILE = os.path.join(USBAUTO_PATH, "umounted.cfg") #Trigger USB is NOT mounted
+
+__VERSION__ = '0.1'
+__DEBUG__ = logging.INFO # logging.ERROR
+CLEAN_LOG_ONSTART = False
+
+class USBAutoService(object):
+    m_dEmulatorsName = ["retroarch", "ags", "uae4all2", "uae4arm", "capricerpi",
+                        "linapple", "hatari", "stella", "atari800", "xroar",
+                        "vice", "daphne", "reicast", "pifba", "osmose", "gpsp",
+                        "jzintv", "basiliskll", "mame", "advmame", "dgen",
+                        "openmsx", "mupen64plus", "gngeo", "dosbox", "ppsspp",
+                        "simcoupe", "scummvm", "snes9x", "pisnes", "frotz",
+                        "fbzx", "fuse", "gemrb", "cgenesis", "zdoom", "eduke32",
+                        "lincity", "love", "kodi", "alephone", "micropolis",
+                        "openbor", "openttd", "opentyrian", "cannonball",
+                        "tyrquake", "ioquake3", "residualvm", "xrick", "sdlpop",
+                        "uqm", "stratagus", "wolf4sdl", "solarus", "drastic",
+                        "coolcv", "PPSSPPSDL", "moonlight", "Xorg", "smw",
+                        "omxplayer.bin", "wolf4sdl-3dr-v14", "wolf4sdl-gt-v14",
+                        "wolf4sdl-spear", "wolf4sdl-sw-v14", "xvic",
+                        "xvic cart", "xplus4", "xpet", "x128", "x64sc", "x64",
+                        "prince", "fba2x", "steamlink", "pcsx-rearmed",
+                        "limelight", "sdltrs", "ti99sm", "dosbox-sdl2",
+                        "minivmac", "quasi88", "xm7", "yabause", "abuse",
+                        "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
+                        "love", "love-0.10.2", "openblok", "openfodder", "srb2",
+                        "yquake2", "amiberry", "zesarux", "dxx-rebirth",
+                        "zesarux"]
+    m_lMountUSBsPrev = []  # Previous scan: disk ID + mnt Path
+    m_lMountPathsPrev = [] # Previous scan: only mnt Path
+    m_lMountUSBs = []      # Current scan: disk ID + mnt Path
+    m_lMountPaths = []     # Current scan: disk ID + mnt Path
+    m_lMountCtrl = []      # For control the valid usb path
+    m_bUSBMounted = False  # To avoid to mount a second device
+
+    m_dWrongFolderName = { "fba_libretro": "fba", "mame": "mame-libretro",
+                           "advmame": "mame-advmame", "sg1000": "sg-1000",
+                           "wswan": "wonderswan", "wswanc": "wonderswancolor",
+                           "colecovision": "coleco", "lynx": "atarilynx",
+                          }
+
+    m_dRootFolders = [ROMS_FOLDER, BIOS_FOLDER, GAMELIST_FOLDER]
+    m_dGamelistFolders = [CRT_OPT_FOLDER, RETROPIE_OPT_FOLDER]
+
+    def __init__(self):
+        self.__temp()
+        self.__clean()
+        logging.info("INFO: Initializating USB Automount Service")
+        
+    def run(self):
+        self._loop()
+
+    def _get_mounted_list(self):
+        """ 
+        Will take all connected disks on the system and make a filtered list with
+        only usb devices. This also will create two lists, one with only usb mounted
+        paths and other with mounted paths and disks system id (/dev/sda1 - /media/usb0)
+        First access will replicate previous scan to variables 'Prev' to 
+        compare and see if any new device was connected.
+        """
+        self.m_lMountUSBsPrev = self.m_lMountUSBs   #Save current scan as Prev to compare
+        self.m_lMountPathsPrev = self.m_lMountPaths #Save current scan as Prev to compare
+        self.m_lMountUSBs = []  #Reset variable with disk and paths info
+        self.m_lMountPaths = [] #Reset variable with paths info
+
+        p_sCMDString = "find /dev/disk -ls | grep /%s"
+        p_sOutputMNT = [(item.split()[0].replace("├─", "").replace("└─", ""),
+                         item[item.find("/"):]) for item in subprocess.check_output(
+                         ["lsblk"]).split("\n") if "/" in item]
+        
+        for item in p_sOutputMNT:
             try:
-                # Remove mounted points when external USB is removed
-                os.system("sudo umount -l /home/pi/RetroPie/roms > /dev/null 2>&1")
-                os.system("sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1")
-                os.system("sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1")
-                os.system("sudo umount -l %s > /dev/null 2>&1" % item)
-                # Wait if there is any emulator running
-                MountedUSB = False
-                os.system("rm /opt/retropie/configs/all/CRT/bin/AutomountService/mounted.cfg > /dev/null 2>&1")
-                os.system("touch /opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg > /dev/null 2>&1")
-                while True:
-                    output = subprocess.getoutput('ps -A')
-                    if not 'retroarch' in output or not 'advmame' in output or not 'scummvm' in output:
+                p_sOutputUSB = subprocess.check_output(["/bin/bash", "-c", p_sCMDString % item[0]])
+            except:
+                p_sOutputUSB = ""
+            if 'usb' in p_sOutputUSB:
+                self.m_lMountUSBs.append(item)
+                self.m_lMountPaths.append(item[1])
+
+    def _mount(self, p_sMount = None):
+        for device in self.m_lMountUSBs:
+            if device[1] == p_sMount:
+                p_sDisk = device[0]
+        os.system("sudo mount --bind %s/%s %s > /dev/null 2>&1" % (p_sMount, ROMS_FOLDER, ROMS_PATH))
+        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, ROMS_FOLDER, ROMS_PATH))
+        os.system("sudo mount --bind %s/%s %s > /dev/null 2>&1" % (p_sMount, BIOS_FOLDER, BIOS_PATH))
+        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, BIOS_FOLDER, BIOS_PATH))
+        os.system("sudo mount --bind %s/%s %s > /dev/null 2>&1" % (p_sMount, GAMELIST_FOLDER, GAMELIST_PATH))
+        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, GAMELIST_FOLDER, GAMELIST_PATH))
+        os.system("rm %s > /dev/null 2>&1" % TRG_UMNT_FILE)
+        os.system("echo \"/dev/%s %s\" > %s" % (p_sDisk, p_sMount, TRG_MNT_FILE))
+        logging.info("INFO: Created trigger file mount : \"/dev/%s %s\"" % (p_sDisk, p_sMount))
+
+    def _check_mount(self):
+        """ 
+        Will check if any new USB external storage is connected and it´s a valid USB 
+        for ROMs. If 'Prev' and current variable check for USB devices are different
+        and also self.m_bUSBMounted is False (there is not a prev USB ROMs device
+        connected) will try to mount.
+        
+        """
+        p_bCheck01 = False
+        p_bCheck02 = False
+        if self.m_lMountPathsPrev != self.m_lMountPaths:
+            p_bCheck01 = True
+        
+        if not self.m_bUSBMounted and p_bCheck01:
+            for path in self.m_lMountPaths:
+                if not path in self.m_lMountPathsPrev: #Means we have a new device
+                    if self._valid_usb_storage(path): #Check if root '/roms' if found
+                        self.m_bUSBMounted = True
+                        logging.info("INFO: New VALID usb device plugged at \"%s\"" % (path))
+                        #TODO: Prepare folder structure
+                        self._get_folder_structure(path)
+                        self.m_lMountCtrl.append(path)
+                        self._mount(path)
+                        p_bCheck02 = True
                         break
-                    time.sleep(1)
-                output = subprocess.getoutput('ps -A')
-                # Restart ES if it is running
-                if 'emulationstatio' in output:
-                    os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
-                check.remove(item)
-            except FileNotFoundError:
+                    else:
+                        logging.info("INFO: Found new NOT VALID usb device at \"%s\"" % (path))
+        return p_bCheck02
+
+    def _valid_usb_storage(self, p_sMount):
+        for folder in os.listdir(p_sMount):
+            #logging.info("INFO: Compare %s %s" % (folder.lower(), ROMS_FOLDER.lower()))
+            if folder.lower() == ROMS_FOLDER.lower():
+                logging.info("INFO: Found \"/roms\" folder in root at %s" % p_sMount)
+                return True
+        logging.info("INFO: No valid folder structure found at %s" % p_sMount)
+        return False
+
+    def _umount(self, p_sMount = None):
+        """ Force umount of all mounted paths """
+        try:
+            os.system("sudo umount -l %s > /dev/null 2>&1" % ROMS_PATH)
+            logging.info("INFO: Umounting %s" % ROMS_PATH)
+            os.system("sudo umount -l %s > /dev/null 2>&1" % BIOS_PATH)
+            logging.info("INFO: Umounting %s" % BIOS_PATH)
+            os.system("sudo umount -l %s > /dev/null 2>&1" % GAMELIST_PATH)
+            logging.info("INFO: Umounting %s" % GAMELIST_PATH)
+            if p_sMount:
+                os.system("sudo umount -l %s > /dev/null 2>&1" % p_sMount)
+                logging.info("INFO: Umounting device %s" % p_sMount)
+            os.system("rm %s > /dev/null 2>&1" % TRG_MNT_FILE)
+            os.system("touch %s > /dev/null 2>&1" % TRG_UMNT_FILE)
+        except:
+            pass
+
+    def _check_umount(self):
+        """ 
+        Check if any previous devices identified as valid USB of ROMs is
+        disconected. If list is empty will not do anything.
+        """
+        p_bCheck = False
+        p_lTemp = self.m_lMountCtrl
+        if p_lTemp:
+            for path in p_lTemp:
+                if not path in self.m_lMountPaths:
+                    logging.info("INFO: Valid device at \"%s\" removed" % path)
+                    p_bCheck = True
+                    self.m_bUSBMounted = False
+                    self.m_lMountCtrl.remove(path)
+                    self._umount(path)
+        return p_bCheck
+
+    def _get_folder_structure(self, p_sMount):
+        self._check_folder_names(p_sMount)
+        self._check_missing_folders(p_sMount)
+        self._sync_system_gamelist(p_sMount)
+    
+    def _check_folder_names(self, p_sMount):
+        """ Will fix wrong folder names, from some recalbox usb roms packs """
+        p_sRootPath = p_sMount
+        p_sGamelistsPath = (os.path.join(p_sRootPath, GAMELIST_FOLDER))
+        p_sROMsPath = (os.path.join(p_sRootPath, ROMS_FOLDER))
+        logging.info("INFO: Starting folder's names check")
+        # Fix main folders names on USB root
+        self._fix_folder_names(self.m_dRootFolders, p_sRootPath)
+        # Fix main folders names on USB gamelist folder
+        self._fix_folder_names(self.m_dGamelistFolders, p_sGamelistsPath)
+        # Fix wrong roms folder names
+        self._fix_roms_folder_names(self.m_dWrongFolderName, p_sROMsPath)
+
+    def _fix_roms_folder_names(self, p_lFldList, p_sPath):
+        """ For fix some Recalbox roms packs, different folder names """
+        if os.path.exists(p_sPath):
+            for folder01 in p_lFldList:
+                for folder02 in os.listdir(p_sPath):
+                    if folder01.lower() == folder02.lower():
+                        try:
+                            os.rename("%s/%s" % (p_sPath, folder02),
+                                      "%s/%s" % (p_sPath, p_lFldList[folder01]))
+                            logging.info("INFO: Changed folder name from %s/%s to %s/%s" % \
+                                        (p_sPath, folder02, p_sPath, p_lFldList[folder01]))
+                        except:
+                            pass
+
+    def _fix_folder_names(self, p_lFldList, p_sPath):
+        """ For CaSe SeNsItIvE folder names """
+        if os.path.exists(p_sPath):
+            for folder01 in p_lFldList:
+                for folder02 in os.listdir(p_sPath):
+                    if folder01.lower() == folder02.lower() and folder01 != folder02:
+                        try:
+                            os.rename("%s/%s" % (p_sPath, folder02),
+                                      "%s/%s" % (p_sPath, folder01))
+                            logging.info("INFO: Changed folder name from %s/%s to %s/%s" % \
+                                        (p_sPath, folder02, p_sPath, folder01))
+                        except:
+                            pass
+
+    def _check_missing_folders(self, p_sMount):
+        """ Will fix and create base folders: roms, bios, gamelists... """
+        p_sRootPath = p_sMount
+        p_sGamelistsPath = (os.path.join(p_sRootPath, GAMELIST_FOLDER))
+        p_sROMsPath = (os.path.join(p_sRootPath, ROMS_FOLDER))
+        logging.info("INFO: Creating missing folders")
+        # Create main folders
+        self._create_miss_folders(self.m_dRootFolders, p_sRootPath)
+        # Create system CRT and retropie 
+        self._create_miss_folders(self.m_dGamelistFolders, p_sGamelistsPath)
+        # Replicate roms/gamelist folders internal -> usb
+        self._create_miss_folders(os.listdir(ROMS_PATH), p_sROMsPath)
+        self._create_miss_folders(os.listdir(GAMELIST_PATH), p_sGamelistsPath)
+        # Replicate roms/gamelist folders usb -> internal
+        self._create_miss_folders(os.listdir(p_sROMsPath), ROMS_PATH)
+        self._create_miss_folders(os.listdir(p_sGamelistsPath), GAMELIST_PATH)
+
+    def _create_miss_folders(self, p_lFldList, p_sPath):
+        for folder in p_lFldList:
+            p_sNewPath01 = "%s/%s" % (p_sPath, folder)
+            if not os.path.exists(p_sNewPath01):
+                os.makedirs(p_sNewPath01)
+                logging.info("INFO: Create folder %s" % p_sNewPath01)
+
+    def _sync_system_gamelist(self, p_sMount):
+        """ Will create and sync to usb CRT and retropie options for ES """
+        p_sGamelistsPath = (os.path.join(p_sMount, GAMELIST_FOLDER))
+        for folder in self.m_dGamelistFolders:
+            logging.info("INFO: Synchronizing folder %s/%s to %s/%s" % \
+                        (GAMELIST_PATH, folder, p_sGamelistsPath, folder))
+            os.system("rsync -a --delete %s/%s/ %s/%s/" % \
+                       (GAMELIST_PATH, folder, p_sGamelistsPath, folder))
+
+    def _loop(self, p_iTime = 2):
+        while True:
+            self._get_mounted_list()
+            if self._check_umount():
+                self._restart_ES()
+            elif self._check_mount():
+                self._restart_ES()
+            time.sleep(p_iTime)
+
+
+    def _restart_ES(self):
+        """ Restart ES if it's running """
+        sOutput = commands.getoutput('ps -A')
+        if 'emulationstatio' in sOutput:
+            logging.info("INFO: Restarting EmulationStation...")
+            if self._check_process():
+                self._wait_process()
+            os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
+            os.system('clear')
+
+    def _wait_process(self, p_sProcess = m_dEmulatorsName, p_sState = 'stop', p_iTime = 1):
+        """
+        This function will wait to start or stop for only one process or a 
+        list of them like emulators. By default will wait to start with
+        p_sState parameter, but you can change it on call to 'start'.
+        If a list is passed, function will validate that at least one of
+        them started or all are stopped.
+        
+        """
+        bProcessFound = None
+        bCondition = True
+        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
+        if p_sState == 'stop':
+            bCondition = False
+        while bProcessFound != bCondition:
+            bProcessFound = self._check_process(p_sProcess)
+            time.sleep(p_iTime)
+        logging.info("INFO: wait finished")
+
+    def _check_process(self, p_sProcess = m_dEmulatorsName):
+        pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+        for pid in pids:
+            try:
+                procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
+                if type(p_sProcess) is list:
+                    if procname[:-1] in p_sProcess:
+                        logging.info("INFO: found process {%s}"%procname[:-1])
+                        return True
+                elif type(p_sProcess) is str:
+                    if procname[:-1] == p_sProcess:
+                        logging.info("INFO: found process {%s}"%procname[:-1])
+                        return True
+            except IOError:
                 pass
-    new_paths = [dev for dev in mnt if not dev in done and not dev[1] == "/"]
-    valid = [dev for dev in new_paths if identify(dev[0]) == True]
-    # Enter if connected device is an USB storage
-    for item in valid:
-        new = item[1]
-        USBPhysicalDisk = item[0]
-        USBMountPoing = item[1]
-        # Def of hiphotetic roms paths
-        RomPaths = "%s/roms" % new
-        BiosPaths = "%s/bios" % new
-        GamelistPaths = "%s/gamelists" % new
-        ###############################################################################################################
-        #    If at least exist on USB a 'roms' folder, device is allowed for external storage, function will do:      #
-        #                                                                                                             #
-        #       1) Check for an existing 'roms' folder if not, devide will be discarded, if yes:                      #
-        #          a) Check for an existing 'bios' folder if not, function will create it                             #
-        #             If 'BIOS' folder exists, function will rename it to 'bios'                                      #
-        #          b) Check for an existing 'gamelist' folder if not, function will create it and:                    #
-        #             b.1) Check for existing 'retropie' and 'CRT' folders if not, function will create it and:       #
-        #                b.1.1) Replicate to USB gamelist.xml for both, 'retropie' ang 'CRT', this allows that     #
-        #                       their options will be available after USB mounting.                                   #
-        #          c) Try to replicate, if not exist, current structure of system folders to 'gamelist' and 'roms'    #
-        #                                                                                                             #
-        #    These are the folders will be mounted on usb:                                                            #
-        #       /media/usbX/roms -> /home/pi/RetroPie/roms                                                            #
-        #       /media/usbX/bios -> /home/pi/RetroPie/BIOS                                                            #
-        #       /media/usbX/gamelists -> /opt/retropie/configs/all/emulationstation/gamelists                         #
-        #        *Retropie also support gamelist.xml in the same folder as roms                                       #
-        #                                                                                                             #
-        #    *'save states' are saved in the same folder as the game i                                                #
-        ###############################################################################################################
-        if os.path.exists(RomPaths) and MountedUSB == False:
-            #Check if there is any folder with recalbox name 'libretro-fba' and change to 'fba'
-            if os.path.exists('%s/fba_libretro' % RomPaths):
-                if not os.path.exists('%s/fba' % RomPaths):
-                    os.rename("%s/fba_libretro" % RomPaths,"%s/fba" % RomPaths)
-            if os.path.exists("%s/mame" % RomPaths):
-                if not os.path.exists('%s/mame-libretro' % RomPaths):
-                    os.rename("%s/mame" % RomPaths,"%s/mame-libretro" % RomPaths)
-            if os.path.exists('%s/advmame' % RomPaths):
-                if not os.path.exists('%s/mame-advmame' % RomPaths):
-                    os.rename("%s/advmame" % RomPaths,"%s/mame-advmame" % RomPaths)
-            if os.path.exists('%s/sg1000' % RomPaths):
-                if not os.path.exists('%s/sg-1000' % RomPaths):
-                    os.rename("%s/sg1000" % RomPaths,"%s/sg-1000" % RomPaths)
-            if os.path.exists('%s/wswan' % RomPaths):
-                if not os.path.exists('%s/wonderswan' % RomPaths):
-                    os.rename("%s/wswan" % RomPaths,"%s/wonderswan" % RomPaths)
-            if os.path.exists('%s/wswanc' % RomPaths):
-                if not os.path.exists('%s/wonderswancolor' % RomPaths):
-                    os.rename("%s/wswanc" % RomPaths,"%s/wonderswancolor" % RomPaths)
-            if os.path.exists('%s/colecovision' % RomPaths):
-                if not os.path.exists('%s/coleco' % RomPaths):
-                    os.rename("%s/colecovision" % RomPaths,"%s/coleco" % RomPaths)
-            if os.path.exists('%s/lynx' % RomPaths):
-                if not os.path.exists('%s/atarilynx' % RomPaths):
-                    os.rename("%s/lynx" % RomPaths,"%s/atarilynx" % RomPaths)
-            if not os.path.exists(BiosPaths):
-                if os.path.exists('%s/BIOS' % USBMountPoing):
-                    os.rename("%s/BIOS" % USBMountPoing,BiosPaths)
-                else:
-                    os.makedirs(BiosPaths)
-            if not os.path.exists(GamelistPaths):
-                os.makedirs(GamelistPaths)
-            if not os.path.exists("%s/1CRT" % GamelistPaths):
-                os.makedirs ("%s/1CRT" % GamelistPaths)
-            if not os.path.exists("%s/retropie" % GamelistPaths):
-                os.makedirs ("%s/retropie" % GamelistPaths)
+        return False
+        
+    # clean trigger files
+    def __clean(self):
+        os.system("rm %s > /dev/null 2>&1" % TRG_MNT_FILE)
+        os.system("rm %s > /dev/null 2>&1" % TRG_UMNT_FILE)
+        os.system("touch %s > /dev/null 2>&1" % TRG_UMNT_FILE)
 
-            os.system("rsync -a --delete /opt/retropie/configs/all/emulationstation/gamelists/1CRT/ %s/1CRT/" % GamelistPaths)
-            os.system("rsync -a --delete /opt/retropie/configs/all/emulationstation/gamelists/retropie/ %s/retropie/" % GamelistPaths)
-
-            #Check ROM folders from internal Retropie to USB external
-            for item in os.listdir("/home/pi/RetroPie/roms"):
-                InternalRomPath = "/home/pi/RetroPie/roms/%s" % item
-                ExternalRomPath = "%s/%s" % (RomPaths,item)
-                ExternalGamelistPath = "%s/%s" % (GamelistPaths,item)
-                if not os.path.exists(ExternalRomPath):
-                    os.makedirs(ExternalRomPath)
-                #If folders exist copy .sh files from some emulator like ScummVM, DosBox or Amiga
-                os.system("cp -n %s/+*.sh %s" % (InternalRomPath,ExternalRomPath))
-                if not os.path.exists(ExternalGamelistPath):
-                    os.makedirs(ExternalGamelistPath)
-
-            #Reverse Check, ROM folders from USB external to internal
-            for item in os.listdir(RomPaths):
-                InternalRomPath = "/home/pi/RetroPie/roms/%s" % item
-                ExternalRomPath = "%s/%s" % (RomPaths,item)
-                InternalGamelistPath = "/opt/retropie/configs/all/emulationstation/gamelists/%s" % item
-                if not os.path.exists(InternalRomPath):
-                    os.makedirs(InternalRomPath)
-                #If folders exist copy .sh files from some emulator like ScummVM, DosBox or Amiga
-                os.system("cp -n %s/+*.sh %s" % (ExternalRomPath,InternalRomPath))
-                if not os.path.exists(InternalGamelistPath):
-                    os.makedirs(InternalGamelistPath)
-
-            os.system("sudo mount --bind %s /home/pi/RetroPie/roms > /dev/null 2>&1" % RomPaths)
-            os.system("sudo mount --bind %s /home/pi/RetroPie/BIOS > /dev/null 2>&1" % BiosPaths)
-            os.system("sudo mount --bind %s /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1" % GamelistPaths)
-            MountedUSB = True
-            os.system("rm /opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg > /dev/null 2>&1")
-            os.system("echo \"/dev/%s %s\" > /opt/retropie/configs/all/CRT/bin/AutomountService/mounted.cfg" % (USBPhysicalDisk,USBMountPoing))
-            while True:
-                # Wait if there is any emulator running
-                output = subprocess.getoutput('ps -A')
-                if not 'retroarch' in output or not 'advmame' in output or not 'scummvm' in output:
-                    break
-                time.sleep(1)
-            output = subprocess.getoutput('ps -A')
-            # Restart ES if it is running
-            if 'emulationstatio' in output:
-                os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
-            check.append(new)
-        #else:
-            # If USB is not identified as external storage for roms.
-    time.sleep(4)
-    done = mnt
+    def __temp(self):
+        if CLEAN_LOG_ONSTART:
+            if os.path.exists (LOG_PATH):
+                os.system('rm %s' % LOG_PATH)
+        logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
+        format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
+        
+try:
+    oUSBAutoMount = USBAutoService()
+    oUSBAutoMount.run()
+except Exception as e:
+    with open(EXCEPTION_LOG, 'a') as f:
+        f.write(str(e))
+        f.write(traceback.format_exc())
