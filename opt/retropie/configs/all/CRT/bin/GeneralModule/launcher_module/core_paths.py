@@ -32,3 +32,4 @@ RETROPIEEMU_PATH = os.path.join(RETROPIE_PATH, "emulators")
 
 CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
 CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
+CRTASSETS_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/resources/assets")
