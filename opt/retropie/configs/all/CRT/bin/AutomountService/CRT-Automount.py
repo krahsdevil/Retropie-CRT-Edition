@@ -90,6 +90,17 @@ class USBAutoService(object):
                            "colecovision": "coleco", "lynx": "atarilynx",
                           }
 
+    m_dStartScripts = ({"script": "+Start ScummVM.sh", 
+                        "binary": "/opt/retropie/emulators/scummvm/bin/scummvm"},
+                       {"script": "+Start ScummVM-SDL1.sh", 
+                        "binary": "/opt/retropie/emulators/scummvm-sdl1/bin/scummvm"},
+                       {"script": "+Start Amiberry.sh", 
+                        "binary": "/opt/retropie/emulators/amiberry/amiberry.sh"},
+                       {"script": "+Start DOSBox.sh", 
+                        "binary": "/opt/retropie/emulators/dosbox/bin/dosbox"},
+                       {"script": "+Start Fuse.sh", 
+                        "binary": "/opt/retropie/emulators/fuse/bin/fuse"})
+
     m_dRootFolders = [ROMS_FOLDER, BIOS_FOLDER, GAMELIST_FOLDER]
     m_dGamelistFolders = [CRT_OPT_FOLDER, RETROPIE_OPT_FOLDER]
 
@@ -218,6 +229,7 @@ class USBAutoService(object):
         self._check_folder_names(p_sMount)
         self._check_missing_folders(p_sMount)
         self._sync_system_gamelist(p_sMount)
+        self._sync_start_scripts(p_sMount)
     
     def _check_folder_names(self, p_sMount):
         """ Will fix wrong folder names, from some recalbox usb roms packs """
@@ -232,31 +244,29 @@ class USBAutoService(object):
         # Fix wrong roms folder names
         self._fix_roms_folder_names(self.m_dWrongFolderName, p_sROMsPath)
 
-    def _fix_roms_folder_names(self, p_lFldList, p_sPath):
+    def _fix_roms_folder_names(self, p_lFolderLST, p_sPath):
         """ For fix some Recalbox roms packs, different folder names """
         if os.path.exists(p_sPath):
-            for folder01 in p_lFldList:
-                for folder02 in os.listdir(p_sPath):
-                    if folder01.lower() == folder02.lower():
-                        try:
-                            os.rename("%s/%s" % (p_sPath, folder02),
-                                      "%s/%s" % (p_sPath, p_lFldList[folder01]))
+            for p_sFolderDST in p_lFolderLST:
+                for p_sFolderSRC in os.listdir(p_sPath):
+                    if p_sFolderDST.lower() == p_sFolderSRC.lower():
+                        if not os.path.exists("%s/%s" % (p_sPath, p_lFolderLST[p_sFolderDST])):
+                            os.rename("%s/%s" % (p_sPath, p_sFolderSRC),
+                                      "%s/%s" % (p_sPath, p_lFolderLST[p_sFolderDST]))
                             logging.info("INFO: Changed folder name from %s/%s to %s/%s" % \
-                                        (p_sPath, folder02, p_sPath, p_lFldList[folder01]))
-                        except:
-                            pass
+                                        (p_sPath, p_sFolderSRC, p_sPath, p_lFolderLST[p_sFolderDST]))
 
-    def _fix_folder_names(self, p_lFldList, p_sPath):
+    def _fix_folder_names(self, p_lFolderLST, p_sPath):
         """ For CaSe SeNsItIvE folder names """
         if os.path.exists(p_sPath):
-            for folder01 in p_lFldList:
-                for folder02 in os.listdir(p_sPath):
-                    if folder01.lower() == folder02.lower() and folder01 != folder02:
+            for p_sFolderDST in p_lFolderLST:
+                for p_sFolderSRC in os.listdir(p_sPath):
+                    if p_sFolderDST.lower() == p_sFolderSRC.lower() and p_sFolderDST != p_sFolderSRC:
                         try:
-                            os.rename("%s/%s" % (p_sPath, folder02),
-                                      "%s/%s" % (p_sPath, folder01))
+                            os.rename("%s/%s" % (p_sPath, p_sFolderSRC),
+                                      "%s/%s" % (p_sPath, p_sFolderDST))
                             logging.info("INFO: Changed folder name from %s/%s to %s/%s" % \
-                                        (p_sPath, folder02, p_sPath, folder01))
+                                        (p_sPath, p_sFolderSRC, p_sPath, p_sFolderDST))
                         except:
                             pass
 
@@ -277,22 +287,50 @@ class USBAutoService(object):
         self._create_miss_folders(os.listdir(p_sROMsPath), ROMS_PATH)
         self._create_miss_folders(os.listdir(p_sGamelistsPath), GAMELIST_PATH)
 
-    def _create_miss_folders(self, p_lFldList, p_sPath):
-        for folder in p_lFldList:
-            p_sNewPath01 = "%s/%s" % (p_sPath, folder)
-            if not os.path.exists(p_sNewPath01):
-                os.makedirs(p_sNewPath01)
-                logging.info("INFO: Create folder %s" % p_sNewPath01)
+    def _create_miss_folders(self, p_lFolderLST, p_sPath):
+        for p_sFolderDST in p_lFolderLST:
+            p_sPathDST = "%s/%s" % (p_sPath, p_sFolderDST)
+            if not os.path.exists(p_sPathDST) and \
+               not p_sFolderDST in self.m_dWrongFolderName:
+                os.makedirs(p_sPathDST)
+                logging.info("INFO: Create folder %s" % p_sPathDST)
 
     def _sync_system_gamelist(self, p_sMount):
         """ Will create and sync to usb CRT and retropie options for ES """
         p_sGamelistsPath = (os.path.join(p_sMount, GAMELIST_FOLDER))
-        for folder in self.m_dGamelistFolders:
+        for p_sFolder in self.m_dGamelistFolders:
             logging.info("INFO: Synchronizing folder %s/%s to %s/%s" % \
-                        (GAMELIST_PATH, folder, p_sGamelistsPath, folder))
+                        (GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
             os.system("rsync -a --delete %s/%s/ %s/%s/" % \
-                       (GAMELIST_PATH, folder, p_sGamelistsPath, folder))
+                       (GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
 
+    def _sync_start_scripts(self, p_sMount):
+        p_sRootPath = p_sMount
+        p_sROMsPath = (os.path.join(p_sRootPath, ROMS_FOLDER))
+        # Clean +Start_xxx scripts on internal storage
+        self._clean_start_scripts(ROMS_PATH, p_sROMsPath)
+        # Clean +Start_xxx scripts on external usb device
+        self._clean_start_scripts(p_sROMsPath, ROMS_PATH)
+
+    def _clean_start_scripts(self, p_sPathSRC, p_sPathDST):
+        p_lFolderLST = os.listdir(p_sPathSRC)
+        for item in self.m_dStartScripts:
+            for p_sFolder in p_lFolderLST:
+                p_sScriptSRC = "%s/%s/%s" % (p_sPathSRC, p_sFolder, item["script"])
+                p_sScriptDST = "%s/%s/%s" % (p_sPathDST, p_sFolder, item["script"])
+                if os.path.exists(p_sScriptSRC):
+                    if not os.path.exists(item["binary"]):
+                        logging.info("INFO: Binary %s doesn't exist" % item["binary"])
+                        os.system('rm "%s" /dev/null 2>&1' % p_sScriptSRC)
+                        logging.info("INFO: Deleting %s" % p_sScriptSRC)
+                        if os.path.exists(p_sScriptDST):
+                            os.system('rm "%s" /dev/null 2>&1' % p_sScriptDST)
+                            logging.info("INFO: Deleting %s" % p_sScriptDST)
+                    else:
+                        os.system("rsync -zvh %s %s /dev/null 2>&1" % \
+                                 (p_sScriptSRC, p_sScriptDST))
+                    break
+        
     def _loop(self, p_iTime = 2):
         while True:
             self._get_mounted_list()
