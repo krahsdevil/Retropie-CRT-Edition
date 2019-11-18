@@ -143,14 +143,14 @@ class USBAutoService(object):
         for device in self.m_lMountUSBs:
             if device[1] == p_sMount:
                 p_sDisk = device[0]
-        os.system("sudo mount --bind %s/%s %s > /dev/null 2>&1" % (p_sMount, ROMS_FOLDER, ROMS_PATH))
+        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, ROMS_FOLDER, ROMS_PATH))
         logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, ROMS_FOLDER, ROMS_PATH))
-        os.system("sudo mount --bind %s/%s %s > /dev/null 2>&1" % (p_sMount, BIOS_FOLDER, BIOS_PATH))
+        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, BIOS_FOLDER, BIOS_PATH))
         logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, BIOS_FOLDER, BIOS_PATH))
-        os.system("sudo mount --bind %s/%s %s > /dev/null 2>&1" % (p_sMount, GAMELIST_FOLDER, GAMELIST_PATH))
+        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, GAMELIST_FOLDER, GAMELIST_PATH))
         logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, GAMELIST_FOLDER, GAMELIST_PATH))
-        os.system("rm %s > /dev/null 2>&1" % TRG_UMNT_FILE)
-        os.system("echo \"/dev/%s %s\" > %s" % (p_sDisk, p_sMount, TRG_MNT_FILE))
+        os.system('rm "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
+        os.system('echo "/dev/%s %s" > "%s"' % (p_sDisk, p_sMount, TRG_MNT_FILE))
         logging.info("INFO: Created trigger file mount : \"/dev/%s %s\"" % (p_sDisk, p_sMount))
 
     def _check_mount(self):
@@ -186,7 +186,7 @@ class USBAutoService(object):
         for folder in os.listdir(p_sMount):
             #logging.info("INFO: Compare %s %s" % (folder.lower(), ROMS_FOLDER.lower()))
             if folder.lower() == ROMS_FOLDER.lower():
-                logging.info("INFO: Found \"/roms\" folder in root at %s" % p_sMount)
+                logging.info('INFO: Found "/roms" folder in root at %s' % p_sMount)
                 return True
         logging.info("INFO: No valid folder structure found at %s" % p_sMount)
         return False
@@ -194,17 +194,17 @@ class USBAutoService(object):
     def _umount(self, p_sMount = None):
         """ Force umount of all mounted paths """
         try:
-            os.system("sudo umount -l %s > /dev/null 2>&1" % ROMS_PATH)
+            os.system('sudo umount -l "%s" > /dev/null 2>&1' % ROMS_PATH)
             logging.info("INFO: Umounting %s" % ROMS_PATH)
-            os.system("sudo umount -l %s > /dev/null 2>&1" % BIOS_PATH)
+            os.system('sudo umount -l "%s" > /dev/null 2>&1' % BIOS_PATH)
             logging.info("INFO: Umounting %s" % BIOS_PATH)
-            os.system("sudo umount -l %s > /dev/null 2>&1" % GAMELIST_PATH)
+            os.system('sudo umount -l "%s" > /dev/null 2>&1' % GAMELIST_PATH)
             logging.info("INFO: Umounting %s" % GAMELIST_PATH)
             if p_sMount:
-                os.system("sudo umount -l %s > /dev/null 2>&1" % p_sMount)
+                os.system('sudo umount -l "%s" > /dev/null 2>&1' % p_sMount)
                 logging.info("INFO: Umounting device %s" % p_sMount)
-            os.system("rm %s > /dev/null 2>&1" % TRG_MNT_FILE)
-            os.system("touch %s > /dev/null 2>&1" % TRG_UMNT_FILE)
+            os.system('rm "%s" > /dev/null 2>&1' % TRG_MNT_FILE)
+            os.system('touch "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
         except:
             pass
 
@@ -218,7 +218,7 @@ class USBAutoService(object):
         if p_lTemp:
             for path in p_lTemp:
                 if not path in self.m_lMountPaths:
-                    logging.info("INFO: Valid device at \"%s\" removed" % path)
+                    logging.info('INFO: Valid device at "%s" removed' % path)
                     p_bCheck = True
                     self.m_bUSBMounted = False
                     self.m_lMountCtrl.remove(path)
@@ -236,7 +236,7 @@ class USBAutoService(object):
         p_sRootPath = p_sMount
         p_sGamelistsPath = (os.path.join(p_sRootPath, GAMELIST_FOLDER))
         p_sROMsPath = (os.path.join(p_sRootPath, ROMS_FOLDER))
-        logging.info("INFO: Starting folder's names check")
+        logging.info("INFO: Starting folder names check")
         # Fix main folders names on USB root
         self._fix_folder_names(self.m_dRootFolders, p_sRootPath)
         # Fix main folders names on USB gamelist folder
@@ -301,7 +301,7 @@ class USBAutoService(object):
         for p_sFolder in self.m_dGamelistFolders:
             logging.info("INFO: Synchronizing folder %s/%s to %s/%s" % \
                         (GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
-            os.system("rsync -a --delete %s/%s/ %s/%s/" % \
+            os.system('rsync -a --delete "%s/%s/" "%s/%s/"' % \
                        (GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
 
     def _sync_start_scripts(self, p_sMount):
@@ -321,16 +321,18 @@ class USBAutoService(object):
                 if os.path.exists(p_sScriptSRC):
                     if not os.path.exists(item["binary"]):
                         logging.info("INFO: Binary %s doesn't exist" % item["binary"])
-                        os.system('rm "%s" /dev/null 2>&1' % p_sScriptSRC)
                         logging.info("INFO: Deleting %s" % p_sScriptSRC)
+                        os.system('rm "%s" > /dev/null 2>&1' % p_sScriptSRC)
                         if os.path.exists(p_sScriptDST):
-                            os.system('rm "%s" /dev/null 2>&1' % p_sScriptDST)
                             logging.info("INFO: Deleting %s" % p_sScriptDST)
+                            os.system('rm "%s" > /dev/null 2>&1' % p_sScriptDST)
                     else:
-                        os.system("rsync -zvh %s %s /dev/null 2>&1" % \
-                                 (p_sScriptSRC, p_sScriptDST))
-                    break
-        
+                        if not os.path.exists(p_sScriptDST):
+                            logging.info("INFO: Copying file %s to %s" % \
+                                        (p_sScriptSRC, p_sScriptDST))
+                            os.system('cp "%s" "%s" > /dev/null 2>&1' % \
+                                     (p_sScriptSRC, p_sScriptDST))
+
     def _loop(self, p_iTime = 2):
         while True:
             self._get_mounted_list()
@@ -389,14 +391,14 @@ class USBAutoService(object):
         
     # clean trigger files
     def __clean(self):
-        os.system("rm %s > /dev/null 2>&1" % TRG_MNT_FILE)
-        os.system("rm %s > /dev/null 2>&1" % TRG_UMNT_FILE)
-        os.system("touch %s > /dev/null 2>&1" % TRG_UMNT_FILE)
+        os.system('rm "%s" > /dev/null 2>&1' % TRG_MNT_FILE)
+        os.system('rm "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
+        os.system('touch "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
 
     def __temp(self):
         if CLEAN_LOG_ONSTART:
             if os.path.exists (LOG_PATH):
-                os.system('rm %s' % LOG_PATH)
+                os.system('rm "%s"' % LOG_PATH)
         logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
         format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
         
