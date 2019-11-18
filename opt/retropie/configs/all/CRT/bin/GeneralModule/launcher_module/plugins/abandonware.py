@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, re, logging
 import subprocess
-from launcher_module.core import CRTROOT_PATH, RETROPIEEMU_PATH, RETROPIECFG_PATH, CFG_TIMINGS_FILE, TMP_SLEEPER_FILE, CRT_RUNCOMMAND_FORMAT, RUNCOMMAND_FILE
+from launcher_module.core import CFG_TIMINGS_FILE, TMP_SLEEPER_FILE, CRT_RUNCOMMAND_FORMAT
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
 from launcher_module.screen import CRT
@@ -43,15 +43,15 @@ class abandonware(emulator):
     def pre_configure(self):
         if self.m_sSystem == "scummvm":
             self.m_lBinaryMasks = ["scummvm"]
-            self.m_lProcesses = ["scummvm", "retroarch"] # default emulator process is retroarch
+            self.m_lProcesses = ["scummvm", "retroarch"]
         elif self.m_sSystem == "pc":
             self.m_lBinaryMasks = ["dosbox"]
-            self.m_lProcesses = ["dosbox", "retroarch"] # default emulator process is retroarch
+            self.m_lProcesses = ["dosbox", "retroarch"]
 
     def configure(self):
         super(abandonware, self).configure()
         self.abandonware_show_info("Better with keyboard and mouse")
-        
+
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
         self.m_oCRT.screen_raw(CFG_TIMINGS_FILE)
@@ -61,26 +61,23 @@ class abandonware(emulator):
             logging.error("splash failed: %s" % e)
         logging.info("clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
-        
+
     def abandonware_show_info(self, m_sMessage, m_sTitle = None):
         ch = choices()
         if m_sTitle:
             ch.set_title(m_sTitle)
-        ch.load_choices([
-                (m_sMessage, "OK"),
-            ])
-        ch.show(3000)
+        ch.load_choices([(m_sMessage, "OK")])
+        ch.show()
         ch.cleanup()
-    
+
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         if "+Start " in self.m_sGameName:
             self.abandonware_show_info("Launching SCUMMVM Configurator!")
-            commandline = "%s bash \"%s\" > /dev/null 2>&1" % (self.m_sSleeper, self.m_sFilePath)
+            commandline = "%s bash \"%s\" > /dev/null 2>&1" % \
+                          (self.m_sSleeper, self.m_sFilePath)
             self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
             logging.info("Subprocess running: %s", commandline)
             self.runcommand_wait()
         else:
             super(abandonware, self).runcommand_start()
-
-    
