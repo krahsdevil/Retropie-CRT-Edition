@@ -95,20 +95,41 @@ class joystick(object):
             logging.info("joy config not found: %s" % sCfgFile)
         else:
             #getting ES custom config for joy
-            axis_tmp = ini_get(sCfgFile, 'input_l_x_minus_axis')
+            #Try to get AXIS X in joystick config file
+            axis_tmp = self._get_joy_cfg(sCfgFile, 'input_l_x_minus_axis')
             if not axis_tmp:
-                axis_tmp = ini_get(sCfgFile, 'input_left_axis')
-            jData['x']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
-            jData['x']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
-            axis_tmp = ini_get(sCfgFile, 'input_l_y_minus_axis')
+                axis_tmp = self._get_joy_cfg(sCfgFile, 'input_left_axis')
+            if axis_tmp:
+                jData['x']['axis'] = abs(int(axis_tmp, 10))
+                jData['x']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
+            #Try to get AXIS Y in joystick config file
+            axis_tmp = self._get_joy_cfg(sCfgFile, 'input_l_y_minus_axis')
             if not axis_tmp:
-                axis_tmp = ini_get(sCfgFile, 'input_up_axis')
-            jData['y']['axis'] = abs(int(axis_tmp.replace('"', ''), 10))
-            jData['y']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
-            jData['ok'] = int(ini_get(sCfgFile, 'input_a_btn').replace('"', ''), 10)
-            jData['cancel'] = int(ini_get(sCfgFile, 'input_b_btn').replace('"', ''), 10)
+                axis_tmp = self._get_joy_cfg(sCfgFile, 'input_up_axis')
+            if axis_tmp:
+                jData['y']['axis'] = abs(int(axis_tmp, 10))
+                jData['y']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
+            #Try to get BUTTON A in joystick config file
+            btn_tmp = self._get_joy_cfg(sCfgFile, 'input_a_btn')
+            if btn_tmp:
+                jData['ok'] = int(btn_tmp)
+            #Try to get BUTTON B in joystick config file
+            btn_tmp = self._get_joy_cfg(sCfgFile, 'input_b_btn')
+            if btn_tmp:
+                jData['cancel'] = int(btn_tmp)
         self.m_lJoys.append(jData)
 
+    def _get_joy_cfg(self, p_sCfgFile, p_sINI):
+        temp = ini_get(p_sCfgFile, p_sINI)
+        if temp:
+            try:
+                temp = temp.replace('"', '')
+                logging.info("found value ini {%s} for %s" % (temp, p_sINI))
+            except:
+                logging.info("not possible to find value for %s in %s" % (p_sINI, p_sCfgFile))
+                return False
+        return temp
+        
     def _base_joy_config(self):
         #if config file is not found will apply this axis and 'standard' buttons
         jData = {'x': {}, 'y': {}}
