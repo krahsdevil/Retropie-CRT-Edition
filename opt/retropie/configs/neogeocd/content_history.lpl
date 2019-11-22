@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "path": "/home/pi/RetroPie/roms/neogeo/alpham2.zip",
+      "label": "",
+      "core_path": "/opt/retropie/libretrocores/lr-fbneo/fbneo_libretro.so",
+      "core_name": "FinalBurn Neo",
+      "crc32": "",
+      "db_name": ""
+    }
+  ]
+}

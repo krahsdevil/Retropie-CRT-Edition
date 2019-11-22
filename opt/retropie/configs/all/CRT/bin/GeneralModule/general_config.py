@@ -5,6 +5,8 @@
 # TODO: add a json config to avoid this :D
 XMLStringPCEnginceCD = "  <system>\n    <name>pcenginecd</name>\n    <fullname>PC Engine CD</fullname>\n    <path>/home/pi/RetroPie/roms/pcenginecd</path>\n    <extension>.cue .CUE .ccd .CCD</extension>\n    <command>python /opt/retropie/configs/all/CRT/bin/GeneralModule/emulator_launcher.py %ROM% pcenginecd dummy</command>\n    <platform>pcenginecd</platform>\n    <theme>pcenginecd</theme>\n  </system>\n"
 
+XMLStringNEOGEOCD = "  <system>\n    <name>neogeocd</name>\n    <fullname>Neo Geo CD</fullname>\n    <path>/home/pi/RetroPie/roms/neogeocd</path>\n    <extension>.iso .ISO .cue .CUE .ccd .CCD</extension>\n    <command>python /opt/retropie/configs/all/CRT/bin/GeneralModule/emulator_launcher.py %ROM% neogeocd dummy</command>\n    <platform>neogeocd</platform>\n    <theme>neogeocd</theme>\n  </system>\n"
+
 XMLStringMAMETate = "  <system>\n    <name>mame-libretro-tate</name>\n    <fullname>mame-libretro TATE</fullname>\n    <path>/home/pi/RetroPie/roms/mame_tate</path>\n    <extension>.zip .ZIP</extension>\n    <command>python /opt/retropie/configs/all/CRT/bin/GeneralModule/emulator_launcher.py %ROM% mame-libretro dummy</command>\n    <platform>arcade</platform>\n    <theme>mame_tate</theme>\n  </system>\n"
 
 XMLStringAdvMAMETate = "  <system>\n    <name>mame-advmame-tate</name>\n    <fullname>advmame TATE</fullname>\n    <path>/home/pi/RetroPie/roms/advmame_tate</path>\n    <extension>.zip .ZIP</extension>\n    <command>python /opt/retropie/configs/all/CRT/bin/GeneralModule/emulator_launcher.py %ROM% mame-advmame dummy</command>\n    <platform>arcade</platform>\n    <theme>advmame_tate</theme>\n  </system>\n"
@@ -22,6 +24,7 @@ XMLStringRetropie = "  <system>\n    <name>retropie</name>\n    <fullname>RetroP
 
 SYSTEMS = {
     "pcenginecd": { "core": "pcenginecd", "check": False, "xml": XMLStringPCEnginceCD, "theme": "pcenginecd" },
+    "neogeocd": { "core": "neogeocd", "check": False, "xml": XMLStringNEOGEOCD, "theme": "neogeocd" },
     "mame-libretro-tate": { "core": "mame-libretro", "check": False, "xml": XMLStringMAMETate, "theme": "mame_tate" },
     "mame-advmame": { "core": "mame-advmame", "check": False, "xml": XMLStringAdvMAME, "theme": "mame-advmame" },
     "mame-advmame-tate": { "core": "mame-advmame", "check": False, "xml": XMLStringAdvMAMETate, "theme": "advmame_tate" },
