@@ -25,13 +25,6 @@ Thanks @alphatoanant for the permission to use them!
                <fontPath>./_inc/fonts/pixelmix.ttf</fontPath>
                <fontSize>0.0345</fontSize>
             </text>
-            <image name="system-border" extra="true">
-               <origin>0.5 0</origin>
-               <pos>0.5 0.60</pos>
-               <size>0.25 0.83</size>
-               <path>./_inc/images/space.png</path>
-               <color>666666</color>
-            </image>
             <text name="logoText">
                <color>FFFFFF</color>
                <fontSize>0.0028</fontSize>
