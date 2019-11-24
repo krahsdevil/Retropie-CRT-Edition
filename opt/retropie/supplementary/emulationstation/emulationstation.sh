@@ -1,9 +1,10 @@
 #!/bin/sh
 ang=0
 esdir="$(dirname $0)"
-tate1="/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1"
-tate3="/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3"
-yoko="/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko"
+astdir="/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs"
+tate1="$astdir/es-select-tate1"
+tate3="$astdir/configs/es-select-tate3"
+yoko="$astdir/es-select-yoko"
 if [ -f $tate1 ]; then
     ang=1
 elif [ -f $tate3 ]; then
