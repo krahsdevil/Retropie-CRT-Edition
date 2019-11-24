@@ -48,9 +48,9 @@ class libretro(emulator):
     def configure(self):
         if self.m_sSystem == "zxspectrum":
             self.m_sSystemFreq = "zxspectrum50"
-        elif self.m_sSystem == "pcenginecd":
-            self.m_sSystem = "pcengine" #Change global variable of system to Retropie standard
-            self.m_sSystemFreq = "pcenginecd" #Retroarch config especific for pcenginecd
+        #elif self.m_sSystem == "pcenginecd":
+        #    self.m_sSystem = "pcengine" #Change global variable of system to Retropie standard
+        #    self.m_sSystemFreq = "pcenginecd" #Retroarch config especific for pcenginecd
         else:
             self.m_sSystemFreq = self.m_sSystem
         
