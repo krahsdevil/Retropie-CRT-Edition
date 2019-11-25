@@ -47,8 +47,9 @@ class selector(libretro):
 
     @staticmethod
     def get_system_list():
-        return ["n64", "nes", "snes", "psx", "msx", "atari2600", "videopac", "zx81", "atarist", "c64", "atari7800",
-                "megadrive", "segacd", "sega32x", "mastersystem"]
+        return ["n64", "nes", "snes", "psx", "msx", "atari2600", "videopac", "zx81",
+                "atarist", "c64", "atari7800", "megadrive", "segacd", "sega32x",
+                "atari800", "mastersystem"]
 
     def pre_configure(self):
         self.m_sCompactedName = compact_rom_name(self.m_sFileName)
