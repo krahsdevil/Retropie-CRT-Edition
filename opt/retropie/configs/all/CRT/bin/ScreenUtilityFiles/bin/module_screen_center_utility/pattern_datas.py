@@ -30,10 +30,18 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 
 TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
 IMG_TEST_PATTERN_FILE = "" #Assign Pattern to draw
+IMG_TEST_FREQ_FILE = "" #Assign Frequency icon to draw
+
 IMG_TEST_INGAME_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_crosshatch.png")
 IMG_TEST_SYSTEM_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_pattern.png")
+                      
+IMG_TEST_50HZ_FILE = os.path.join(TEST_MEDIA_PATH, "50hz.png")
+IMG_TEST_60HZ_FILE = os.path.join(TEST_MEDIA_PATH, "60hz.png")
+IMG_TEST_240p_FILE = os.path.join(TEST_MEDIA_PATH, "240p.png")
+IMG_TEST_270p_FILE = os.path.join(TEST_MEDIA_PATH, "270p.png")
+IMG_TEST_EMPT_FILE = os.path.join(TEST_MEDIA_PATH, "empty.png")
 
 RED = pygame.Color(255, 0, 0)
 BLACK = pygame.Color(0, 0, 0)
@@ -73,10 +81,15 @@ class datas(object):
     m_iBCentY = 0
 
     m_lPattern = {"posx": 0, "posy": 0, "width": 0, "height": 0}
+    m_lFreqIcon = {"posx": 0, "posy": 0, "width": 0, "height": 0}
     m_iCurrent = 0
     m_iCurrentSub = 0
 
-    def __init__(self, p_iPatternAdj, p_dConfigFile, p_sEnv):
+    def __init__(self):
+        pass
+
+    def run(self, p_iPatternAdj, p_dConfigFile, p_sEnv):
+        self._clean_datas()
         self.m_dPatternAdj = p_iPatternAdj
         self.m_dConfigFile = p_dConfigFile
         self.m_sEnv = p_sEnv
@@ -85,13 +98,16 @@ class datas(object):
     def prepare(self):
         self.prepare_datas()
         self.prepare_pattern()
+        self.prepare_frequency_icon()
 
     def get_info_datas(self):
         return self.m_lInfo, self.m_lBox
 
     def get_pattern_datas(self):
         self.prepare_pattern()
-        return self.m_lPattern, IMG_TEST_PATTERN_FILE
+        #self.prepare_frequency_icon()
+        return self.m_lPattern, self.m_lFreqIcon, IMG_TEST_PATTERN_FILE, \
+               IMG_TEST_FREQ_FILE
 
     def update(self, p_iMaxOffsetX, p_iMaxOffsetY):
         self.m_iMaxOffSetX = p_iMaxOffsetX
@@ -360,6 +376,28 @@ class datas(object):
         self.m_lPattern["width"] = PatternResizeX
         self.m_lPattern["height"] = PatternResizeY
 
+    def prepare_frequency_icon(self):
+        global IMG_TEST_FREQ_FILE
+        IMG_TEST_FREQ_FILE = IMG_TEST_EMPT_FILE
+        if self.m_sEnv == "test60":
+            IMG_TEST_FREQ_FILE = IMG_TEST_60HZ_FILE
+            self.m_lFreqIcon["posx"] = 1450
+            self.m_lFreqIcon["posy"] = 35
+            self.m_lFreqIcon["width"] = 400
+            self.m_lFreqIcon["height"] = 26
+        elif self.m_sEnv == "system50":
+            IMG_TEST_FREQ_FILE = IMG_TEST_270p_FILE
+            self.m_lFreqIcon["posx"] = 400
+            self.m_lFreqIcon["posy"] = 51
+            self.m_lFreqIcon["width"] = 140
+            self.m_lFreqIcon["height"] = 45
+        elif self.m_sEnv == "system60":
+            IMG_TEST_FREQ_FILE = IMG_TEST_240p_FILE
+            self.m_lFreqIcon["posx"] = 270
+            self.m_lFreqIcon["posy"] = 45
+            self.m_lFreqIcon["width"] = 102
+            self.m_lFreqIcon["height"] = 35
+
     def update_menu_colors(self):
         """Set info text color"""
         #Initialize color to WHITE
@@ -519,3 +557,7 @@ class datas(object):
                         found = False
             eval(p_lLibrary).append(Info_Text_Temp)
             Info_Text_Temp = {}
+
+    def _clean_datas(self):
+        self.m_lInfo = [] #Full information for info text
+        self.m_lBox = [] #Full information for the box

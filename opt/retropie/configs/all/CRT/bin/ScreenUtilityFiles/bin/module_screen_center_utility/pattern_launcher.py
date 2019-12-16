@@ -47,7 +47,8 @@ CLEAN_LOG_ONSTART = True
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Screen_Center.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
-tests = ["system", "test60", "force"]
+tests = ["current", "system", "system50", "system60", "test60", "force"]
+Arg = []
 
 class center(object):
     """ virtual class for centering pattern """
@@ -61,18 +62,19 @@ class center(object):
     def __init__(self):
         self.__temp()
         self.__clean()
-        logging.info("INFO: arg 1 (test) = %s" %sys.argv[1])
+        self.m_oPatternHandle = generate()
 
+    def launch(self, p_sArgv = "current"): 
+        logging.info("INFO: arg 1 (test) = %s" %p_sArgv)
+        self.m_sEnv = p_sArgv
         self.configure() # rom name work
         self.prepare() # screen and pattern generator
         self.run() # launch, wait and cleanup
 
     # called at start, called by __init__()
     def configure(self):
-        self.m_sEnv = sys.argv[1]
-
         """Get from utility.cfg system resolution"""
-        if self.m_sEnv == "system":
+        if self.m_sEnv == "current":
             self.m_sEnv = ini_get(CFG_VIDEOUTILITY_FILE, "default")
         elif self.m_sEnv == "force":
             logging.info("INFO: Force mode, only apply sys resolution")
@@ -80,7 +82,7 @@ class center(object):
 
     def prepare(self):
         self.screen_prepare()
-        self.m_oPatternHandle = generate(self.m_sEnv, self.m_dVideo)
+        self.m_oPatternHandle.initialize(self.m_sEnv, self.m_dVideo)
 
     def run(self):
         self.start()
@@ -89,15 +91,15 @@ class center(object):
     def start(self):
         self.apply_diff_timings()
         self.screen_set()
-        self.m_oPatternHandle.run()
+        self.m_oPatternHandle.launch()
 
     def apply_diff_timings(self):
         DiffTimings = self.m_oPatternHandle.get_diff_timings()
-        logging.info("INFO: timing_data_set CALCULATED Pre Diff - %s" %
+        logging.info("INFO: timing_data_set PRE-CALCULATED Diff - %s" %
                      self.m_dVideo)
         for timing in DiffTimings:
             self.m_oCRT.timing_add(timing, int(DiffTimings[timing]))
-        logging.info("INFO: timing_data_set CALCULATED Post Diff - %s" %
+        logging.info("INFO: timing_data_set POST-CALCULATED Diff - %s" %
                       self.m_dVideo)
 
     def _force_system_res(self):
@@ -108,6 +110,7 @@ class center(object):
 
     def screen_prepare(self):
         self.m_oCRT = CRT(self.m_sEnv+"_timings")
+        self.m_oCRT.clean_datas()
         self.m_dVideo = self.m_oCRT.pattern_data(CFG_VIDEOUTILITY_FILE)
 
     def screen_set(self):
@@ -129,7 +132,7 @@ class center(object):
         logging.info("ES mode recover")
         os.system('clear')
         self.__clean()
-        sys.exit()
+        #sys.exit()
 
     # clean system
     def __clean(self):
@@ -142,13 +145,27 @@ class center(object):
         format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
 
 try:
-    argument = sys.argv[1]
-    if not argument in tests:
+    if not sys.argv[1] in tests:
         print ('ERROR: some of these arguments expected:\n %s' % tests)
-        raise Exception('ERROR: some of these arguments expected: %s' % tests)
+        raise Exception('incorrect argument')
+    if sys.argv[1] == "system":
+        Arg.append("system60")
+        Arg.append("system50")
+    else:
+        Arg.append(sys.argv[1])
     oLaunch = center()
+    for item in Arg:
+        oLaunch.launch(item)
+    
 except Exception as e:
+    ErrMsg = ""
+    if "list index out of range" in e:
+        ErrMsg += 'ERROR: at least one argument expected \n'
+    elif 'incorrect argument' in e:
+        ErrMsg += 'ERROR: some of these arguments expected: %s \n' % tests
+    else:
+        ErrMsg += str(e) + '\n'
+        ErrMsg += traceback.format_exc()
     with open(EXCEPTION_LOG, 'a') as f:
-        f.write(str(e))
-        f.write(traceback.format_exc())
+        f.write(str(ErrMsg))
 sys.exit()

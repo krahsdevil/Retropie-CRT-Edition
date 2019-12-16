@@ -83,6 +83,7 @@ class generate(object):
     m_PGoClock = None
     m_PGoScreen = None
     m_PGpPattern = None
+    m_PGoFreqIcon = None
     m_PGoFontText = None
     m_PGoFontTextSize = 0
     m_PGTextVResizer = 0
@@ -95,19 +96,24 @@ class generate(object):
     m_lInfoBox = []
     m_lPattern = {"posx": 0, "posy": 0, "width": 0, "height": 0,
                   "rndimg": None, "rndpos": None}
+    m_lFreqIcon = {"posx": 0, "posy": 0, "width": 0, "height": 0,
+                  "rndimg": None, "rndpos": None}
 
-    def __init__(self, m_sEnv, p_lTimings = {}):
+    def __init__(self):
+        self.m_oPatternDatas = datas()
+        
+    def initialize(self, m_sEnv, p_lTimings = {}):
         self.m_sEnv = m_sEnv
         self.m_lTimings = p_lTimings
-        self.prepare()
-
+        self.prepare()    
+    
     def prepare(self):
         self.prepare_cfg()
         self.prepare_screen_timings()
         self.prepare_test_font()
         self.test_data_init()
 
-    def run(self):
+    def launch(self):
         self._init_pygame()
         self.render_test()
         self.draw_test()
@@ -167,8 +173,8 @@ class generate(object):
 
     def test_data_init(self):
         """ Initialize option text and other dynamic datas """
-        self.m_oPatternDatas = datas(self.m_dPatternAdj,
-                                     self.m_dConfigFile, self.m_sEnv)
+        self.m_oPatternDatas.run(self.m_dPatternAdj,
+                                 self.m_dConfigFile, self.m_sEnv)
         self.m_lInfoText, self.m_lInfoBox = self.m_oPatternDatas.get_info_datas()
         self.pattern_init_size_position()
 
@@ -196,6 +202,8 @@ class generate(object):
         """ Draw main centering pattern """
         self.m_PGoScreen.blit(self.m_lPattern["rndimg"],
                               self.m_lPattern["rndpos"])
+        self.m_PGoScreen.blit(self.m_lFreqIcon["rndimg"],
+                              self.m_lFreqIcon["rndpos"])
 
     def box_info_prepare_render(self):
         """ Render all text and take position """
@@ -232,6 +240,8 @@ class generate(object):
     def pattern_prepare_render(self):
         self.pattern_render()
         self.pattern_pos()
+        self.freq_icon_render()
+        self.freq_icon_pos()
 
     def pattern_render(self):
         self.m_lPattern["rndimg"] = pygame.image.load(self.m_PGpPattern)
@@ -239,10 +249,21 @@ class generate(object):
                                     (self.m_lPattern["width"],
                                     self.m_lPattern["height"]))
 
+    def freq_icon_render(self):
+        self.m_lFreqIcon["rndimg"] = pygame.image.load(self.m_PGoFreqIcon)
+        self.m_lFreqIcon["rndimg"] = pygame.transform.smoothscale(self.m_lFreqIcon["rndimg"],
+                                    (self.m_lFreqIcon["width"],
+                                    self.m_lFreqIcon["height"]))
+
     def pattern_pos(self):
         self.m_lPattern["rndpos"] = self.m_lPattern["rndimg"].get_rect()
         self.m_lPattern["rndpos"].center = (self.m_lPattern["posx"],
                                             self.m_lPattern["posy"])
+
+    def freq_icon_pos(self):
+        self.m_lFreqIcon["rndpos"] = self.m_lFreqIcon["rndimg"].get_rect()
+        self.m_lFreqIcon["rndpos"].center = (self.m_lFreqIcon["posx"],
+                                            self.m_lFreqIcon["posy"])
 
     def prepare_cfg(self):
         """ Take config from utility.cfg """
@@ -309,9 +330,12 @@ class generate(object):
         'PatternDatas': Pattern size and coordinates
         'm_PGpPattern': Path to pattern image
         """
-        PatternDatas, self.m_PGpPattern = self.m_oPatternDatas.get_pattern_datas()
+        PatternDatas, IconDatas, self.m_PGpPattern, self.m_PGoFreqIcon = \
+        self.m_oPatternDatas.get_pattern_datas()
         for item in PatternDatas:
             self.m_lPattern[item] = PatternDatas[item]
+        for item in IconDatas:
+            self.m_lFreqIcon[item] = IconDatas[item]
 
     def loop(self):
         while True:
@@ -329,6 +353,9 @@ class generate(object):
             if event & CRT_BUTTON:
                 self.m_PGSndLoad.play()
                 if not self.choice_change(0):
+                    #reset menu selections and exit
+                    self.m_iCurrent = 0
+                    self.m_iCurrentSub = 0
                     time.sleep(1)
                     return
             self.render_test()
