@@ -62,9 +62,9 @@ class amiga(emulator):
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
         if "+Start Amiberry" in self.m_sGameName:
-            self.m_oCRT.screen_raw(DB_AMIGA)
+            self.m_oCRT.screen_calculated(DB_AMIGA)
         elif "amiberry" in self.m_sBinarySelected:
-            self.m_oCRT.screen_raw(DB_AMIGA)
+            self.m_oCRT.screen_calculated(DB_AMIGA)
         elif "lr-puae" in self.m_sBinarySelected:
             self.m_oCRT.screen_calculated(DB_AMIGA)
         try:

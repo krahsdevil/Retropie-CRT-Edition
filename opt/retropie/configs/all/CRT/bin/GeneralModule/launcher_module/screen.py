@@ -88,23 +88,23 @@ class CRT(object):
     def screen_calculated(self, p_sTimingCfgPath):
         self.p_sTimingPath = p_sTimingCfgPath
         lValues = self.get_values()
-        self.timing_parse_calculated(lValues)
-        lValues = self.get_fix_tv('%s_game_mask')
-        if lValues:
+        logging.info("number of timings found in resolution: %s" % str(len(lValues)))
+        """Detect if raw or extended resolution parsed"""
+        if int(len(lValues)) < 17: #Extended resolution
             self.timing_parse_calculated(lValues)
-        self.set_timing_unk()
-        self.get_fix_user()
-        self._calculated_adjustement()
-        self.resolution_call(**self.m_dData)
-
-    def screen_raw(self, p_sTimingCfgPath):
-        self.p_sTimingPath = p_sTimingCfgPath
-        lValues = self.get_values()
-        self.timing_parse_raw(lValues)
-        # TODO: get_fix_user_raw - 320x240
-        lValues = self.get_fix_tv('%s_game_mask_raw')
-        if lValues:
+            lValues = self.get_fix_tv('%s_game_mask')
+            if lValues:
+                self.timing_parse_calculated(lValues)
+            self.set_timing_unk()
+            self.get_fix_user()
+            self._calculated_adjustement()
+        else: #Raw system resolution
             self.timing_parse_raw(lValues)
+            # TODO: get_fix_user_raw - 320x240
+            lValues = self.get_fix_tv('%s_game_mask_raw')
+            if lValues:
+                self.timing_parse_raw(lValues)
+            self.get_fix_user_raw()
         self.resolution_call(**self.m_dData)
 
     def pattern_data(self, p_sTimingCfgPath):
@@ -160,6 +160,34 @@ class CRT(object):
         self.timing_add("H_Zoom", ini_get(CFG_VIDEOUTILITY_FILE, "test60_width"))
         self.m_iRSys = int(ini_get(CFG_VIDEOUTILITY_FILE, "frontend_rotation"))
         self.m_iRGame = int(ini_get(CFG_VIDEOUTILITY_FILE, "game_rotation"))
+
+    def get_fix_user_raw(self):
+        offsetX = int(ini_get(CFG_VIDEOUTILITY_FILE, "system60_offsetX"))
+        offsetY = int(ini_get(CFG_VIDEOUTILITY_FILE, "system60_offsetY"))
+        width = int(ini_get(CFG_VIDEOUTILITY_FILE, "system60_width"))
+        
+        #Apply width to timings
+        #self.timing_add("H_Res", (2*width))
+        #if width < 0:
+        #    self.timing_add("H_BP", abs(width))
+        #    self.timing_add("H_FP", abs(width))
+        #else:
+        #    self.timing_add("H_BP", -width)
+        #    self.timing_add("H_FP", -width)
+
+        #Apply offsetX to timings
+        self.timing_add("H_BP", offsetX)
+        if offsetX < 0:
+            self.timing_add("H_FP", abs(offsetX))
+        else:
+            self.timing_add("H_FP", -offsetX)
+            
+        #Apply offsetY to timings
+        self.timing_add("V_BP", offsetY)
+        if offsetY < 0:
+            self.timing_add("V_FP", abs(offsetY))
+        else:
+            self.timing_add("V_FP", -offsetY)
 
     # ------------- timings
 
@@ -354,5 +382,7 @@ class CRT(object):
                  (self.m_dData["H_Res"],self.m_dData["V_Res"],
                   self.m_dData["H_Res"],self.m_dData["V_Res"]))
         #logging.info("%s x %s" % (self.m_dData["H_Res"],self.m_dData["V_Res"]))
-        
-
+  
+    def clean_datas(self):
+        for item in self.m_dData:
+            self.m_dData[item] = 0

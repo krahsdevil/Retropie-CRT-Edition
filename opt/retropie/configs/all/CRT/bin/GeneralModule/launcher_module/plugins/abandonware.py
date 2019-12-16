@@ -54,7 +54,7 @@ class abandonware(emulator):
 
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
-        self.m_oCRT.screen_raw(CFG_TIMINGS_FILE)
+        self.m_oCRT.screen_calculated(CFG_TIMINGS_FILE)
         try:
             splash_info("black") # clean screen
         except Exception as e:
