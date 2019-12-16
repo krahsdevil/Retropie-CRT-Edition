@@ -107,6 +107,7 @@ class center(object):
         p_oSaveBoot.save()
         self.m_oCRT = CRT()
         self.cleanup()
+        sys.exit()
 
     def screen_prepare(self):
         self.m_oCRT = CRT(self.m_sEnv+"_timings")
