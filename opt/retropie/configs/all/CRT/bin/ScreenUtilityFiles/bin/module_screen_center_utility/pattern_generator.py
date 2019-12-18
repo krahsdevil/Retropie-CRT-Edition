@@ -34,7 +34,6 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from launcher_module.screen import CRT
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
 from launcher_module.core import CFG_VIDEOUTILITY_FILE, LOG_PATH, CFG_FIXMODES_FILE
@@ -101,6 +100,7 @@ class generate(object):
 
     def __init__(self):
         self.m_oPatternDatas = datas()
+        self.m_PGoJoyHandler = joystick()
         
     def initialize(self, m_sEnv, p_lTimings = {}):
         self.m_sEnv = m_sEnv
@@ -125,7 +125,7 @@ class generate(object):
         pygame.mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
         self.m_PGoClock = pygame.time.Clock()
-        self.m_PGoJoyHandler = joystick()
+        self.m_PGoJoyHandler.find_joy()
         self._init_screen()
         self._init_sounds()
 
@@ -484,15 +484,6 @@ class generate(object):
         self.m_lInfoText, self.m_lInfoBox = \
         self.m_oPatternDatas.update(self.m_iMaxOffSetX, self.m_iMaxOffSetY)
         self.pattern_init_size_position() #Need to calculate every
-
-    def panic(self, p_sErrorLine1, p_sErrorLine2 = "-", p_bForceQuit = True):
-        """ stop the program and show error to the user """
-        logging.error("PANIC: %s" % p_sErrorLine1)
-        CRT().screen_restore()
-        something_is_bad(p_sErrorLine1, p_sErrorLine2)
-        if p_bForceQuit:
-            logging.error("EXIT: crt_launcher forced")
-            sys.exit(1)
 
     # cleanup code
     def cleanup(self):
