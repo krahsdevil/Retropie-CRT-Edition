@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os, sys, traceback
+import os, sys, traceback, time
 import subprocess, commands
 import logging
 
@@ -157,6 +157,7 @@ try:
     oLaunch = center()
     for item in Arg:
         oLaunch.launch(item)
+        time.sleep(1)
     
 except Exception as e:
     ErrMsg = ""
