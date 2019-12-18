@@ -75,6 +75,9 @@ class joystick(object):
     m_iNumJoys = 0
     m_iAxisTriggered = False
     def __init__(self):
+        self.find_joy()
+        
+    def find_joy(self):
         pygame.joystick.init()
         try:
             for j in range(0,4):
