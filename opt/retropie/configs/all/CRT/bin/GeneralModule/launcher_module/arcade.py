@@ -230,11 +230,11 @@ class arcade(emulator):
         elif self.m_dVideo["V_Res"] > 240: # Classic encapsulator
             select = self.encapsulator_selector()
             if select == "FORCED": # Encapsulate
-                self.m_dVideo["H_Freq"] = int(15840)
+                self.m_dVideo["H_Freq"] = int(15841)
                 self.m_dVideo["V_Pos"] += int(10)
             elif select == "CROPPED": # Cropped if is under 55Hz
                 if self.m_dVideo["R_Rate"] < 55:
-                    self.m_dVideo["H_Freq"] = int(15269)
+                    self.m_dVideo["H_Freq"] = int(15095)
                 self.m_dVideo["V_Pos"] -= int(10)
 
     def encapsulator_selector(self):
