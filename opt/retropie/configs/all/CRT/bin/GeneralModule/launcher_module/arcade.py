@@ -111,7 +111,9 @@ class arcade(emulator):
                 if self.m_oCRT.m_iRGame == -90:
                     self.m_oCRT.m_sSide_Game = 'H'
                     self.cfg_hres = 1120
-                    self.cfg_vres = 250
+                    #Force vertical resolution to 224 in rotated games
+                    self.m_dVideo["V_Res"] = 224
+                    self.cfg_vres = self.m_dVideo["V_Res"]
                     self.cfg_offsetx = 400
                     self.cfg_offsety = 0
                     self.ra_config_create(p_bSmooth = True)
