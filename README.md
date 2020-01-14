@@ -5,7 +5,7 @@
 ***
 | Current Version  | Legacy | [FINAL 1.0](https://github.com/krahsdevil/crt-for-retropie/releases/tag/LEGACY_v.1.0) | Retropie 4.5 | RPi 2B/3B/3B+ | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs-Retropie-CRT-Edition)  |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| Developing | EVO | [BETA 1.0](https://github.com/krahsdevil/crt-for-retropie/releases/download/evo.beta.1.0/retropieCRTEVO-BETAU1.img.gz) | Retropie 4.5 | RPi 2B/3B/3B+ | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs-Retropie-CRT-Edition)  |
+| Developing | EVO | [BETA 1.1](https://github.com/krahsdevil/Retropie-CRT-Edition/releases/download/evo.beta.1.1/retropieCRTEVO-BETAU1.1img.gz) | Retropie 4.5 | RPi 2B/3B/3B+ | [Changelog](https://github.com/krahsdevil/crt-for-retropie/wiki/Changelogs-Retropie-CRT-Edition)  |
 
 
 
