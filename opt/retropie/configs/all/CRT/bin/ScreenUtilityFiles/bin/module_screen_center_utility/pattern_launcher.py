@@ -156,9 +156,10 @@ try:
         Arg.append("system50")
     else:
         Arg.append(sys.argv[1])
-    oLaunch = center()
     for item in Arg:
+        oLaunch = center()
         oLaunch.launch(item)
+        oLaunch = None
         time.sleep(1)
     
 except Exception as e:
