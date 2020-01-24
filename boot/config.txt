@@ -79,6 +79,19 @@ dpi_mode=87
 #dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2
 #dpi_output_format=6
 
+# JAMMA RGB-PI
+#dtparam=i2c_vc=on
+#dtoverlay=i2c-gpio,i2c_gpio_sda=10,i2c_gpio_scl=11
+
 #Set dtoverlay to vga666 or rgb-pi; vga666 for generic adapters and pi2scart
 dtoverlay=vga666
 
+# CRT Video Recovery MODES; 0=disabled; 1=enabled
+crt_recovery_enabled=0
+# MODE to apply: DEFAULT/MODE1/MODE2/MODE3 (modes.cfg)
+crt_recovery_mode=DEFAULT
+
+# CRT DAEMON; 0=disabled; 1=enabled
+crt_daemon_enabled=1
+# Set if you have a jamma cable; 0=none; 1=pi2jamma; 2=jamma-rgb-pi
+jamma_cable=0
