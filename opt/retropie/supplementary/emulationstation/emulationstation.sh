@@ -23,9 +23,8 @@ while true; do
     if [ -f $fstboot ]; then
 		rm -f $fstboot
 		python $cablesel
-	else
-		"$esdir/emulationstation" --screenrotate $ang "$@"
 	fi
+	"$esdir/emulationstation" --screenrotate $ang "$@"
     ret=$?
     if [ -f /tmp/es-restart ]; then
         if [ -f $tate1 ]; then
