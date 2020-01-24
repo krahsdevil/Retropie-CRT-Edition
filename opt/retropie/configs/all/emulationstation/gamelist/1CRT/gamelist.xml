@@ -13,6 +13,7 @@
 	<game>
 		<path>./3. RGB Cable Selector.py</path>
 		<name>3. RGB Cable Selector</name>
+		<image>./icons/3. RGB Cable Selector.png</image>
 	</game>
 	<game>
 		<path>./4. Credits.py</path>
