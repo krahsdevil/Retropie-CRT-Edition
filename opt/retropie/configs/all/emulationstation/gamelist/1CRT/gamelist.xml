@@ -1,28 +1,22 @@
 <?xml version="1.0"?>
 <gameList>
 	<game>
-		<path>./4. Easy Netplay.py</path>
-		<name>4. Easy Netplay</name>
-		<image>./icons/4. Easy Netplay.png</image>
-	</game>
-	<game>
-		<path>./5. Trinitron fix.py</path>
-		<name>5. Trinitron FIX</name>
-		<image>./icons/5. Trinitron FIX.png</image>
-	</game>
-	<game>
 		<path>./1. Configuration Utility.py</path>
 		<name>1. Configuration Utility</name>
 		<image>./icons/1. Configuration Utility.png</image>
 	</game>
 	<game>
-		<path>./3. Credits.py</path>
-		<name>3. Credits</name>
-		<image>./icons/3. Credits.png</image>
-	</game>
-	<game>
 		<path>./2. USB AutoMount.py</path>
 		<name>2. USB AutoMount</name>
 		<image>./icons/2. USB AutoMount.png</image>
+	</game>
+	<game>
+		<path>./3. RGB Cable Selector.py</path>
+		<name>3. RGB Cable Selector</name>
+	</game>
+	<game>
+		<path>./4. Credits.py</path>
+		<name>4. Credits</name>
+		<image>./icons/4. Credits.png</image>
 	</game>
 </gameList>
