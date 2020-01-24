@@ -29,6 +29,8 @@ import os, sys, traceback, time
 import subprocess, commands
 import logging
 
+sys.dont_write_bytecode = True
+
 CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
