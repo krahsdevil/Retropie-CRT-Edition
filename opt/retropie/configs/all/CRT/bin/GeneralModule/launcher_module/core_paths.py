@@ -30,6 +30,29 @@ RETROPIE_PATH = "/opt/retropie"
 RETROPIECFG_PATH = os.path.join(RETROPIE_PATH, "configs")
 RETROPIEEMU_PATH = os.path.join(RETROPIE_PATH, "emulators")
 
+# emulationstation path setup
+ESCFG_PATH = os.path.join(RETROPIECFG_PATH, "all/emulationstation")
+
+# CRT main software paths
 CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
 CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
-CRTASSETS_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/resources/assets")
+
+# CRT main additional software path (configs, resources, modules)
+CRTCONTENT_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles")
+
+# CRT configurations
+CRTCONFIG_PATH = os.path.join(CRTCONTENT_PATH, "config_files")
+
+# CRT resources
+CRTRESOURCES_PATH = os.path.join(CRTCONTENT_PATH, "resources")
+CRTASSETS_PATH = os.path.join(CRTRESOURCES_PATH, "assets")
+CRTLAUNCHIMAGES_SET_PATH = os.path.join(CRTASSETS_PATH, "screen_emulationstation/CRTResources/launch_images_modes")
+CRTICONS_SET_PATH = os.path.join(CRTASSETS_PATH, "screen_emulationstation/CRTResources/crt_icons")
+CRTFONTS_PATH = os.path.join(CRTASSETS_PATH, "screen_fonts")
+CRTADDONS_PATH = os.path.join(CRTRESOURCES_PATH, "addons")
+
+# CRT scripts modules
+CRTMODULES_PATH = os.path.join(CRTCONTENT_PATH, "bin")
+
+# raspbian path setup
+BOOTCFG_FILE = "/boot/config.txt"
