@@ -1,61 +1,119 @@
 #!/usr/bin/python
-# coding: utf-8
-#
-# Retropie code/integration by -krahs- (2019)
-#
-# unlicense.org
-#
-# This script can be heavily optimized.
+# -*- coding: utf-8 -*-
 
-# IMPORTS
-import struct
-import time
+"""
+screen_tools_manager.py.
+
+https://github.com/krahsdevil/crt-for-retropie/
+
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 2 of the License, or (at your option) any
+later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
 import pygame
-import sys
-import os
-import commands
-import subprocess
-import math
+import sys, os, commands, subprocess
 import filecmp
 
-#sys.path.insert(0, '/opt/retropie/configs/all/CRT/')
-sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
-sys.path.append('/opt/retropie/configs/all/CRT/')
+CRT_PATH = "/opt/retropie/configs/all/CRT"
+RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
+sys.path.append(RESOURCES_PATH)
+
+from launcher_module.core_paths import *
+from launcher_module.utils import ra_check_version
 from selector_module_functions import get_retropie_joy_map
 from selector_module_functions import check_joy_event
-from pygame.locals import *
 from general_functions import *
 
-os.system('clear')
+ESCFG_FILE = os.path.join(ESCFG_PATH, "es_settings.cfg")
+CRTCFG_FILE = os.path.join(CRTCONFIG_PATH, "utility.cfg")
+CRTMODESCFG_FILE = os.path.join(CRTCONFIG_PATH, "modes.cfg")
+CRTICONS_PATH = os.path.join(CRTROOT_PATH, "config/icons")
+FONT_FILE = os.path.join(CRTFONTS_PATH, "PetMe64.ttf")
 
+PATTERN_LAUNCHER_FILE = os.path.join(CRTMODULES_PATH,
+                        "module_screen_center_utility/pattern_launcher.py")
+
+TEST_SUITE_FILE = os.path.join(CRTADDONS_PATH, "addon_240p_suite/240pSuite.bin")
+TIMMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
+RA_MD_CFG_FILE1 = os.path.join(RETROPIECFG_PATH, "megadrive/retroarch.cfg")
+RA_MD_CFG_FILE2 = os.path.join(CRTROOT_PATH, "Retroarch/configs/megadrive.cfg")
+RA_MD_CORE_FILE = os.path.join(CRTADDONS_PATH,
+                  "addon_240p_suite/genesis_plus_gx_libretro.so")
+RETROARCH_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
+
+# menu centering and screen adjusters
 x_screen = 0
 y_screen = 0
-x_margin = 0
 y_margin = 0
 MarginNorm = 0.1482
 Interline = 0
 LineMov = 0
 
-#positions and arrows color
+# menu positions and arrows color
 data_x = 0
 list_x = 0
 arrow_c = [255,255,0]
+iCurOption = 0
 
 SaveConfig = False
 SaveModes = False
-OutputModeChange = False
 ResModeChange = False
 
+sESResLabel50 = 'system50'
+sESResLabel60 = 'system60'
+
+CurTheme = "none"
+HorTheme240p = "none"
+HorTheme270p = "none"
+VerTheme240p = "none"
+VerTheme270p = "none"
+
+# modes[0][x] Mode name; modes[x][0] Mode description
+modes = []
+MaxModes = 0
+MaxModesCounter = 0
+SelectedMode = (['DEFAULT', "Timings presets for better compatibility"])
+
+# pygame configurations
+oScreen = None
+oFont = None
+BLUELIGHT = pygame.Color(165, 165, 255)
+BLUEDARK = pygame.Color(66, 66, 231)
+BLUEUNS = pygame.Color(110, 110, 255)
+YELLOW = pygame.Color(255, 255, 0)
+RED = pygame.Color(255, 0, 0)
+
+# menu options
+opt = [["1.SYSTEM RESOLUTION" , "Changes don't have effect inside the games",
+        0, 0],
+       ["2.TV COMPATIBILITY" , "Timings presets for better compatibility",
+        "DEFAULT", "DEFAULT"],
+       ["3.FRONTEND CENTERING>" , "Affects only to Emulation Station"],
+       ["4.IN-GAME CENTERING>" , "Affects to all games"],
+       ["5.240P TEST SUITE>" , "Tool suite for TV/Monitor calibration"],
+       ["empty" , "empty"],
+       ["empty" , "empty"],
+       ["empty" , "empty"],
+       ["<BACK" , "Save and back to main menu"]]
 
 def get_xy_screen():
     global x_screen
     global y_screen
-    global x_margin
     global y_margin
     global Interline
     global LineMov
     global list_x
     global data_x
+
     process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
     output = process.stdout.read()
     for line in output.splitlines():
@@ -65,16 +123,15 @@ def get_xy_screen():
             x_screen = int(ResMode[1])
             y_screen = int(ResMode[2])
     if y_screen > 270:
-        Multiplier = int((y_screen-270)/8)
-        Interline = 20+Multiplier
-        LineMov = int(Multiplier/2)
-        y_margin = 20+((y_screen-270)-(Multiplier*9))
+        Multiplier = int((y_screen - 270) / 8)
+        Interline = 20 + Multiplier
+        LineMov = int(Multiplier / 2)
+        y_margin = 20 + ((y_screen - 270) - (Multiplier * 9))
     elif y_screen < 270:
-        Multiplier = int((270-y_screen)/8)
-        Interline = 20-Multiplier
-        LineMov = int(-1*(Multiplier/2))
-        y_margin = 20-((270-y_screen)-(Multiplier*9))
-        
+        Multiplier = int((270 - y_screen) / 8)
+        Interline = 20 - Multiplier
+        LineMov = int(-1 * (Multiplier / 2))
+        y_margin = 20 - ((270 - y_screen) - (Multiplier * 9))
     elif y_screen == 270:
         y_margin = 20
         Interline = 20
@@ -86,60 +143,15 @@ def get_xy_screen():
         data_x = 350
         list_x = 100
 
-# INITS
-get_xy_screen()
-pygame.init()
-pygame.mouse.set_visible(0)
-get_retropie_joy_map()
+def pygame_initialization():
+    global oScreen
+    global oFont
+    pygame.init()
+    pygame.mouse.set_visible(0)
+    oFont = pygame.font.Font(FONT_FILE, 8)
+    oScreen = pygame.display.set_mode((x_screen,y_screen), pygame.FULLSCREEN)
 
-# VARIABLES
-ES_Res_50hz = 'system50'
-ES_Res_60hz = 'system60'
-CurTheme = "none"
-HorTheme240p = "none"
-HorTheme270p = "none"
-VerTheme240p = "none"
-VerTheme270p = "none"
-state_up = 0
-state_down = 0
-state_left = 0
-state_right = 0
-threshold = 1000 # Analogic middle to debounce
-joystick = 0 # 0 is the 1sf joystick
-
-opt = 0
-x = 0
-y = 0
-y_slide = 0
-
-#########################################################
-# ALL FINDED MODES                                      #
-# modes[0][x] Mode name                                 #
-# modes[x][0] Mode description                          #
-#########################################################
-modes = []
-MaxModes = 0
-MaxModesCounter = 0
-########################################################
-# CURRECT SELECTED MODE                                #
-# SelectedMode[0][x] Mode name                         #
-# SelectedMode[x][0] Mode description                  #
-########################################################
-SelectedMode = (['DEFAULT', "Timings presets for better compatibility"])
-
-#files
-sucfg = '/opt/retropie/configs/all/CRT/su.cfg'
-VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/utility.cfg"
-EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
-CompModesCFG = '/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/modes.cfg'
-MainConfPath = '/opt/retropie/configs'
-LaunchImgPath = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/launch_images_modes'
-IconsImgPathSrc = '/opt/retropie/configs/all/CRT/bin/emulationstation/CRTResources/crt_icons'
-IconsImgPathDst = '/opt/retropie/configs/all/CRT/config/icons'
-RaspbianCFG = "/boot/config.txt"
-
-# FUNCTIONS
-def text_print(txt, xcoord, ycoord, r, g, b, center):
+def text_print(txt, xcoord, ycoord, color, center):
     if x_screen <= 340:
         txt = txt[0:28]
         if len(txt) >= 28 :
@@ -150,190 +162,108 @@ def text_print(txt, xcoord, ycoord, r, g, b, center):
             txt = txt + '...'
 
     if center == True:
-        text = myfont.render(txt, True, (r,g,b))
+        text = oFont.render(txt, True, (color))
         textPos = text.get_rect()
         textPos.center = (x_screen/2, ycoord+6)
-        fullscreen.blit(text,textPos)
+        oScreen.blit(text,textPos)
     else:
-        fullscreen.blit(myfont.render(txt, 1, (r,g,b)), (xcoord, ycoord))
+        oScreen.blit(oFont.render(txt, 1, (color)), (xcoord, ycoord))
 
 def draw_arrow_left():
-    fullscreen.blit((myfont.render('<<', 1, (arrow_c))), (data_x-(len(str(str(opt[option][2])))*8)-18, (30+y_margin+LineMov)+y*Interline))
+    oScreen.blit((oFont.render('<<', 1, (YELLOW))),
+                                  (data_x-(len(str(str(opt[iCurOption][2])))*8)-18,
+                                  (30+y_margin+LineMov)+iCurOption*Interline))
 
 def draw_arrow_right():
-    fullscreen.blit((myfont.render('>>', 1, (arrow_c))), (data_x+2, (30+y_margin+LineMov)+y*Interline))
+    oScreen.blit((oFont.render('>>', 1, (YELLOW))),
+                    (data_x+2, (30+y_margin+LineMov)+iCurOption*Interline))
 
-def replace_launch_image(image):
-    image_cur = MainConfPath+"/"+image
-    image_240p = LaunchImgPath+"/"+image[:-4]+"_240p.png"
-    image_270p = LaunchImgPath+"/"+image[:-4]+"_270p.png"
+def replace_launch_image(p_sImage):
+    p_lMask = (".png", ".jpg")
+    if not p_sImage[-4:] in p_lMask:
+        return
+    image_cur = RETROPIECFG_PATH + "/" + p_sImage
+    sImageSetA = CRTLAUNCHIMAGES_SET_PATH + "/" + p_sImage[:-4] + "_240p.png"
+    sImageSetB = CRTLAUNCHIMAGES_SET_PATH + "/" + p_sImage[:-4] + "_270p.png"
+    # if 240p is the chosen resolution, images are changed
     if "240" in opt[0][2]:
-        try:
-            if filecmp.cmp(image_cur, image_270p):
-                os.system('cp "%s" "%s" >> /dev/null 2>&1'%(image_240p, image_cur))
-        except:
-            pass
-    elif "270" in opt[0][2]:
-        try:
-            if filecmp.cmp(image_cur, image_240p):
-                os.system('cp "%s" "%s" >> /dev/null 2>&1'%(image_270p, image_cur))
-        except:
-            pass
+        sImageSetA = sImageSetA[:-9] + "_270p.png"
+        sImageSetB = sImageSetB[:-9] + "_240p.png"
+    try:
+        if filecmp.cmp(image_cur, sImageSetA):
+            os.system('cp "%s" "%s"' % (sImageSetB, image_cur))
+    except:
+        pass
 
 def replace_icons_image():
-    for file in os.listdir(IconsImgPathDst):
-        IconImg = IconsImgPathDst+"/"+file
-        IconImgMode = IconsImgPathSrc+"/"+file[:-4]+"_"+opt[0][2]+".png"
+    for file in os.listdir(CRTICONS_PATH):
+        IconImg = CRTICONS_PATH + "/" + file
+        IconImgMode = CRTICONS_SET_PATH + "/" + file[:-4] + "_" + opt[0][2] + ".png"
         if not os.path.isdir(IconImg):
-            os.system('cp "%s" "%s" >> /dev/null 2>&1'%(IconImgMode, IconImg))
+            os.system('cp "%s" "%s" >> /dev/null 2>&1' % (IconImgMode, IconImg))
 
 def search_launch_image():
-    for Level1 in os.listdir(MainConfPath):
-        if os.path.isdir(MainConfPath+"/"+Level1):
-            for Level2 in os.listdir(MainConfPath+"/"+Level1):
-                if os.path.isdir(MainConfPath+"/"+Level1+"/"+Level2):
-                    for Level3 in os.listdir(MainConfPath+"/"+Level1+"/"+Level2):
-                        if os.path.isdir(MainConfPath+"/"+Level1+"/"+Level2+"/"+Level3):
-                            for Level4 in os.listdir(MainConfPath+"/"+Level1+"/"+Level2+"/"+Level3):
-                                if os.path.isfile(MainConfPath+"/"+Level1+"/"+Level2+"/"+Level3+"/"+Level4):
-                                    replace_launch_image(Level1+"/"+Level2+"/"+Level3+"/"+Level4)
+    for Level1 in os.listdir(RETROPIECFG_PATH):
+        LEVEL1 = os.path.join(RETROPIECFG_PATH, Level1)
+        if os.path.isdir(LEVEL1):
+            for Level2 in os.listdir(LEVEL1):
+                LEVEL2 = os.path.join(LEVEL1, Level2)
+                sFile2 = os.path.join(Level1, Level2)
+                if os.path.isdir(LEVEL2):
+                    for Level3 in os.listdir(LEVEL2):
+                        LEVEL3 = os.path.join(LEVEL2, Level3)
+                        sFile3 = os.path.join(Level1, Level2, Level3)
+                        if os.path.isdir(LEVEL3):
+                            for Level4 in os.listdir(LEVEL3):
+                                LEVEL4 = os.path.join(LEVEL3, Level4)
+                                sFile4 = os.path.join(Level1, Level2, Level3, Level4)
+                                if os.path.isfile(LEVEL4):
+                                    replace_launch_image(sFile4)
                         else:
-                            replace_launch_image(Level1+"/"+Level2+"/"+Level3)
+                            replace_launch_image(sFile3)
                 else:
-                    replace_launch_image(Level1+"/"+Level2)
+                    replace_launch_image(sFile2)
 
 def save():
     if SaveConfig == True:
-        modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%opt[0][3], '%s_theme_horizontal %s'%(opt[0][3], CurTheme))
+        modificarLinea(CRTCFG_FILE, '%s_theme_horizontal ' % opt[0][3],
+                       '%s_theme_horizontal %s' % (opt[0][3], CurTheme))
         if opt[0][2] == '240p':
-            modificarLinea(VideoUtilityCFG,'default','default %s'%ES_Res_60hz)
-            modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme240p)
+            modificarLinea(CRTCFG_FILE, 'default', 'default %s' % sESResLabel60)
+            modificarLinea(ESCFG_FILE, '"ThemeSet"',
+                           '<string name="ThemeSet" value="%s" />' % HorTheme240p)
         elif opt[0][2] == '270p':
-            modificarLinea(VideoUtilityCFG,'default','default %s'%ES_Res_50hz)
-            modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme270p)
+            modificarLinea(CRTCFG_FILE,'default', 'default %s' % sESResLabel50)
+            modificarLinea(ESCFG_FILE, '"ThemeSet"',
+                           '<string name="ThemeSet" value="%s" />' % HorTheme270p)
         search_launch_image()
         replace_icons_image()
     if SaveModes == True:
-        modificarLinea(CompModesCFG,'mode_default','mode_default %s'%SelectedMode[0])
+        modificarLinea(CRTMODESCFG_FILE,'mode_default',
+                       'mode_default %s' % SelectedMode[0])
 
 def quit_manager():
     if ResModeChange == True or SaveModes == True:
         save()
         pygame.quit()
-        commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_screen_center_utility/pattern_launcher.py force"
-        os.system(commandline)
+        commandline1 = "/usr/bin/python %s force" % PATTERN_LAUNCHER_FILE
+        commandline2 = "sudo pkill -9 "
+        commandline2 += "-f \"Configuration Utility\""
+        commandline3 = "touch /tmp/es-restart "
+        commandline3 += "&& pkill -f \"/opt/retropie"
+        commandline3 += "/supplementary/.*/emulationstation([^.]|$)\""
+        os.system(commandline1)
         output = commands.getoutput('ps -A')
         # Restart ES if it is running
         if 'emulationstatio' in output:
-            os.system('sudo pkill -9 -f \"Configuration Utility\"')
-            os.system("touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"")
-    elif OutputModeChange == True:
-        CurMode = 'none'
-        rgbpidto = False
-        rgbpidtoformat = False
-        pi2scart_audio1 = False
-        pi2scart_audio2 = False
-        with open(RaspbianCFG, 'r') as file:
-            for line in file:
-                if 'dtoverlay=rgb-pi' in line:
-                    CurMode = 'RGB-Pi'
-                elif 'dtoverlay=vga666' in line:
-                    CurMode = 'VGA666'
-                elif 'dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2' in line:
-                    rgbpidto = True
-                elif 'dpi_output_format=6' in line:
-                    rgbpidtoformat = True
-                elif 'disable_audio_dither=1' in line:
-                    pi2scart_audio1 = True
-                elif 'dtparam=audio=on' in line:
-                    pi2scart_audio2 = True
-        if CurMode != 'none':
-            if opt[2][2] == 'RGB-Pi':
-                modificarLinea("/tmp/config.txt","dtoverlay=vga666", "dtoverlay=rgb-pi")
-                if rgbpidto == True:
-                    modificarLinea("/tmp/config.txt","dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2", "dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2")
-                else:
-                    os.system('echo \"dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2\" >> /tmp/config.txt')
-                if rgbpidtoformat == True:
-                    modificarLinea("/tmp/config.txt","dpi_output_format=6", "dpi_output_format=6")
-                else:
-                    os.system('echo \"dpi_output_format=6\" >> /tmp/config.txt')
-                if pi2scart_audio1 == True:
-                    modificarLinea("/tmp/config.txt","disable_audio_dither=1", "#disable_audio_dither=1")
-                else:
-                    os.system('echo \"#disable_audio_dither=1\" >> /tmp/config.txt')
-                if pi2scart_audio2 == True:
-                    modificarLinea("/tmp/config.txt","dtparam=audio=on", "dtparam=audio=on")
-                else:
-                    os.system('echo \"dtparam=audio=on\" >> /tmp/config.txt')
-            elif opt[2][2] == 'VGA666':
-                modificarLinea("/tmp/config.txt","dtoverlay=rgb-pi", "dtoverlay=vga666")
-                if rgbpidto != False:
-                    modificarLinea("/tmp/config.txt","dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2", "#dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2")
-                else:
-                    os.system('echo \"#dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2\" >> /tmp/config.txt')
-                if rgbpidtoformat != False:
-                    modificarLinea("/tmp/config.txt","dpi_output_format=6", "#dpi_output_format=6")
-                else:
-                    os.system('echo \"#dpi_output_format=6\" >> /tmp/config.txt')
-                if pi2scart_audio1 == True:
-                    modificarLinea("/tmp/config.txt","disable_audio_dither=1", "#disable_audio_dither=1")
-                else:
-                    os.system('echo \"#disable_audio_dither=1\" >> /tmp/config.txt')
-                if pi2scart_audio2 == True:
-                    modificarLinea("/tmp/config.txt","dtparam=audio=on", "dtparam=audio=on")
-                else:
-                    os.system('echo \"dtparam=audio=on\" >> /tmp/config.txt')
-            elif opt[2][2] == 'PI2SCART':
-                modificarLinea("/tmp/config.txt","dtoverlay=rgb-pi", "dtoverlay=vga666")
-                if rgbpidto != False:
-                    modificarLinea("/tmp/config.txt","dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2", "#dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2")
-                else:
-                    os.system('echo \"#dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2\" >> /tmp/config.txt')
-                if rgbpidtoformat != False:
-                    modificarLinea("/tmp/config.txt","dpi_output_format=6", "#dpi_output_format=6")
-                else:
-                    os.system('echo \"#dpi_output_format=6\" >> /tmp/config.txt')
-                if pi2scart_audio1 == True:
-                    modificarLinea("/tmp/config.txt","disable_audio_dither=1", "disable_audio_dither=1")
-                else:
-                    os.system('echo \"disable_audio_dither=1\" >> /tmp/config.txt')
-                if pi2scart_audio2 == True:
-                    modificarLinea("/tmp/config.txt","dtparam=audio=on", "dtparam=audio=on")
-                else:
-                    os.system('echo \"dtparam=audio=on\" >> /tmp/config.txt')
-            os.system('sudo cp /tmp/config.txt %s' % RaspbianCFG)
-            os.remove('/tmp/config.txt')
-            os.system('sudo shutdown now')
+            os.system(commandline2)
+            os.system(commandline3)
     sys.exit()
-
-def get_output_video_mode():
-    global opt
-    os.system('cp %s /tmp/config.txt' % RaspbianCFG)
-    OutputMode = 'none'
-    pi2scart_audio1 = False
-    pi2scart_audio2 = False
-    with open(RaspbianCFG, 'r') as file:
-        for line in file:
-            line = line.strip()
-            if 'dtoverlay=rgb-pi' in line:
-                OutputMode = 'RGB-Pi'
-            elif 'dtoverlay=vga666' in line:
-                OutputMode = 'VGA666'
-            elif 'disable_audio_dither=1' == line:
-                pi2scart_audio1 = True
-            elif 'dtparam=audio=on' == line:
-                pi2scart_audio2 = True
-    if OutputMode == 'VGA666'and pi2scart_audio1 == True and pi2scart_audio2 == True:
-        OutputMode = 'PI2SCART'
-    opt[2][2] = OutputMode
-    if opt[2][3] == 'unknown':
-        opt[2][3] = OutputMode
 
 def screen_center_utility_es():
     save()
     pygame.quit()
-    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_screen_center_utility/pattern_launcher.py system"
+    commandline = "/usr/bin/python %s system" % PATTERN_LAUNCHER_FILE
     os.system(commandline)
     get_xy_screen()
     os.execl(sys.executable, sys.executable, *sys.argv)
@@ -341,58 +271,33 @@ def screen_center_utility_es():
 def screen_center_utility_ingame():
     save()
     pygame.quit()
-    commandline = "/usr/bin/python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_screen_center_utility/pattern_launcher.py test60"
+    commandline = "/usr/bin/python %s test60" % PATTERN_LAUNCHER_FILE
     os.system(commandline)
     get_xy_screen()
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 def test_suite():
     save()
-    TestSuiteRom = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/addons/addon_240p_suite/240pSuite.bin"
-    timings_full_path = "/opt/retropie/configs/all/CRT/Resolutions/base_systems.cfg"
-    ra_cfg_path = "/opt/retropie/configs/all/CRT/Retroarch/configs/megadrive.cfg"
-    ra_bin_path = "/opt/retropie/emulators/retroarch/bin/retroarch"
-    retroarch_core = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/addons/addon_240p_suite/genesis_plus_gx_libretro.so"
-    Check_RetroArch_Version(ra_cfg_path)
-    crt_open_screen_from_timings_cfg('megadrive',timings_full_path)
+    ra_check_version(RA_MD_CFG_FILE2)
+    crt_open_screen_from_timings_cfg('megadrive', TIMMINGS_FILE)
     pygame.quit()
-    commandline = "%s -L %s --config /opt/retropie/configs/megadrive/retroarch.cfg --appendconfig %s \"%s\" > /dev/null 2>&1" % (ra_bin_path,retroarch_core,ra_cfg_path,TestSuiteRom)
+    commandline = "%s -L %s " % (RETROARCH_FILE, RA_MD_CORE_FILE)
+    commandline += "--config %s " % RA_MD_CFG_FILE1
+    commandline += "--appendconfig %s " % RA_MD_CFG_FILE2
+    commandline += "\"%s\" " % TEST_SUITE_FILE
+    commandline += "> /dev/null 2>&1"
     os.system(commandline)
     es_restore_screen()
     get_xy_screen()
     os.execl(sys.executable, sys.executable, *sys.argv)
-
-# SET SCREEN
-black = pygame.Color(0,0,0)
-white = pygame.Color(255,255,255)
-BlueLight = pygame.Color(165,165,255)
-BlueDark = pygame.Color(66,66,231)
-BlueUnselect = pygame.Color(110,110,255)
-
-fullscreen = pygame.display.set_mode((x_screen,y_screen), FULLSCREEN)
-fullscreen.fill(BlueLight)
-
-# FONT
-myfont = pygame.font.Font("/opt/retropie/configs/all/CRT/config/PetMe64.ttf", 8)
-
-# loading data from su.cfg
-opt = [["1.SYSTEM RESOLUTION" , "Changes don't have effect inside the games", 0, 0],
-    ["2.TV COMPATIBILITY" , "Timings presets for better compatibility", "DEFAULT", "DEFAULT"],
-    ["3.RGB OUTPUT MODE" , 'Change DPI Overlay for RGB video signal', 'unknown', 'unknown'],
-    ["4.FRONTEND CENTERING>" , "Affects only to Emulation Station"],
-    ["5.IN-GAME CENTERING>" , "Affects to all games"],
-    ["6.240P TEST SUITE>" , "Tool suite for TV/Monitor calibration"],
-    ["empty" , "empty"],
-    ["empty" , "empty"],
-    ["<BACK" , "Save and back to main menu"]]
 
 def get_available_modes():
     global modes
     global MaxModes
     global SelectedMode
     global MaxModesCounter
-    if os.path.exists(CompModesCFG):
-        with open(CompModesCFG, 'r') as file:
+    if os.path.exists(CRTMODESCFG_FILE):
+        with open(CRTMODESCFG_FILE, 'r') as file:
             counter = 0
             modes.append(['DEFAULT', "Timings presets for better compatibility"])
             for line in file:
@@ -406,11 +311,13 @@ def get_available_modes():
         counter = 0
         for item in modes:
             if item[0] != 'DEFAULT':
-                with open(CompModesCFG, 'r') as file:
+                with open(CRTMODESCFG_FILE, 'r') as file:
                     for line in file:
-                        line = line.strip().replace('=',' ').split(' ')
-                        if line[0] == '%s_desc'%item[0]:
-                            modes[counter][1] = " ".join(line).replace('%s_desc'%item[0],'').strip()
+                        line = line.strip().replace('=', ' ').split(' ')
+                        if line[0] == '%s_desc' % item[0]:
+                            modes[counter][1] = " ".join(line)\
+                                                .replace('%s_desc' % item[0], '')\
+                                                .strip()
             counter += 1
         counter = 0
         for item in modes:
@@ -422,6 +329,7 @@ def get_available_modes():
     opt[1][2] = SelectedMode[0]
     opt[1][3] = SelectedMode[0]
     opt[1][1] = SelectedMode[1]
+
 def get_config():
     global opt
     global CurTheme
@@ -429,15 +337,15 @@ def get_config():
     global HorTheme270p
     global VerTheme240p
     global VerTheme270p
-    with open(VideoUtilityCFG, 'r') as file:
+    with open(CRTCFG_FILE, 'r') as file:
         for line in file:
             line = line.strip().replace('=',' ').split(' ')
             if line[0] == "default":
-                if line[1] == ES_Res_50hz:
+                if line[1] == sESResLabel50:
                     opt[0][2] = '270p'
                     if opt[0][3] == 0:
                         opt[0][3] = '270p'
-                elif line[1] == ES_Res_60hz:
+                elif line[1] == sESResLabel60:
                     opt[0][2] = '240p'
                     if opt[0][3] == 0:
                         opt[0][3] = '240p'
@@ -445,119 +353,114 @@ def get_config():
                 HorTheme240p = line[1]
             elif line[0] == '270p_theme_horizontal':
                 HorTheme270p = line[1]
-    get_output_video_mode()
+
     get_available_modes()
-    if os.path.exists(EsSystemcfg):
-        with open(EsSystemcfg, 'r') as file:
+
+    if os.path.exists(ESCFG_FILE):
+        with open(ESCFG_FILE, 'r') as file:
             for line in file:
-                line = line.strip().replace('"','').replace(' ','').replace('/','').replace('>','').split('=')
+                line = line.strip().replace('"','').replace(' ','')
+                line = line.replace('/','').replace('>','').split('=')
                 if 'ThemeSet' in line[1]:
                     CurTheme = line[2]
 
-get_config()
-
 def draw_menu():
-    global option
     global opt
-    global OutputModeChange
     global ResModeChange
     global SaveConfig
     global SaveModes
-    # SHOW BACKGROUND
-    pygame.draw.rect(fullscreen, BlueDark, (20,y_margin,x_screen-40,(20+(Interline*9)+3+16+10)), 0)
 
-    #title and credits
-    title = myfont.render("Configuration Utility", 1, BlueLight)
-    fullscreen.blit(title, (32, y_margin+8))
-    text_print("v3.0", x_screen-62, y_margin+8, 110, 110, 255, False)
+    # draw background color and main frame
+    oScreen.fill(BLUELIGHT)
+    pygame.draw.rect(oScreen, BLUEDARK, 
+                    (20, y_margin, x_screen - 40, (49 + (Interline * 9))), 0)
 
-    #last options
-    #text_print('last rotation = ' + str(opt[4][3]), 0, 0, 255, 0, 0)
-    #text_print('last ES resolution = ' + str(opt[6][3] ), 0, 8, 255, 0, 0)    
-    
-    #list square
-    pygame.draw.rect(fullscreen, BlueLight, (32,y_margin+24,x_screen-62,Interline*9), 1)
+    # draw title and version
+    title = oFont.render("Configuration Utility", 1, BLUELIGHT)
+    oScreen.blit(title, (32, y_margin + 8))
+    text_print("v3.1", x_screen - 62, y_margin + 8, BLUEUNS, False)
 
-    #list
+    # draw options list frame
+    pygame.draw.rect(oScreen, BLUELIGHT, (32, y_margin + 24,
+                                             x_screen - 62, Interline * 9), 1)
+
+    # draw whole list of options in base color
     for i in range(0,9):
-        option = y+y_slide
-        if (i+y_slide <= 5 or i+y_slide == 8) and OutputModeChange == False and ResModeChange == False:
+        if (i <= 4 or i == 8) and ResModeChange == False:
             opt[8][0] = '<BACK'
             opt[8][1] = 'Save and back to main menu'
-            fullscreen.blit((myfont.render(opt[i+y_slide][0], 1, BlueLight)), (list_x, (30+y_margin+LineMov)+i*Interline))
-        elif (i+y_slide <= 5 or i+y_slide == 8) and OutputModeChange == True:
-            opt[8][0] = '<SHUTDOWN'
-            opt[8][1] = 'Shudown the system and replace RGB connector'
-            if i+y_slide == 2 or i+y_slide == 8:
-                fullscreen.blit((myfont.render(opt[i+y_slide][0], 1, BlueLight)), (list_x, (30+y_margin+LineMov)+i*Interline))
-            else:
-                fullscreen.blit((myfont.render(opt[i+y_slide][0], 1, BlueUnselect)), (list_x, (30+y_margin+LineMov)+i*Interline))
-        elif (i+y_slide <= 5 or i+y_slide == 8) and ResModeChange == True:
+            oScreen.blit((oFont.render(opt[i][0], 1, BLUELIGHT)),
+                            (list_x, (30 + y_margin + LineMov) + i * Interline))
+        elif (i <= 4 or i == 8) and ResModeChange == True:
             opt[8][0] = '<RESTART'
             opt[8][1] = 'Restart ES to apply new resolution...'
-            if i+y_slide == 0 or i+y_slide == 8:
-                fullscreen.blit((myfont.render(opt[i+y_slide][0], 1, BlueLight)), (list_x, (30+y_margin+LineMov)+i*Interline))
+            if i == 0 or i == 8:
+                oScreen.blit((oFont.render(opt[i][0], 1, BLUELIGHT)),
+                                (list_x, (30 + y_margin + LineMov) \
+                                + i * Interline))
             else:
-                fullscreen.blit((myfont.render(opt[i+y_slide][0], 1, BlueUnselect)), (list_x, (30+y_margin+LineMov)+i*Interline))
+                oScreen.blit((oFont.render(opt[i][0], 1, BLUEUNS)),
+                                (list_x, (30+y_margin+LineMov)+i*Interline))
 
-    # data values
+    # draw all selectables values in base color
     for i in range(0,9):
-        option = y+y_slide
-        if (i < 3) and OutputModeChange == False and ResModeChange == False:
-            esres = myfont.render(str(opt[i][2]), 1, BlueLight)
-            fullscreen.blit(esres, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-        elif (i < 3) and OutputModeChange == True:
-            if i == 2:
-                mode = myfont.render(str(opt[i][2]), 1, BlueLight)
-                fullscreen.blit(mode, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            else:
-                esres = myfont.render(str(opt[i][2]), 1, BlueUnselect)
-                fullscreen.blit(esres, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-        elif (i < 3) and ResModeChange == True:
+        if (i < 2) and ResModeChange == False:
+            esres = oFont.render(str(opt[i][2]), 1, BLUELIGHT)
+            oScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
+                                            (30 + y_margin + LineMov) \
+                                            + i * Interline))
+        elif (i < 2) and ResModeChange == True:
             if i == 0:
-                mode = myfont.render(str(opt[i][2]), 1, BlueLight)
-                fullscreen.blit(mode, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
+                mode = oFont.render(str(opt[i][2]), 1, BLUELIGHT)
+                oScreen.blit(mode, (data_x-(len(str(opt[i][2])) * 8),
+                                      (30 + y_margin + LineMov) + i * Interline))
             else:
-                esres = myfont.render(str(opt[i][2]), 1, BlueUnselect)
-                fullscreen.blit(esres, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
+                esres = oFont.render(str(opt[i][2]), 1, BLUEUNS)
+                oScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
+                                        (30 + y_margin + LineMov) \
+                                        + i * Interline))
 
-
-    # message if reboot is needed and deactivated options in red
-    OutputModeChange = False
+    # clear any previous warning top red message
     ResModeChange = False
     SaveModes = False
-    text_print('SYSTEM NEEDS TO SHUTDOWN NOW', 0, y_margin-13, 165, 165, 255, True)
-    text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0, y_margin-13, 165, 165, 255, True)
-    text_print('FIX WILL APPLY ON BACK/CENTERING', 0, y_margin-13, 165, 165, 255, True)
-    if opt[2][2] != opt[2][3]:
-        OutputModeChange = True
-        #opt[0][2] = opt[0][3]
-        #opt[1][2] = opt[1][3]
-        text_print('SYSTEM NEEDS TO SHUTDOWN NOW', 0, y_margin-13, 255, 0, 0, True)
-    elif opt[0][2] != opt[0][3]:
-        #opt[1][2] = opt[1][3]
+    text_print('SYSTEM NEEDS TO SHUTDOWN NOW', 0,
+               y_margin - 13, BLUELIGHT, True)
+    text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
+               y_margin - 13, BLUELIGHT, True)
+    text_print('FIX WILL APPLY ON BACK/CENTERING', 0,
+               y_margin - 13, BLUELIGHT, True)
+
+    # draw if apply warning message on top
+    if opt[0][2] != opt[0][3]:
         ResModeChange = True
         SaveConfig = True
-        text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0, y_margin-13, 255, 0, 0, True)
+        text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
+                   y_margin - 13, RED, True)
     elif opt[1][2] != opt[1][3]:
         SaveModes = True
-        text_print('FIX WILL APPLY ON BACK/CENTERING', 0, y_margin-13, 255, 0, 0, True)
+        text_print('FIX WILL APPLY ON BACK/CENTERING', 0,
+                    y_margin - 13, RED, True)
 
-# list selection and square and arrows
-    pygame.draw.rect(fullscreen, BlueLight, (32,(24+y_margin)+y*Interline,x_screen-62,Interline))
-    fullscreen.blit((myfont.render(opt[option][0], 1, BlueDark)), (list_x, (30+y_margin+LineMov)+y*Interline))
+    # draw current selection frame color
+    pygame.draw.rect(oScreen, BLUELIGHT,
+                    (32, (24 + y_margin) + iCurOption * Interline, x_screen \
+                    - 62, Interline))
+    oScreen.blit((oFont.render(opt[iCurOption][0], 1, BLUEDARK)),
+                    (list_x, (30 + y_margin + LineMov) + iCurOption * Interline))
 
-    # data redraw
-    if y == 0:
-        esres = myfont.render(str(opt[0][2]), 1, BlueDark)
-        fullscreen.blit(esres, (data_x-(len(str(opt[0][2]))*8), (30+y_margin+LineMov)+y*Interline))
+    # draw active option in dark color
+    if iCurOption == 0:
+        esres = oFont.render(str(opt[0][2]), 1, BLUEDARK)
+        oScreen.blit(esres, (data_x - (len(str(opt[0][2])) * 8),
+                        (30 + y_margin + LineMov) + iCurOption * Interline))
         if opt[0][2] == '240p':
             draw_arrow_right()
         elif opt[0][2] == '270p':
             draw_arrow_left()
-    elif y == 1:
-        modres = myfont.render(str(opt[1][2]), 1, BlueDark)
-        fullscreen.blit(modres, (data_x-(len(str(opt[1][2]))*8), (30+y_margin+LineMov)+y*Interline))
+    elif iCurOption == 1:
+        modres = oFont.render(str(opt[1][2]), 1, BLUEDARK)
+        oScreen.blit(modres, (data_x - (len(str(opt[1][2])) * 8),
+                        (30 + y_margin + LineMov) + iCurOption * Interline))
         if MaxModes != 0:
             if MaxModesCounter == 0:
                 draw_arrow_right()
@@ -566,19 +469,9 @@ def draw_menu():
                 draw_arrow_right()
             elif MaxModesCounter == MaxModes:
                 draw_arrow_left()
-    elif y == 2:
-        VideoMode = myfont.render(str(opt[2][2]), 1, BlueDark)
-        fullscreen.blit(VideoMode, (data_x-(len(str(opt[2][2]))*8), (30+y_margin+LineMov)+y*Interline))
-        if opt[2][2] == 'RGB-Pi':
-            draw_arrow_right()
-            draw_arrow_left()
-        elif opt[2][2] == 'VGA666':
-            draw_arrow_right()
-        elif opt[2][2] == 'PI2SCART':
-            draw_arrow_left()
 
-    # SHOW description on bootom in yellow and case
-    info = str(opt[y+y_slide][1])
+    # draw info message on bottom
+    info = str(opt[iCurOption][1])
     if x_screen <= 340:
         info = info[0:28]
         if len(info) >= 28 :
@@ -587,93 +480,90 @@ def draw_menu():
         info = info[0:44]
         if len(info) >= 44 :
             info = info + '...'
-    fullscreen.blit((myfont.render(info, 1, (255,255,0))), (38, ((y_margin+23)+Interline*9)+4))
-    pygame.draw.rect(fullscreen, BlueLight, (32,(y_margin+23)+Interline*9,x_screen-62,16), 1)
+    oScreen.blit((oFont.render(info, 1, (YELLOW))),
+                    (38, ((y_margin + 23) + Interline * 9) + 4))
+    pygame.draw.rect(oScreen, BLUELIGHT,
+                    (32, (y_margin + 23) + Interline * 9, x_screen - 62, 16), 1)
     pygame.display.flip()
 
-draw_menu()
+# MAIN PROGRAM
+os.system('clear')
+get_xy_screen()
+pygame_initialization()
+get_retropie_joy_map()
+get_config()
+
 while True:
+    draw_menu()
     for event in pygame.event.get():
         action = check_joy_event(event)
         #button
-        if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
-            if y == 3 and OutputModeChange == False and ResModeChange == False:
+        if action == 'KEYBOARD' or action == 'JOYBUTTONB' \
+           or action == 'JOYBUTTONA':
+            if iCurOption == 2 and ResModeChange == False:
                 screen_center_utility_es()
-            if y == 4 and OutputModeChange == False and ResModeChange == False:
+            if iCurOption == 3 and ResModeChange == False:
                 screen_center_utility_ingame()
-            if y == 5 and OutputModeChange == False and ResModeChange == False:
+            if iCurOption == 4 and ResModeChange == False:
                 test_suite()
-            if y == 8:
+            if iCurOption == 8:
                 pygame.quit()
                 quit_manager()
                 sys.exit()
         #right
-        elif action == 'RIGTHKEYBOARD' or action == 'JOYHATRIGTH' or action == 'AXISRIGTH':
-            if y == 0:
+        elif action == 'RIGTHKEYBOARD' or action == 'JOYHATRIGTH' \
+             or action == 'AXISRIGTH':
+            if iCurOption == 0:
                 if opt[0][2] == '240p':
                     opt[0][2] = '270p'
                     if opt[0][2] != opt[0][3]:
-                        y = 8
-            elif y == 1:
+                        iCurOption = 8
+            elif iCurOption == 1:
                 if MaxModesCounter < MaxModes:
                     MaxModesCounter+=1
                     SelectedMode[0] = modes[MaxModesCounter][0]
                     SelectedMode[1] = modes[MaxModesCounter][1]
                     opt[1][2] = SelectedMode[0]
                     opt[1][1] = SelectedMode[1]
-            elif y == 2:
-                if opt[2][2] == 'VGA666':
-                    opt[2][2] = 'RGB-Pi'
-                elif opt[2][2] == 'RGB-Pi':
-                    opt[2][2] = 'PI2SCART'
         #left
-        elif action == 'LEFTKEYBOARD' or action == 'JOYHATLEFT' or action == 'AXISLEFT':
-            if y == 0:
+        elif action == 'LEFTKEYBOARD' or action == 'JOYHATLEFT' \
+             or action == 'AXISLEFT':
+            if iCurOption == 0:
                 if opt[0][2] == '270p':
                     opt[0][2] = '240p'
                     if opt[0][2] != opt[0][3]:
-                        y = 8
-            elif y == 1:
+                        iCurOption = 8
+            elif iCurOption == 1:
                 if MaxModesCounter > 0:
                     MaxModesCounter-=1
                     SelectedMode[0] = modes[MaxModesCounter][0]
                     SelectedMode[1] = modes[MaxModesCounter][1]
                     opt[1][2] = SelectedMode[0]
                     opt[1][1] = SelectedMode[1]
-            elif y == 2:
-                if opt[2][2] == 'PI2SCART':
-                    opt[2][2] = 'RGB-Pi'
-                elif opt[2][2] == 'RGB-Pi':
-                    opt[2][2] = 'VGA666'
-        #up
-        elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
-            if OutputModeChange == True:
-                if y == 8:
-                    y = 2
-            elif ResModeChange == True:
-                if y == 8:
-                    y = 0
-            else:
-                if y == 8:
-                    y = 5
-                elif y > 0:
-                    y = y - 1
-                elif y == 0:
-                    y = 8
-        #down
-        elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
-            if OutputModeChange == True:
-                if y == 2:
-                    y = 8
-            elif ResModeChange == True:
-                if y == 0:
-                    y = 8
-            else:
-                if y == 5:
-                    y = 8
-                elif y < 8:
-                    y = y + 1
-                elif y == 8:
-                    y = 0
-    draw_menu()
 
+        #up
+        elif action == 'UPKEYBOARD' or action == 'JOYHATUP' \
+             or action == 'AXISUP':
+            if ResModeChange == True:
+                if iCurOption == 8:
+                    iCurOption = 0
+            else:
+                if iCurOption == 8:
+                    iCurOption = 4
+                elif iCurOption > 0:
+                    iCurOption = iCurOption - 1
+                elif iCurOption == 0:
+                    iCurOption = 8
+        #down
+        elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' \
+             or action == 'AXISDOWN':
+            if ResModeChange == True:
+                if iCurOption == 0:
+                    iCurOption = 8
+            else:
+                if iCurOption == 4:
+                    iCurOption = 8
+                elif iCurOption < 8:
+                    iCurOption = iCurOption + 1
+                elif iCurOption == 8:
+                    iCurOption = 0
