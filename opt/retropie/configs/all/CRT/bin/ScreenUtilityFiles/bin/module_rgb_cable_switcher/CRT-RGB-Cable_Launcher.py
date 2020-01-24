@@ -489,9 +489,11 @@ class CableSelector(object):
             logging.info('INFO: NO changes in /boot/config.txt; ' + \
                          'no reboot needed')
             return
+        commandline = 'sudo reboot now'
         if self._check_process('emulationstatio'):
-            commandline += 'sudo killall emulationstation && '
-        commandline += 'sudo reboot now'
+            commandline = "touch /tmp/es-sysrestart "
+            commandline += "&& pkill -f \"/opt/retropie"
+            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
         self._show_info('SYSTEM WILL REBOOT NOW...')
         os.system(commandline)
         sys.exit()
