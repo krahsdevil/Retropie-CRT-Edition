@@ -160,7 +160,7 @@ try:
         oLaunch = center()
         oLaunch.launch(item)
         oLaunch = None
-        time.sleep(1)
+        #time.sleep(1)
     
 except Exception as e:
     ErrMsg = ""
