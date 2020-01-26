@@ -40,7 +40,9 @@ CRTMODES_FILE = os.path.join(CRTCONFIGS_PATH, "modes.cfg")
 
 PI2JAMMA_PATH = os.path.join(CRTASSETS_PATH, 'driver_pi2jamma')
 PI2JAMMA_BIN = 'pikeyd165'
-PI2JAMMA_BIN_FILE = os.path.join(PI2JAMMA_PATH, PI2JAMMA_BIN)
+PI2JAMMA_BIN_FILE_SRC = os.path.join(PI2JAMMA_PATH, PI2JAMMA_BIN)
+PI2JAMMA_BIN_FILE_DST = os.path.join('/usr/local/bin/', PI2JAMMA_BIN)
+
 PI2JAMMA_CFG = 'pikeyd165.conf'
 PI2JAMMA_CFG_FILE_SRC = os.path.join(PI2JAMMA_PATH, PI2JAMMA_CFG)
 PI2JAMMA_CFG_FILE_DST = os.path.join('/etc', PI2JAMMA_CFG)
@@ -188,19 +190,23 @@ class CRTDaemon(object):
         if not self._check_process(PI2JAMMA_BIN):
             logging.info("INFO: Subprocess for pi2jamma NOT found, " + \
                          "try to start...")
+            if not self._check_pi2jamma_source():
+                return
+            # Check if files are in right location
             if not os.path.exists(PI2JAMMA_CFG_FILE_DST):
-                if not os.path.exists(PI2JAMMA_CFG_FILE_SRC):
-                    logging.info("WARNING: NOT possible to prepare " + \
-                                 "pi2jamma driver")
-                    logging.info("WARNING: pi2jamma source asset not " + \
-                                 "found in %s" % PI2JAMMA_CFG_FILE_SRC)
-                    return
-                else:
-                    os.system('sudo cp \"%s\" \"%s\"' \
-                              %(PI2JAMMA_CFG_FILE_SRC, PI2JAMMA_CFG_FILE_DST))
-                    os.system('chmod +x \"%s\"' % PI2JAMMA_BIN_FILE)
-            self.m_oRunBinary = subprocess.Popen([PI2JAMMA_BIN_FILE, '-d'])
+                os.system('sudo cp \"%s\" \"%s\"' \
+                          %(PI2JAMMA_CFG_FILE_SRC, PI2JAMMA_CFG_FILE_DST))
+            if not os.path.exists(PI2JAMMA_BIN_FILE_DST):
+                os.system('sudo cp \"%s\" \"%s\"' \
+                          %(PI2JAMMA_BIN_FILE_SRC, PI2JAMMA_BIN_FILE_DST))
+                os.system('chmod +x \"%s\"' % PI2JAMMA_BIN_FILE_DST)
+
+            # Launch pi2jamma driver
+            os.system('sudo chmod a+rwx /dev/uinput')
+            commandline = 'sudo -s pikeyd165 -smi -ndb -d &> /dev/null'
+            self.m_oRunBinary = subprocess.Popen(commandline, shell=True)
             time.sleep(2)
+
             logging.info("INFO: Subprocess launched: %s, PID: %s" \
                          % (PI2JAMMA_BIN, self.m_oRunBinary.pid))
             if self._check_process(PI2JAMMA_BIN):
@@ -212,12 +218,30 @@ class CRTDaemon(object):
             logging.info("INFO: Subprocess for pi2jamma " + \
                          "already FOUND running")
 
+    def _check_pi2jamma_source(self):
+        """ 
+        Will check if binary and config files are stored in assets
+        folder of this Retropie CRT Edition to install in system if
+        needed (pikeyd165 & pikeyd165.conf)
+        """
+        p_bCheck = True
+        if not os.path.exists(PI2JAMMA_CFG_FILE_SRC):
+            logging.info("WARNING: pi2jamma binary source asset " + \
+                         "not found in %s" % PI2JAMMA_CFG_FILE_SRC)
+            p_bCheck = False
+        if not os.path.exists(PI2JAMMA_BIN_FILE_SRC):
+            logging.info("WARNING: pi2jamma binary source asset " + \
+                         "not found in %s" % PI2JAMMA_BIN_FILE_SRC)
+            p_bCheck = False
+        return p_bCheck
+
     def _kill_pi2jamma(self):
         """ This function will close pi2jamma software """
         if self._check_process(PI2JAMMA_BIN):
             logging.info("INFO: Terminating subprocess with PID: %s" \
                          % self.m_oRunBinary.pid)
-            os.system('sudo killall %s' % PI2JAMMA_BIN)
+            os.system('sudo chmod a+rwx /dev/uinput')
+            os.system('sudo -s  pikeyd165 -k &> /dev/null')
             self.m_oRunBinary = None
         return True
 
