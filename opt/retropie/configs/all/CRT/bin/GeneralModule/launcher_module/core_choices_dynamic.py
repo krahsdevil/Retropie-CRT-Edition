@@ -287,6 +287,7 @@ class choices(object):
     def _choice_select(self):
         result = self.m_lOpts[self.m_iCurrent]['value']
         text = self.m_lOpts[self.m_iCurrent]['text']
+        text = self._clean_text(text)
         self._reset_data()
         # just create a new simple table to show the result
         self.dCFG['bgcolor'] = self.dCFG['bgcolor_selected']
@@ -297,6 +298,13 @@ class choices(object):
         pygame.time.delay(2000)
         logging.info("selected: %s" % str(result))
         return result
+
+    def _clean_text(self, text):
+        # Clean not wanted characters or strings in output message
+        clean = ('[ ] ', '[*] ', '[ ]', '[*]')
+        for char in clean:
+            text = text.replace(char, "")
+        return text
 
     # TODO: allow another directions, atm is a simple up to down cursor
     def _choice_change(self, p_iDirection):
