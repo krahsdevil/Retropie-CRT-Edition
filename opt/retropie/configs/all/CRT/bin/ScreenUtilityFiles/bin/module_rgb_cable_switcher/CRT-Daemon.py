@@ -410,14 +410,13 @@ class CRTDaemon(object):
         if self.m_iRecoverEna == 1:
             p_lCheck = self._ini_get(CRTMODES_FILE, self.m_sRecoverMod)
             if p_lCheck[0]:
-                logging.info("INFO: Recovery mode {%s} exist, changing " + \
-                             "in modes.cfg" % self.m_sRecoverMod)
+                logging.info("INFO: Recovery mode {%s} " % self.m_sRecoverMod + \
+                             "exist, changing in modes.cfg" )
                 self._modify_line(CRTMODES_FILE, 'mode_default',
                                   'mode_default %s' % self.m_sRecoverMod.upper())
             else:
-                logging.info("INFO: Recovery mode {%s} NOT exist, " + \
-                             "changing to DEFAULT in modes.cfg" \
-                             % self.m_sRecoverMod)
+                logging.info("INFO: Recovery mode {%s} " % self.m_sRecoverMod + \
+                             "NOT exist, changing to DEFAULT in modes.cfg")
                 self._modify_line(CRTMODES_FILE, 'mode_default',
                                   'mode_default DEFAULT')
 
@@ -461,7 +460,7 @@ class CRTDaemon(object):
         """
         bProcessFound = None
         bCondition = True
-        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
+        logging.info("INFO: waiting to %s processes: %s" % (p_sState, p_sProcess))
         if p_sState == 'stop':
             bCondition = False
         while bProcessFound != bCondition:
@@ -476,11 +475,11 @@ class CRTDaemon(object):
                 procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
                 if type(p_sProcess) is list:
                     if procname[:-1] in p_sProcess:
-                        logging.info("INFO: found process {%s}"%procname[:-1])
+                        logging.info("INFO: found process {%s}" % procname[:-1])
                         return True
                 elif type(p_sProcess) is str:
                     if procname[:-1] == p_sProcess:
-                        logging.info("INFO: found process {%s}"%procname[:-1])
+                        logging.info("INFO: found process {%s}" % procname[:-1])
                         return True
             except IOError:
                 pass
@@ -517,8 +516,8 @@ class CRTDaemon(object):
     # clean trigger files
     def __clean(self):
         if os.path.exists (self.m_sBootTempFile):
-            logging.info('INFO: deleting temp config file: %s' \
-                         % self.m_sBootTempFile)
+            logging.info('INFO: deleting temp config file: ' + \
+                         '%s' % self.m_sBootTempFile)
             os.system('rm "%s"' % self.m_sBootTempFile)
 
     def __temp(self):
