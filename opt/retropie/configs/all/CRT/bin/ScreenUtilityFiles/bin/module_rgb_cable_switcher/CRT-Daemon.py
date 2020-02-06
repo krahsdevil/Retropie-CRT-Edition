@@ -24,7 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys, smbus, hashlib, random
-import subprocess, commands
+import subprocess, commands, filecmp
 import logging, traceback
 import time
 
@@ -64,7 +64,7 @@ class CRTDaemon(object):
     m_iJammaCable = 0
     m_iRecoverEna = -1 # If -1 option don't exist
     m_sRecoverMod = None
-    m_iDaemonEna = -1 # If -1 option don't exist
+    m_iDaemonCRT = -1 # If -1 option don't exist
 
     m_oRunBinary = None
     m_iLoadedCable = 0
@@ -87,7 +87,7 @@ class CRTDaemon(object):
         self.m_iJammaCable = 0
         self.m_iRecoverEna = -1
         self.m_sRecoverMod = None
-        self.m_iDaemonEna = -1
+        self.m_iDaemonCRT = -1
         p_lCheck = []
         self._clone_boot_cfg() #Copy to a temp space
 
@@ -132,9 +132,9 @@ class CRTDaemon(object):
         """
         p_lCheck = self._ini_get(self.m_sBootTempFile, 'crt_daemon_enabled')
         if p_lCheck[0]:
-            self.m_iDaemonEna = 0
+            self.m_iDaemonCRT = 0
             if not p_lCheck[1]:  #line is not commented, getting value
-                self.m_iDaemonEna = int(p_lCheck[2])
+                self.m_iDaemonCRT = int(p_lCheck[2])
 
     def _create_missing_recovery_config(self):
         p_bConfigs = False
@@ -142,21 +142,21 @@ class CRTDaemon(object):
             p_bConfigs = True
             os.system('echo \"\n# CRT Video Recovery MODES; 0=disabled; ' \
                        + '1=enabled\" >> %s' % self.m_sBootTempFile)
-            os.system('echo \"crt_recovery_enabled=0\" >> %s' \
-                      % self.m_sBootTempFile)
+            os.system('echo \"crt_recovery_enabled=0\" ' + \
+                      '>> %s' % self.m_sBootTempFile)
             if not self.m_sRecoverMod:
                 os.system('echo \"# MODE to apply: DEFAULT/MODE1/MODE2/MODE3 ' +\
                           '(modes.cfg)\" ' +
                 '>> %s' % self.m_sBootTempFile)
-                os.system('echo \"crt_recovery_mode=DEFAULT\" >> %s' % \
-                           self.m_sBootTempFile)
+                os.system('echo \"crt_recovery_mode=DEFAULT\" ' + \
+                          '>> %s' % self.m_sBootTempFile)
 
-        if self.m_iDaemonEna < 0:
+        if self.m_iDaemonCRT < 0:
             p_bConfigs = True
-            os.system('echo \"\n# CRT DAEMON; 0=disabled; 1=enabled\" >> %s' \
-                      % self.m_sBootTempFile)
-            os.system('echo \"crt_daemon_enabled=1\" >> %s' % \
-                      self.m_sBootTempFile)
+            os.system('echo \"\n# CRT DAEMON; 0=disabled; 1=enabled\" ' + \
+                      '>> %s' % self.m_sBootTempFile)
+            os.system('echo \"crt_daemon_enabled=1\" ' + \
+                      '>> %s' % self.m_sBootTempFile)
 
         if p_bConfigs:
             #Re-check again config options in boot.txt
@@ -170,8 +170,8 @@ class CRTDaemon(object):
                          "previous driver")
             self._kill_drivers()
         else:
-            logging.info("INFO: Jamma cable config not changed: %s",
-                         self.m_iJammaCable)
+            logging.info("INFO: Jamma cable config not changed: " + \
+                         "%s" % self.m_iJammaCable)
 
         if self.m_iJammaCable == 1:
             self._run_pi2jamma()
@@ -190,36 +190,30 @@ class CRTDaemon(object):
         if not self._check_process(PI2JAMMA_BIN):
             logging.info("INFO: Subprocess for pi2jamma NOT found, " + \
                          "try to start...")
-            if not self._check_pi2jamma_source():
+            if not self._check_pi2jamma_files():
                 return
-            # Check if files are in right location
-            if not os.path.exists(PI2JAMMA_CFG_FILE_DST):
-                os.system('sudo cp \"%s\" \"%s\"' \
-                          %(PI2JAMMA_CFG_FILE_SRC, PI2JAMMA_CFG_FILE_DST))
-            if not os.path.exists(PI2JAMMA_BIN_FILE_DST):
-                os.system('sudo cp \"%s\" \"%s\"' \
-                          %(PI2JAMMA_BIN_FILE_SRC, PI2JAMMA_BIN_FILE_DST))
-                os.system('chmod +x \"%s\"' % PI2JAMMA_BIN_FILE_DST)
 
             # Launch pi2jamma driver
             os.system('sudo chmod a+rwx /dev/uinput')
-            commandline = 'sudo -s pikeyd165 -smi -ndb -d &> /dev/null'
+            commandline = 'sudo -s %s ' % PI2JAMMA_BIN
+            commandline += '-smi -ndb -d &> /dev/null'
             self.m_oRunBinary = subprocess.Popen(commandline, shell=True)
             time.sleep(2)
 
-            logging.info("INFO: Subprocess launched: %s, PID: %s" \
-                         % (PI2JAMMA_BIN, self.m_oRunBinary.pid))
+            logging.info("INFO: Subproc launched: %s, " % PI2JAMMA_BIN + \
+                         "PID: %s" % self.m_oRunBinary.pid)
             if self._check_process(PI2JAMMA_BIN):
                 self.m_iLoadedCable = 1
-                logging.info("INFO: Process %s seems to be loaded" \
-                             % PI2JAMMA_BIN)
+                logging.info("INFO: Process %s seems " % PI2JAMMA_BIN +  \
+                             "to be loaded")
         else:
             self.m_iLoadedCable = 1
             logging.info("INFO: Subprocess for pi2jamma " + \
                          "already FOUND running")
 
-    def _check_pi2jamma_source(self):
+    def _check_pi2jamma_files(self):
         """ 
+        pi2jamma asset of files.
         Will check if binary and config files are stored in assets
         folder of this Retropie CRT Edition to install in system if
         needed (pikeyd165 & pikeyd165.conf)
@@ -233,15 +227,47 @@ class CRTDaemon(object):
             logging.info("WARNING: pi2jamma binary source asset " + \
                          "not found in %s" % PI2JAMMA_BIN_FILE_SRC)
             p_bCheck = False
+        
+        # if source files exits, check instalation
+        if p_bCheck:
+            self._sync_files(PI2JAMMA_BIN_FILE_SRC,
+                             PI2JAMMA_BIN_FILE_DST, "x")
+            self._sync_files(PI2JAMMA_CFG_FILE_SRC,
+                             PI2JAMMA_CFG_FILE_DST)
         return p_bCheck
 
+    def _sync_files(self, p_sFile1, p_sFile2, p_schmod = ""):
+        # p_sFile1 = source file
+        # p_sFile2 = destination file
+        # p_schmod = file rigths
+        p_bSync = False
+
+        if not os.path.exists(p_sFile2): # check first if dest exists
+            p_bSync = True
+        else: # compare files if exists
+            if not filecmp.cmp(p_sFile1, p_sFile2):
+                p_bSync = True
+
+        if p_bSync:
+            logging.info("WARNING: %s don't exists " % p_sFile2 + \
+                         "or was changed, synchronizing the file...")
+            os.system('sudo cp \"%s\" \"%s\"' % (p_sFile1, p_sFile2))
+            if p_schmod:
+                logging.info("INFO: changing permissions " + \
+                             "{+%s} to the file..." % p_schmod)
+                os.system('chmod +%s \"%s\"' % (p_schmod, p_sFile2))
+        else:
+            logging.info("INFO: %s is installed" % p_sFile1)
+                
     def _kill_pi2jamma(self):
         """ This function will close pi2jamma software """
         if self._check_process(PI2JAMMA_BIN):
-            logging.info("INFO: Terminating subprocess with PID: %s" \
-                         % self.m_oRunBinary.pid)
+            logging.info("INFO: Terminating subprocess with " + \
+                         "PID: %s" % self.m_oRunBinary.pid)
             os.system('sudo chmod a+rwx /dev/uinput')
-            os.system('sudo -s  pikeyd165 -k &> /dev/null')
+            commandline = 'sudo -s  %s -k ' % PI2JAMMA_BIN
+            commandline += '&> /dev/null'
+            os.system(commandline)
             self.m_oRunBinary = None
         return True
 
@@ -343,16 +369,21 @@ class CRTDaemon(object):
             return p_lCheck
         with open(p_sFile, "r") as f:
             for line in f:
-                lValues = line.strip().replace('=',' ').split(' ')
-                if p_sFindMask in lValues[0].strip():
+                lValues = line.strip().replace(' ','').split('=')
+                if p_sFindMask == lValues[0].strip('# '):
                     p_lCheck[0] = True
-                    if line[:1] == '#' or lValues[-1].strip() == "":
+                    if line[:1] == '#':
                         p_lCheck[1] = True
-                        logging.info('WARNING: %s is commented or ' + \
-                                     'without value' % p_sFindMask)
-                    else:
-                        p_lCheck[2] = lValues[-1].strip()
-                        logging.info('INFO: %s=%s' % (p_sFindMask, p_lCheck[2]))
+                        logging.info('WARNING: %s is ' % p_sFindMask + \
+                                     'commented or without value')
+                    try:
+                        p_lCheck[2] = lValues[1].strip('" ')
+                        logging.info('INFO: %s=' % p_sFindMask + \
+                                      '%s' % p_lCheck[2])
+                    except:
+                        logging.info('WARNING: %s has ' % p_sFindMask + \
+                                     'not value')
+
         if not p_lCheck[0]:
             logging.info('WARNING: %s NOT found' % p_sFindMask)
         return p_lCheck
@@ -389,7 +420,7 @@ class CRTDaemon(object):
         Will wait or close daemon if one of next conditions happen
         If daemon is disabled it will do nothing, only exit.
         """
-        if self.m_iDaemonEna == 0:
+        if self.m_iDaemonCRT == 0:
             logging.info("WARNING: Closing daemon: disabled or " + \
                          "commented in /boot/config.txt")
             self._exit_daemon()
@@ -440,12 +471,12 @@ class CRTDaemon(object):
 
     def _restart_system(self):
         """ Restart system and close ES if it's running """
-        commandline = ""
         if self._check_process('emulationstatio'):
-            commandline += 'sudo killall emulationstation && '
-        commandline += 'sudo reboot now'
-        print('CRT DAEMON WILL REBOOT THE SYSTEM NOW...')
+            commandline = 'sudo killall emulationstation && clear'
+            os.system(commandline)
+        print "CRT DAEMON WILL REBOOT THE SYSTEM NOW..."
         time.sleep(3)
+        commandline = 'sudo reboot now'
         os.system(commandline)
         sys.exit()
 
