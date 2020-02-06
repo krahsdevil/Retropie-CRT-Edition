@@ -28,10 +28,13 @@ import os, sys, traceback
 import commands, random, hashlib
 import logging
 
+sys.dont_write_bytecode = True
+
 CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
+from pi2jamma_controls import CTRLSPi2Jamma
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
@@ -39,8 +42,7 @@ from launcher_module.file_helpers import *
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_CableSelector.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
-MODULES_PATH = os.path.join(CRT_PATH, "bin/ScreenUtilityFiles/bin")
-RGBCABLE_PATH = os.path.join(MODULES_PATH, "module_rgb_cable_switcher")
+RGBCABLE_PATH = os.path.join(CRTMODULES_PATH, "module_rgb_cable_switcher")
 SERVICE_FILE_NAME = "CRT-Daemon.service"
 SERVICE_FILE = os.path.join(RGBCABLE_PATH, SERVICE_FILE_NAME)
 SCRIPT_FILE_NAME = "CRT-Daemon.py"
@@ -71,6 +73,7 @@ class CableSelector(object):
     m_lCables = ["rgb-pi", "vga666", "pi2scart", "jamma-rgb-pi", "pi2jamma"]
 
     m_bUploadCFG = False  # If True config.txt was changed
+    m_bRebootES = False
 
     m_iCableOverlay = ""  # Overlay can be vga666 or rgb-pi
     m_iCableJamma = -1    # Cable Jamma 0 = none; 1 = pi2jamma; 2 = jamma-rgb-pi
@@ -87,6 +90,8 @@ class CableSelector(object):
     m_sTitle = ""
     m_lChoices = []             #Choices for selector
     m_lToFix = []               #Options wrong configured
+    
+    m_oPi2Jamma = None
 
     def __init__(self):
         self.__clean()
@@ -96,6 +101,7 @@ class CableSelector(object):
         self._clone_boot_cfg()
         self._check_crtdaemon() # Check service
         self._check_base_config()
+        self.m_oPi2Jamma = CTRLSPi2Jamma()
 
     def run(self):
         self._show_info('PLEASE WAIT...')
@@ -115,8 +121,9 @@ class CableSelector(object):
             if p_sOption != 'EXIT':
                 self._cable_config(p_sOption, True)
             break
+        self._ctrls_configuration(p_sOption)
         self._upload_boot_cfg()
-        self._restart_system()
+        self._restart()
 
 
     def _selector(self):
@@ -242,6 +249,25 @@ class CableSelector(object):
         elif p_sCableName == 'pi2jamma':
             p_bCheck = self._check_config_lines(1, 1, 2, 2, 1, 1, 1, 1, write)
         return p_bCheck
+
+    def _ctrls_configuration(self, p_sCableName):
+        """
+        Will apply all default keyboard controls for pi2jamma.
+        If current cable is pi2jamma and exit withouth change,
+        function will re-apply controls on EmulationStation and 
+        Retroarch and restart EmulationStation.
+        If any other cable is selected and no change, no controls
+        reconfiguration.
+        If change from pi2jamma to other then controls config
+        will be cleaned.        
+        """
+        if p_sCableName.lower() == 'exit' and \
+           self.m_sCableName == 'pi2jamma':
+            self.m_bRebootES = self.m_oPi2Jamma.enable_controls()
+        elif p_sCableName == 'pi2jamma':
+            self.m_bRebootES = self.m_oPi2Jamma.enable_controls()
+        else:
+            self.m_bRebootES = self.m_oPi2Jamma.disable_controls()
 
     def _detect_cable_model(self):
         p_iJamma = self.get_config_line_value('jamma')
@@ -482,16 +508,24 @@ class CableSelector(object):
             hasher.update(buf)
         return hasher.hexdigest()
 
-    def _restart_system(self):
-        """ Restart system and close ES if it's running """
+    def _restart(self):
+        """ Restart system or reboot ES if needed """
         commandline = ""
         if not self.m_bUploadCFG:
             logging.info('INFO: NO changes in /boot/config.txt; ' + \
                          'no reboot needed')
-            return
-        commandline = 'sudo reboot now'
-        self._show_info('SYSTEM WILL REBOOT NOW...')
-        os.system(commandline)
+            # check if ES must reboot
+            if self.m_bRebootES and self._check_process('emulationstatio'):
+                self._show_info('RESTORING KEYBOARD CONFIG', 2000)
+                self._show_info('EMULATIONSTATION WILL RESTART NOW...')
+                commandline = "touch /tmp/es-restart "
+                commandline += "&& pkill -f \"/opt/retropie"
+                commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+                os.system(commandline)
+        else:
+            commandline = 'sudo reboot now'
+            self._show_info('SYSTEM WILL REBOOT NOW...')
+            os.system(commandline)
         sys.exit()
 
     def _clone_boot_cfg(self):
