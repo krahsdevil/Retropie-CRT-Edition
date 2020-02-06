@@ -426,7 +426,7 @@ class CRTDaemon(object):
             self._exit_daemon()
         if self._check_process('resize2fs'):
             logging.info("WARNING: Wait until resize2fs finish")
-            self._wait_process('resize2fs')
+            self._wait_process('resize2fs', 'stop')
 
     def _recovery_mode(self):
         """
@@ -471,7 +471,7 @@ class CRTDaemon(object):
 
     def _restart_system(self):
         """ Restart system and close ES if it's running """
-        if self._check_process('emulationstatio'):
+        if self._check_process('emulationstatio', 3):
             commandline = 'sudo killall emulationstation && clear'
             os.system(commandline)
         print "CRT DAEMON WILL REBOOT THE SYSTEM NOW..."
@@ -480,41 +480,45 @@ class CRTDaemon(object):
         os.system(commandline)
         sys.exit()
 
-    def _wait_process(self, p_sProcess, p_sState = 'stop', p_iTime = 1):
+    def _wait_process(self, p_sProcess, p_sState = 'stop',
+                     p_iTimes = 1, p_iTime = 1):
         """
-        This function will wait to start or stop for only one process or a
-        list of them like emulators. By default will wait to stop with
-        p_sState parameter, but you can change it on call to 'start'.
+        This function will wait to start or stop for only one process or a 
+        list of them like emulators. By default will wait to start with
+        p_sState parameter, but you can change it on call to 'stop'.
         If a list is passed, function will validate that at least one of
         them started or all are stopped.
-
+        
         """
         bProcessFound = None
         bCondition = True
-        logging.info("INFO: waiting to %s processes: %s" % (p_sState, p_sProcess))
+        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
         if p_sState == 'stop':
             bCondition = False
         while bProcessFound != bCondition:
-            bProcessFound = self._check_process(p_sProcess)
+            bProcessFound = self._check_process(p_sProcess, p_iTimes)
             time.sleep(p_iTime)
         logging.info("INFO: wait finished")
 
-    def _check_process(self, p_sProcess):
+    def _check_process(self, p_sProcess, p_iTimes = 1):
+        p_bCheck = 0
         pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
         for pid in pids:
             try:
                 procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
                 if type(p_sProcess) is list:
                     if procname[:-1] in p_sProcess:
-                        logging.info("INFO: found process {%s}" % procname[:-1])
-                        return True
+                        logging.info("INFO: found process {%s}"%procname[:-1])
+                        p_bCheck = p_iTimes
+                        break
                 elif type(p_sProcess) is str:
                     if procname[:-1] == p_sProcess:
-                        logging.info("INFO: found process {%s}" % procname[:-1])
-                        return True
+                        logging.info("INFO: found process {%s}"%procname[:-1])
+                        p_bCheck += 1
             except IOError:
                 pass
-        return False
+        p_bCheck = True if p_bCheck >= p_iTimes else False 
+        return p_bCheck
 
     def _generate_random_config_temp(self):
         self.__clean()
