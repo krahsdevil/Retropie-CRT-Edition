@@ -156,7 +156,10 @@ class automount(object):
         sOutput = commands.getoutput('ps -A')
         if 'emulationstatio' in sOutput:
             self._show_info('STOPPING, EMULATIONSTATION WILL REBOOT...')
-            os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
+            commandline = "touch /tmp/es-restart "
+            commandline += "&& pkill -f \"/opt/retropie"
+            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+            os.system(commandline)
             os.system('clear')
        
     def _show_info(self, p_sMessage, p_iTime = 2000):
