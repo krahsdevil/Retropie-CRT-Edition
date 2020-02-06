@@ -30,8 +30,12 @@ RETROPIE_PATH = "/opt/retropie"
 RETROPIECFG_PATH = os.path.join(RETROPIE_PATH, "configs")
 RETROPIEEMU_PATH = os.path.join(RETROPIE_PATH, "emulators")
 
+# retroarch
+RETROARCHCFG_FILE = os.path.join(RETROPIECFG_PATH, "all/retroarch.cfg")
+
 # emulationstation path setup
 ESCFG_PATH = os.path.join(RETROPIECFG_PATH, "all/emulationstation")
+ESCTRLS_FILE = os.path.join(ESCFG_PATH, "es_input.cfg")
 
 # CRT main software paths
 CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
