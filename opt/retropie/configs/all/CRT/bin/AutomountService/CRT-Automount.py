@@ -342,22 +342,25 @@ class USBAutoService(object):
                 self._restart_ES()
             time.sleep(p_iTime)
 
-
     def _restart_ES(self):
         """ Restart ES if it's running """
-        sOutput = commands.getoutput('ps -A')
-        if 'emulationstatio' in sOutput:
+        if self._check_process('emulationstatio', 3):
             logging.info("INFO: Restarting EmulationStation...")
-            if self._check_process():
-                self._wait_process()
-            os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
+            if self._check_process(self.m_dEmulatorsName):
+                logging.info("INFO: Waiting emulator stops...")
+                self._wait_process(self.m_dEmulatorsName, 'stop')
+            commandline = "touch /tmp/es-restart "
+            commandline += "&& pkill -f \"/opt/retropie"
+            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+            os.system(commandline)
             os.system('clear')
 
-    def _wait_process(self, p_sProcess = m_dEmulatorsName, p_sState = 'stop', p_iTime = 1):
+    def _wait_process(self, p_sProcess, p_sState = 'stop',
+                     p_iTimes = 1, p_iTime = 1):
         """
         This function will wait to start or stop for only one process or a 
         list of them like emulators. By default will wait to start with
-        p_sState parameter, but you can change it on call to 'start'.
+        p_sState parameter, but you can change it on call to 'stop'.
         If a list is passed, function will validate that at least one of
         them started or all are stopped.
         
@@ -368,11 +371,12 @@ class USBAutoService(object):
         if p_sState == 'stop':
             bCondition = False
         while bProcessFound != bCondition:
-            bProcessFound = self._check_process(p_sProcess)
+            bProcessFound = self._check_process(p_sProcess, p_iTimes)
             time.sleep(p_iTime)
         logging.info("INFO: wait finished")
 
-    def _check_process(self, p_sProcess = m_dEmulatorsName):
+    def _check_process(self, p_sProcess, p_iTimes = 1):
+        p_bCheck = 0
         pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
         for pid in pids:
             try:
@@ -380,14 +384,16 @@ class USBAutoService(object):
                 if type(p_sProcess) is list:
                     if procname[:-1] in p_sProcess:
                         logging.info("INFO: found process {%s}"%procname[:-1])
-                        return True
+                        p_bCheck = p_iTimes
+                        break
                 elif type(p_sProcess) is str:
                     if procname[:-1] == p_sProcess:
                         logging.info("INFO: found process {%s}"%procname[:-1])
-                        return True
+                        p_bCheck += 1
             except IOError:
                 pass
-        return False
+        p_bCheck = True if p_bCheck >= p_iTimes else False 
+        return p_bCheck
         
     # clean trigger files
     def __clean(self):
