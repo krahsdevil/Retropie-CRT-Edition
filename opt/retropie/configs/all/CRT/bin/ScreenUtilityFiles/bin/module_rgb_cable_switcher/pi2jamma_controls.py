@@ -264,8 +264,18 @@ class CTRLSPi2Jamma(object):
     def inputs_emulationstation_ctrls_clean(self):
         """ Clean any keyboard configuration in es_input.cfg """
         if not self._check_file(ESCTRLS_FILE):
-            root = ET.Element('inputList')
+            # create default emulationstation 'es_input.cfg' file
+            root = ET.Element("inputList")
             root.text = "\n  "
+            p_sNewAction = ET.Element("inputAction")
+            p_sNewAction.set("type", "onfinish")
+            p_sNewAction.text = ("\n    ")
+            p_sNewAction.tail = "\n"
+            p_sNewCommand = ET.SubElement(p_sNewAction, "command")
+            p_sNewCommand.text = "/opt/retropie/supplementary/emulationstation"
+            p_sNewCommand.text += "/scripts/inputconfiguration.sh"
+            p_sNewCommand.tail = "\n  "
+            root.append(p_sNewAction)
             tree = ET.ElementTree(root)
             tree.write(ESCTRLS_FILE, encoding='UTF-8')
         else:
