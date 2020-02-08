@@ -3,7 +3,7 @@
 
 
 """
-RGB Cable Selector
+RGB Cable Selector Launcher
 
 Module to check and load/unload USB Automount service for Retropie by -krahs-
 
