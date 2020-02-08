@@ -44,8 +44,6 @@ def something_is_bad(infos,infos2):
     os.system(problem)
 
 def get_xy_screen():
-    global x_screen
-    global y_screen
     process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
     output = process.stdout.read()
     for line in output.splitlines():
@@ -54,6 +52,7 @@ def get_xy_screen():
             ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
             x_screen = int(ResMode[1])
             y_screen = int(ResMode[2])
+            return (x_screen, y_screen)
 
 def splash_info(SplashImagePath):
     get_xy_screen()
