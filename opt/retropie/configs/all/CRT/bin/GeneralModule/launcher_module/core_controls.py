@@ -193,13 +193,14 @@ class joystick(object):
 
     def event_wait(self):
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    #logging.info("keyb: %s %s" % (event.key, str(event)))
-                    return self.get_key(event.key)
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    return self.get_button(event.joy, event.button)
-                elif event.type == pygame.JOYHATMOTION:
-                    return self.get_hat(event.value)
-                elif event.type == pygame.JOYAXISMOTION and event.axis < 2:
-                    return self.get_axis(event.joy, event.axis, event.value)
+            pygame.event.clear()
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                #logging.info("keyb: %s %s" % (event.key, str(event)))
+                return self.get_key(event.key)
+            elif event.type == pygame.JOYBUTTONDOWN:
+                return self.get_button(event.joy, event.button)
+            elif event.type == pygame.JOYHATMOTION:
+                return self.get_hat(event.value)
+            elif event.type == pygame.JOYAXISMOTION and event.axis < 2:
+                return self.get_axis(event.joy, event.axis, event.value)

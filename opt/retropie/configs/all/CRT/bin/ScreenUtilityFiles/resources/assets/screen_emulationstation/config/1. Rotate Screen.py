@@ -230,7 +230,10 @@ def quit_module(RebootSys):
     if RebootSys == True:
         output = commands.getoutput('ps -A')
         if 'emulationstatio' in output:
-            os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
+            commandline = "touch /tmp/es-restart "
+            commandline += "&& pkill -f \"/opt/retropie"
+            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+            os.system(commandline)
             sys.exit()
     sys.exit()
 
@@ -242,56 +245,57 @@ y = 0
 
 
 while True:
-    for event in pygame.event.get():
-        action = check_joy_event(event)
-        #button
-        if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
-            if y < 1:
-                load.play()
-                fullscreen.blit(option1_ENA, option1_ENAPos)
-                pygame.display.flip()
-                rotate_frontend(0)
-                time.sleep(1)
-                quit_module(True)
+    pygame.event.clear()
+    event = pygame.event.wait()
+    action = check_joy_event(event)
+    #button
+    if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
+        if y < 1:
+            load.play()
+            fullscreen.blit(option1_ENA, option1_ENAPos)
+            pygame.display.flip()
+            rotate_frontend(0)
+            time.sleep(1)
+            quit_module(True)
 
+        if y == 1:
+            load.play()
+            fullscreen.blit(option2_ENA, option2_ENAPos)
+            pygame.display.flip()
+            time.sleep(1)
+            if RotationCurrentMode == 1:
+                rotate_frontend(3)
+            elif RotationCurrentMode == 3:
+                rotate_frontend(1)
+            quit_module(True)
+
+        if y == 2:
+            load.play()
+            fullscreen.blit(option3_ENA, option3_ENAPos)
+            pygame.display.flip()
+            time.sleep(1)
+            quit_module(False)
+
+    #down
+    elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
+        if y < MAXoptions:
+            y = y + 1
+            cursor.play()
             if y == 1:
-                load.play()
-                fullscreen.blit(option2_ENA, option2_ENAPos)
-                pygame.display.flip()
-                time.sleep(1)
-                if RotationCurrentMode == 1:
-                    rotate_frontend(3)
-                elif RotationCurrentMode == 3:
-                    rotate_frontend(1)
-                quit_module(True)
+                fullscreen.blit(option2, option2Pos)
+            elif y == 2:
+                fullscreen.blit(option3, option3Pos)
+            pygame.display.flip()
 
-            if y == 2:
-                load.play()
-                fullscreen.blit(option3_ENA, option3_ENAPos)
-                pygame.display.flip()
-                time.sleep(1)
-                quit_module(False)
-
-        #down
-        elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
-            if y < MAXoptions:
-                y = y + 1
-                cursor.play()
-                if y == 1:
-                    fullscreen.blit(option2, option2Pos)
-                elif y == 2:
-                    fullscreen.blit(option3, option3Pos)
-                pygame.display.flip()
-
-        #up
-        elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
-            if y > 0:
-                y = y - 1
-                cursor.play()
-                if y == 1:
-                    fullscreen.blit(option2, option2Pos)
-                elif y == 0:
-                    fullscreen.blit(option1, option1Pos)
-                pygame.display.flip()
+    #up
+    elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
+        if y > 0:
+            y = y - 1
+            cursor.play()
+            if y == 1:
+                fullscreen.blit(option2, option2Pos)
+            elif y == 0:
+                fullscreen.blit(option1, option1Pos)
+            pygame.display.flip()
 quit_module()
 

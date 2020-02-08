@@ -161,7 +161,10 @@ def DesInstallServiceAutomount():
         os.system("sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1")
         output = commands.getoutput('ps -A')
         if 'emulationstatio' in output:
-            os.system('touch /tmp/es-restart && pkill -f \"/opt/retropie/supplementary/.*/emulationstation([^.]|$)\"')
+            commandline = "touch /tmp/es-restart "
+            commandline += "&& pkill -f \"/opt/retropie"
+            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+            os.system(commandline)
             sys.exit()
     else:
         pygame.display.quit()
@@ -248,62 +251,63 @@ y = 0
 
 
 while True:
-    for event in pygame.event.get():
-        action = check_joy_event(event)
-        #button
-        if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
-            if y < 1:
-                load.play()
-                fullscreen.blit(option1_ENA, option1_ENAPos)
-                pygame.display.flip()
-                time.sleep(1)
-                if ServiceRunning == True:
-                    DesInstallServiceAutomount()
-                elif ServiceRunning == False:
-                    InstallServiceAutomount()
-                quit_moudule()
+    pygame.event.clear()
+    event = pygame.event.wait()
+    action = check_joy_event(event)
+    #button
+    if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
+        if y < 1:
+            load.play()
+            fullscreen.blit(option1_ENA, option1_ENAPos)
+            pygame.display.flip()
+            time.sleep(1)
+            if ServiceRunning == True:
+                DesInstallServiceAutomount()
+            elif ServiceRunning == False:
+                InstallServiceAutomount()
+            quit_moudule()
 
+        if y == 1:
+            load.play()
+            fullscreen.blit(option2_ENA, option2_ENAPos)
+            pygame.display.flip()
+            time.sleep(1)
+            quit_moudule()
+
+        if y == 2:
+            load.play()
+            fullscreen.blit(option3_ENA, option3_ENAPos)
+            pygame.display.flip()
+            time.sleep(1)
+            fullscreen.blit(extract, extractPos)
+            pygame.display.flip()
+            time.sleep(3)
+            os.system('sudo umount %s > /dev/null 2>&1' % MountedPaths[0])
+            while True:
+                if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg'):
+                    break
+            quit_moudule()
+
+    #down
+    elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
+        if y < MAXoptions:
+            y = y + 1
+            cursor.play()
             if y == 1:
-                load.play()
-                fullscreen.blit(option2_ENA, option2_ENAPos)
-                pygame.display.flip()
-                time.sleep(1)
-                quit_moudule()
+                fullscreen.blit(option2, option2Pos)
+            elif y == 2:
+                fullscreen.blit(option3, option3Pos)
+            pygame.display.flip()
 
-            if y == 2:
-                load.play()
-                fullscreen.blit(option3_ENA, option3_ENAPos)
-                pygame.display.flip()
-                time.sleep(1)
-                fullscreen.blit(extract, extractPos)
-                pygame.display.flip()
-                time.sleep(3)
-                os.system('sudo umount %s > /dev/null 2>&1' % MountedPaths[0])
-                while True:
-                    if os.path.exists('/opt/retropie/configs/all/CRT/bin/AutomountService/umounted.cfg'):
-                        break
-                quit_moudule()
-
-        #down
-        elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
-            if y < MAXoptions:
-                y = y + 1
-                cursor.play()
-                if y == 1:
-                    fullscreen.blit(option2, option2Pos)
-                elif y == 2:
-                    fullscreen.blit(option3, option3Pos)
-                pygame.display.flip()
-
-        #up
-        elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
-            if y > 0:
-                y = y - 1
-                cursor.play()
-                if y == 1:
-                    fullscreen.blit(option2, option2Pos)
-                elif y == 0:
-                    fullscreen.blit(option1, option1Pos)
-                pygame.display.flip()
+    #up
+    elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
+        if y > 0:
+            y = y - 1
+            cursor.play()
+            if y == 1:
+                fullscreen.blit(option2, option2Pos)
+            elif y == 0:
+                fullscreen.blit(option1, option1Pos)
+            pygame.display.flip()
 quit_moudule()
 

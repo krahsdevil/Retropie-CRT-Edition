@@ -49,7 +49,7 @@ TEST_SNDCURSOR_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_cursor.wav")
 TEST_SNDLOAD_FILE = os.path.join(TEST_MEDIA_PATH,
                     "screen_center_utility_load.wav")
-TEST_FONT_FILE = os.path.join(TEST_MEDIA_PATH,"PetMe64.ttf")
+FONT_FILE = os.path.join(CRTFONTS_PATH, "PetMe64.ttf")
 
 BOOTCFG_FILE = "/boot/config.txt"
 BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
@@ -133,7 +133,7 @@ class generate(object):
         pygame.display.init()
         pygame.font.init()
         pygame.mouse.set_visible(0)
-        self.m_PGoFontText = pygame.font.Font(TEST_FONT_FILE,
+        self.m_PGoFontText = pygame.font.Font(FONT_FILE,
                                               self.m_PGoFontTextSize)
         self.m_PGoScreen = pygame.display.set_mode((self.m_dPatternAdj["ScreenHSize"],
                                                     self.m_dPatternAdj["ScreenVSize"]),
@@ -339,18 +339,16 @@ class generate(object):
 
     def loop(self):
         while True:
-            #self.m_PGoClock.tick(FPS)
             event = self.m_PGoJoyHandler.event_wait()
-            #logging.info("event %s" % str(event))
             if event & CRT_UP:
                 self.choice_change(1)
-            if event & CRT_DOWN:
+            elif event & CRT_DOWN:
                 self.choice_change(2)
-            if event & CRT_LEFT:
+            elif event & CRT_LEFT:
                 self.choice_change(3)
-            if event & CRT_RIGHT:
+            elif event & CRT_RIGHT:
                 self.choice_change(4)
-            if event & CRT_BUTTON:
+            elif event & CRT_BUTTON:
                 self.m_PGSndLoad.play()
                 if not self.choice_change(0):
                     #reset menu selections and exit

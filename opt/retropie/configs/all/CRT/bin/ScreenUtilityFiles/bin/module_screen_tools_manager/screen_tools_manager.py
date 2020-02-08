@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-screen_tools_manager.py.
+Screen Tool Manager
 
 https://github.com/krahsdevil/crt-for-retropie/
 
@@ -28,14 +28,12 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.utils import ra_check_version
-from selector_module_functions import get_retropie_joy_map
-from selector_module_functions import check_joy_event
-from general_functions import *
+from launcher_module.file_helpers import modify_line
+from launcher_module.screen import CRT
+from launcher_module.utils import ra_check_version, get_xy_screen
+from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
+                                          CRT_RIGHT, CRT_BUTTON
 
-ESCFG_FILE = os.path.join(ESCFG_PATH, "es_settings.cfg")
-CRTCFG_FILE = os.path.join(CRTCONFIG_PATH, "utility.cfg")
-CRTMODESCFG_FILE = os.path.join(CRTCONFIG_PATH, "modes.cfg")
 CRTICONS_PATH = os.path.join(CRTROOT_PATH, "config/icons")
 FONT_FILE = os.path.join(CRTFONTS_PATH, "PetMe64.ttf")
 
@@ -58,10 +56,9 @@ MarginNorm = 0.1482
 Interline = 0
 LineMov = 0
 
-# menu positions and arrows color
+# menu positions
 data_x = 0
 list_x = 0
-arrow_c = [255,255,0]
 iCurOption = 0
 
 SaveConfig = False
@@ -84,28 +81,39 @@ MaxModesCounter = 0
 SelectedMode = (['DEFAULT', "Timings presets for better compatibility"])
 
 # pygame configurations
-oScreen = None
-oFont = None
+PGoJoyHandler = None
+PGoScreen = None
+PGoFont = None
 BLUELIGHT = pygame.Color(165, 165, 255)
 BLUEDARK = pygame.Color(66, 66, 231)
 BLUEUNS = pygame.Color(110, 110, 255)
 YELLOW = pygame.Color(255, 255, 0)
 RED = pygame.Color(255, 0, 0)
 
-# menu options
-opt = [["1.SYSTEM RESOLUTION" , "Changes don't have effect inside the games",
-        0, 0],
-       ["2.TV COMPATIBILITY" , "Timings presets for better compatibility",
-        "DEFAULT", "DEFAULT"],
-       ["3.FRONTEND CENTERING>" , "Affects only to Emulation Station"],
-       ["4.IN-GAME CENTERING>" , "Affects to all games"],
-       ["5.240P TEST SUITE>" , "Tool suite for TV/Monitor calibration"],
-       ["empty" , "empty"],
-       ["empty" , "empty"],
-       ["empty" , "empty"],
-       ["<BACK" , "Save and back to main menu"]]
+# Screen CRT Class
+oCRT = None
 
-def get_xy_screen():
+# menu options
+opt = [["1.SYSTEM RESOLUTION" ,
+        "Changes don't have effect inside the games", 0, 0],
+       ["2.TV COMPATIBILITY" , 
+        "Timings presets for better compatibility", "DEFAULT", "DEFAULT"],
+       ["3.FRONTEND CENTERING>" ,
+        "Affects only to Emulation Station"],
+       ["4.IN-GAME CENTERING>" ,
+        "Affects to all games"],
+       ["5.240P TEST SUITE>" ,
+        "Tool suite for TV/Monitor calibration"],
+       ["empty" ,
+        "empty"],
+       ["empty" ,
+        "empty"],
+       ["empty" ,
+        "empty"],
+       ["<BACK" ,
+        "Save and back to main menu"]]
+
+def get_screen_size_adjust():
     global x_screen
     global y_screen
     global y_margin
@@ -114,14 +122,9 @@ def get_xy_screen():
     global list_x
     global data_x
 
-    process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
-    output = process.stdout.read()
-    for line in output.splitlines():
-        if 'x' in line and 'mode' in line:
-            ResMode = line
-            ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
-            x_screen = int(ResMode[1])
-            y_screen = int(ResMode[2])
+    # Get current x,y resolution
+    x_screen, y_screen = get_xy_screen()
+
     if y_screen > 270:
         Multiplier = int((y_screen - 270) / 8)
         Interline = 20 + Multiplier
@@ -144,12 +147,25 @@ def get_xy_screen():
         list_x = 100
 
 def pygame_initialization():
-    global oScreen
-    global oFont
+    global PGoScreen
+    global PGoFont
+    global PGoJoyHandler
     pygame.init()
     pygame.mouse.set_visible(0)
-    oFont = pygame.font.Font(FONT_FILE, 8)
-    oScreen = pygame.display.set_mode((x_screen,y_screen), pygame.FULLSCREEN)
+    PGoJoyHandler = joystick()
+    PGoJoyHandler.find_joy()
+    PGoFont = pygame.font.Font(FONT_FILE, 8)
+    PGoScreen = pygame.display.set_mode((x_screen,y_screen), pygame.FULLSCREEN)
+
+def pygame_unload():
+    pygame.display.quit()
+    pygame.quit()
+
+def script_initialization():
+    os.system('clear')
+    get_screen_size_adjust()
+    get_config()
+    pygame_initialization()
 
 def text_print(txt, xcoord, ycoord, color, center):
     if x_screen <= 340:
@@ -162,23 +178,23 @@ def text_print(txt, xcoord, ycoord, color, center):
             txt = txt + '...'
 
     if center == True:
-        text = oFont.render(txt, True, (color))
+        text = PGoFont.render(txt, True, (color))
         textPos = text.get_rect()
         textPos.center = (x_screen/2, ycoord+6)
-        oScreen.blit(text,textPos)
+        PGoScreen.blit(text,textPos)
     else:
-        oScreen.blit(oFont.render(txt, 1, (color)), (xcoord, ycoord))
+        PGoScreen.blit(PGoFont.render(txt, 1, (color)), (xcoord, ycoord))
 
 def draw_arrow_left():
-    oScreen.blit((oFont.render('<<', 1, (YELLOW))),
+    PGoScreen.blit((PGoFont.render('<<', 1, (YELLOW))),
                                   (data_x-(len(str(str(opt[iCurOption][2])))*8)-18,
                                   (30+y_margin+LineMov)+iCurOption*Interline))
 
 def draw_arrow_right():
-    oScreen.blit((oFont.render('>>', 1, (YELLOW))),
+    PGoScreen.blit((PGoFont.render('>>', 1, (YELLOW))),
                     (data_x+2, (30+y_margin+LineMov)+iCurOption*Interline))
 
-def replace_launch_image(p_sImage):
+def replace_launching_image(p_sImage):
     p_lMask = (".png", ".jpg")
     if not p_sImage[-4:] in p_lMask:
         return
@@ -202,7 +218,7 @@ def replace_icons_image():
         if not os.path.isdir(IconImg):
             os.system('cp "%s" "%s" >> /dev/null 2>&1' % (IconImgMode, IconImg))
 
-def search_launch_image():
+def search_launching_image():
     for Level1 in os.listdir(RETROPIECFG_PATH):
         LEVEL1 = os.path.join(RETROPIECFG_PATH, Level1)
         if os.path.isdir(LEVEL1):
@@ -218,86 +234,88 @@ def search_launch_image():
                                 LEVEL4 = os.path.join(LEVEL3, Level4)
                                 sFile4 = os.path.join(Level1, Level2, Level3, Level4)
                                 if os.path.isfile(LEVEL4):
-                                    replace_launch_image(sFile4)
+                                    replace_launching_image(sFile4)
                         else:
-                            replace_launch_image(sFile3)
+                            replace_launching_image(sFile3)
                 else:
-                    replace_launch_image(sFile2)
+                    replace_launching_image(sFile2)
 
-def save():
+def save_configuration():
     if SaveConfig == True:
-        modificarLinea(CRTCFG_FILE, '%s_theme_horizontal ' % opt[0][3],
+        modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_horizontal ' % opt[0][3],
                        '%s_theme_horizontal %s' % (opt[0][3], CurTheme))
         if opt[0][2] == '240p':
-            modificarLinea(CRTCFG_FILE, 'default', 'default %s' % sESResLabel60)
-            modificarLinea(ESCFG_FILE, '"ThemeSet"',
+            modify_line(CFG_VIDEOUTILITY_FILE, 'default', 'default %s' % sESResLabel60)
+            modify_line(ESCFG_FILE, '"ThemeSet"',
                            '<string name="ThemeSet" value="%s" />' % HorTheme240p)
         elif opt[0][2] == '270p':
-            modificarLinea(CRTCFG_FILE,'default', 'default %s' % sESResLabel50)
-            modificarLinea(ESCFG_FILE, '"ThemeSet"',
+            modify_line(CFG_VIDEOUTILITY_FILE,'default', 'default %s' % sESResLabel50)
+            modify_line(ESCFG_FILE, '"ThemeSet"',
                            '<string name="ThemeSet" value="%s" />' % HorTheme270p)
-        search_launch_image()
+        search_launching_image()
         replace_icons_image()
     if SaveModes == True:
-        modificarLinea(CRTMODESCFG_FILE,'mode_default',
+        modify_line(CFG_FIXMODES_FILE,'mode_default',
                        'mode_default %s' % SelectedMode[0])
 
 def quit_manager():
+    iExitCode = 0
+    pygame_unload()
+    save_configuration()
     if ResModeChange == True or SaveModes == True:
-        save()
-        pygame.quit()
-        commandline1 = "/usr/bin/python %s force" % PATTERN_LAUNCHER_FILE
-        commandline2 = "sudo pkill -9 "
-        commandline2 += "-f \"Configuration Utility\""
-        commandline3 = "touch /tmp/es-restart "
-        commandline3 += "&& pkill -f \"/opt/retropie"
-        commandline3 += "/supplementary/.*/emulationstation([^.]|$)\""
-        os.system(commandline1)
+        commandline = "/usr/bin/python %s force" % PATTERN_LAUNCHER_FILE
+        os.system(commandline)
         output = commands.getoutput('ps -A')
         # Restart ES if it is running
         if 'emulationstatio' in output:
-            os.system(commandline2)
-            os.system(commandline3)
-    sys.exit()
+            commandline = "touch /tmp/es-restart "
+            commandline += "&& pkill -f \"/opt/retropie"
+            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+            os.system(commandline)
+            iExitCode = 1
+    sys.exit(iExitCode)
 
-def screen_center_utility_es():
-    save()
-    pygame.quit()
+def launch_application(sCommandline, bShell = False):
+    global oCRT
+    pygame_unload()
+    save_configuration()
+    oRunProcess = subprocess.Popen(sCommandline, shell=bShell)
+    iExitCode = oRunProcess.wait()
+    if iExitCode:
+        time.sleep(1)
+        sys.exit()
+    if oCRT:
+        oCRT.screen_restore()
+        oCRT = None
+    os.execl(sys.executable, sys.executable, *sys.argv)
+
+def launch_center_utility_es():
     commandline = "/usr/bin/python %s system" % PATTERN_LAUNCHER_FILE
-    os.system(commandline)
-    get_xy_screen()
-    os.execl(sys.executable, sys.executable, *sys.argv)
+    launch_application(commandline, True)
 
-def screen_center_utility_ingame():
-    save()
-    pygame.quit()
+def launch_center_utility_ingame():
     commandline = "/usr/bin/python %s test60" % PATTERN_LAUNCHER_FILE
-    os.system(commandline)
-    get_xy_screen()
-    os.execl(sys.executable, sys.executable, *sys.argv)
+    launch_application(commandline, True)
 
-def test_suite():
-    save()
+def launch_test_suite():
+    global oCRT
     ra_check_version(RA_MD_CFG_FILE2)
-    crt_open_screen_from_timings_cfg('megadrive', TIMMINGS_FILE)
-    pygame.quit()
+    oCRT = CRT("megadrive")
+    oCRT.screen_calculated(CFG_TIMINGS_FILE)
     commandline = "%s -L %s " % (RETROARCH_FILE, RA_MD_CORE_FILE)
     commandline += "--config %s " % RA_MD_CFG_FILE1
     commandline += "--appendconfig %s " % RA_MD_CFG_FILE2
     commandline += "\"%s\" " % TEST_SUITE_FILE
     commandline += "> /dev/null 2>&1"
-    os.system(commandline)
-    es_restore_screen()
-    get_xy_screen()
-    os.execl(sys.executable, sys.executable, *sys.argv)
+    launch_application(commandline, True)
 
 def get_available_modes():
     global modes
     global MaxModes
     global SelectedMode
     global MaxModesCounter
-    if os.path.exists(CRTMODESCFG_FILE):
-        with open(CRTMODESCFG_FILE, 'r') as file:
+    if os.path.exists(CFG_FIXMODES_FILE):
+        with open(CFG_FIXMODES_FILE, 'r') as file:
             counter = 0
             modes.append(['DEFAULT', "Timings presets for better compatibility"])
             for line in file:
@@ -311,7 +329,7 @@ def get_available_modes():
         counter = 0
         for item in modes:
             if item[0] != 'DEFAULT':
-                with open(CRTMODESCFG_FILE, 'r') as file:
+                with open(CFG_FIXMODES_FILE, 'r') as file:
                     for line in file:
                         line = line.strip().replace('=', ' ').split(' ')
                         if line[0] == '%s_desc' % item[0]:
@@ -337,7 +355,7 @@ def get_config():
     global HorTheme270p
     global VerTheme240p
     global VerTheme270p
-    with open(CRTCFG_FILE, 'r') as file:
+    with open(CFG_VIDEOUTILITY_FILE, 'r') as file:
         for line in file:
             line = line.strip().replace('=',' ').split(' ')
             if line[0] == "default":
@@ -371,17 +389,17 @@ def draw_menu():
     global SaveModes
 
     # draw background color and main frame
-    oScreen.fill(BLUELIGHT)
-    pygame.draw.rect(oScreen, BLUEDARK, 
+    PGoScreen.fill(BLUELIGHT)
+    pygame.draw.rect(PGoScreen, BLUEDARK, 
                     (20, y_margin, x_screen - 40, (49 + (Interline * 9))), 0)
 
     # draw title and version
-    title = oFont.render("Configuration Utility", 1, BLUELIGHT)
-    oScreen.blit(title, (32, y_margin + 8))
+    title = PGoFont.render("Configuration Utility", 1, BLUELIGHT)
+    PGoScreen.blit(title, (32, y_margin + 8))
     text_print("v3.1", x_screen - 62, y_margin + 8, BLUEUNS, False)
 
     # draw options list frame
-    pygame.draw.rect(oScreen, BLUELIGHT, (32, y_margin + 24,
+    pygame.draw.rect(PGoScreen, BLUELIGHT, (32, y_margin + 24,
                                              x_screen - 62, Interline * 9), 1)
 
     # draw whole list of options in base color
@@ -389,34 +407,34 @@ def draw_menu():
         if (i <= 4 or i == 8) and ResModeChange == False:
             opt[8][0] = '<BACK'
             opt[8][1] = 'Save and back to main menu'
-            oScreen.blit((oFont.render(opt[i][0], 1, BLUELIGHT)),
+            PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUELIGHT)),
                             (list_x, (30 + y_margin + LineMov) + i * Interline))
         elif (i <= 4 or i == 8) and ResModeChange == True:
             opt[8][0] = '<RESTART'
             opt[8][1] = 'Restart ES to apply new resolution...'
             if i == 0 or i == 8:
-                oScreen.blit((oFont.render(opt[i][0], 1, BLUELIGHT)),
+                PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUELIGHT)),
                                 (list_x, (30 + y_margin + LineMov) \
                                 + i * Interline))
             else:
-                oScreen.blit((oFont.render(opt[i][0], 1, BLUEUNS)),
+                PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUEUNS)),
                                 (list_x, (30+y_margin+LineMov)+i*Interline))
 
     # draw all selectables values in base color
     for i in range(0,9):
         if (i < 2) and ResModeChange == False:
-            esres = oFont.render(str(opt[i][2]), 1, BLUELIGHT)
-            oScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
+            esres = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
+            PGoScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
                                             (30 + y_margin + LineMov) \
                                             + i * Interline))
         elif (i < 2) and ResModeChange == True:
             if i == 0:
-                mode = oFont.render(str(opt[i][2]), 1, BLUELIGHT)
-                oScreen.blit(mode, (data_x-(len(str(opt[i][2])) * 8),
+                mode = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
+                PGoScreen.blit(mode, (data_x-(len(str(opt[i][2])) * 8),
                                       (30 + y_margin + LineMov) + i * Interline))
             else:
-                esres = oFont.render(str(opt[i][2]), 1, BLUEUNS)
-                oScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
+                esres = PGoFont.render(str(opt[i][2]), 1, BLUEUNS)
+                PGoScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
                                         (30 + y_margin + LineMov) \
                                         + i * Interline))
 
@@ -442,24 +460,24 @@ def draw_menu():
                     y_margin - 13, RED, True)
 
     # draw current selection frame color
-    pygame.draw.rect(oScreen, BLUELIGHT,
+    pygame.draw.rect(PGoScreen, BLUELIGHT,
                     (32, (24 + y_margin) + iCurOption * Interline, x_screen \
                     - 62, Interline))
-    oScreen.blit((oFont.render(opt[iCurOption][0], 1, BLUEDARK)),
+    PGoScreen.blit((PGoFont.render(opt[iCurOption][0], 1, BLUEDARK)),
                     (list_x, (30 + y_margin + LineMov) + iCurOption * Interline))
 
     # draw active option in dark color
     if iCurOption == 0:
-        esres = oFont.render(str(opt[0][2]), 1, BLUEDARK)
-        oScreen.blit(esres, (data_x - (len(str(opt[0][2])) * 8),
+        esres = PGoFont.render(str(opt[0][2]), 1, BLUEDARK)
+        PGoScreen.blit(esres, (data_x - (len(str(opt[0][2])) * 8),
                         (30 + y_margin + LineMov) + iCurOption * Interline))
         if opt[0][2] == '240p':
             draw_arrow_right()
         elif opt[0][2] == '270p':
             draw_arrow_left()
     elif iCurOption == 1:
-        modres = oFont.render(str(opt[1][2]), 1, BLUEDARK)
-        oScreen.blit(modres, (data_x - (len(str(opt[1][2])) * 8),
+        modres = PGoFont.render(str(opt[1][2]), 1, BLUEDARK)
+        PGoScreen.blit(modres, (data_x - (len(str(opt[1][2])) * 8),
                         (30 + y_margin + LineMov) + iCurOption * Interline))
         if MaxModes != 0:
             if MaxModesCounter == 0:
@@ -480,90 +498,77 @@ def draw_menu():
         info = info[0:44]
         if len(info) >= 44 :
             info = info + '...'
-    oScreen.blit((oFont.render(info, 1, (YELLOW))),
+    PGoScreen.blit((PGoFont.render(info, 1, (YELLOW))),
                     (38, ((y_margin + 23) + Interline * 9) + 4))
-    pygame.draw.rect(oScreen, BLUELIGHT,
+    pygame.draw.rect(PGoScreen, BLUELIGHT,
                     (32, (y_margin + 23) + Interline * 9, x_screen - 62, 16), 1)
     pygame.display.flip()
 
 # MAIN PROGRAM
-os.system('clear')
-get_xy_screen()
-pygame_initialization()
-get_retropie_joy_map()
-get_config()
+script_initialization()
 
 while True:
     draw_menu()
-    for event in pygame.event.get():
-        action = check_joy_event(event)
-        #button
-        if action == 'KEYBOARD' or action == 'JOYBUTTONB' \
-           or action == 'JOYBUTTONA':
-            if iCurOption == 2 and ResModeChange == False:
-                screen_center_utility_es()
-            if iCurOption == 3 and ResModeChange == False:
-                screen_center_utility_ingame()
-            if iCurOption == 4 and ResModeChange == False:
-                test_suite()
+    event = PGoJoyHandler.event_wait()
+    #button
+    if event & CRT_BUTTON:
+        if iCurOption == 2 and ResModeChange == False:
+            launch_center_utility_es()
+        if iCurOption == 3 and ResModeChange == False:
+            launch_center_utility_ingame()
+        if iCurOption == 4 and ResModeChange == False:
+            launch_test_suite()
+        if iCurOption == 8:
+            quit_manager()
+    #right
+    elif event & CRT_RIGHT:
+        if iCurOption == 0:
+            if opt[0][2] == '240p':
+                opt[0][2] = '270p'
+                if opt[0][2] != opt[0][3]:
+                    iCurOption = 8
+        elif iCurOption == 1:
+            if MaxModesCounter < MaxModes:
+                MaxModesCounter+=1
+                SelectedMode[0] = modes[MaxModesCounter][0]
+                SelectedMode[1] = modes[MaxModesCounter][1]
+                opt[1][2] = SelectedMode[0]
+                opt[1][1] = SelectedMode[1]
+    #left
+    elif event & CRT_LEFT:
+        if iCurOption == 0:
+            if opt[0][2] == '270p':
+                opt[0][2] = '240p'
+                if opt[0][2] != opt[0][3]:
+                    iCurOption = 8
+        elif iCurOption == 1:
+            if MaxModesCounter > 0:
+                MaxModesCounter-=1
+                SelectedMode[0] = modes[MaxModesCounter][0]
+                SelectedMode[1] = modes[MaxModesCounter][1]
+                opt[1][2] = SelectedMode[0]
+                opt[1][1] = SelectedMode[1]
+    #up
+    elif event & CRT_UP:
+        if ResModeChange == True:
             if iCurOption == 8:
-                pygame.quit()
-                quit_manager()
-                sys.exit()
-        #right
-        elif action == 'RIGTHKEYBOARD' or action == 'JOYHATRIGTH' \
-             or action == 'AXISRIGTH':
+                iCurOption = 0
+        else:
+            if iCurOption == 8:
+                iCurOption = 4
+            elif iCurOption > 0:
+                iCurOption = iCurOption - 1
+            elif iCurOption == 0:
+                iCurOption = 8
+    #down
+    elif event & CRT_DOWN:
+        if ResModeChange == True:
             if iCurOption == 0:
-                if opt[0][2] == '240p':
-                    opt[0][2] = '270p'
-                    if opt[0][2] != opt[0][3]:
-                        iCurOption = 8
-            elif iCurOption == 1:
-                if MaxModesCounter < MaxModes:
-                    MaxModesCounter+=1
-                    SelectedMode[0] = modes[MaxModesCounter][0]
-                    SelectedMode[1] = modes[MaxModesCounter][1]
-                    opt[1][2] = SelectedMode[0]
-                    opt[1][1] = SelectedMode[1]
-        #left
-        elif action == 'LEFTKEYBOARD' or action == 'JOYHATLEFT' \
-             or action == 'AXISLEFT':
-            if iCurOption == 0:
-                if opt[0][2] == '270p':
-                    opt[0][2] = '240p'
-                    if opt[0][2] != opt[0][3]:
-                        iCurOption = 8
-            elif iCurOption == 1:
-                if MaxModesCounter > 0:
-                    MaxModesCounter-=1
-                    SelectedMode[0] = modes[MaxModesCounter][0]
-                    SelectedMode[1] = modes[MaxModesCounter][1]
-                    opt[1][2] = SelectedMode[0]
-                    opt[1][1] = SelectedMode[1]
-
-        #up
-        elif action == 'UPKEYBOARD' or action == 'JOYHATUP' \
-             or action == 'AXISUP':
-            if ResModeChange == True:
-                if iCurOption == 8:
-                    iCurOption = 0
-            else:
-                if iCurOption == 8:
-                    iCurOption = 4
-                elif iCurOption > 0:
-                    iCurOption = iCurOption - 1
-                elif iCurOption == 0:
-                    iCurOption = 8
-        #down
-        elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' \
-             or action == 'AXISDOWN':
-            if ResModeChange == True:
-                if iCurOption == 0:
-                    iCurOption = 8
-            else:
-                if iCurOption == 4:
-                    iCurOption = 8
-                elif iCurOption < 8:
-                    iCurOption = iCurOption + 1
-                elif iCurOption == 8:
-                    iCurOption = 0
+                iCurOption = 8
+        else:
+            if iCurOption == 4:
+                iCurOption = 8
+            elif iCurOption < 8:
+                iCurOption = iCurOption + 1
+            elif iCurOption == 8:
+                iCurOption = 0
