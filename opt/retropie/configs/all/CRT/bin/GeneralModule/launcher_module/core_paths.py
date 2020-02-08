@@ -29,6 +29,9 @@ TMP_LAUNCHER_PATH = "/dev/shm"
 RETROPIE_PATH = "/opt/retropie"
 RETROPIECFG_PATH = os.path.join(RETROPIE_PATH, "configs")
 RETROPIEEMU_PATH = os.path.join(RETROPIE_PATH, "emulators")
+RETROPIEMUS_PATH = os.path.join(RETROPIECFG_PATH, "music")
+CFG_VIDEOMODES_FILE = os.path.join(RETROPIECFG_PATH, "all/videomodes.cfg")
+RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
 
 # retroarch
 RETROARCHCFG_FILE = os.path.join(RETROPIECFG_PATH, "all/retroarch.cfg")
@@ -36,6 +39,7 @@ RETROARCHCFG_FILE = os.path.join(RETROPIECFG_PATH, "all/retroarch.cfg")
 # emulationstation path setup
 ESCFG_PATH = os.path.join(RETROPIECFG_PATH, "all/emulationstation")
 ESCTRLS_FILE = os.path.join(ESCFG_PATH, "es_input.cfg")
+ESCFG_FILE = os.path.join(ESCFG_PATH, "es_settings.cfg")
 
 # CRT main software paths
 CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
@@ -46,6 +50,10 @@ CRTCONTENT_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles")
 
 # CRT configurations
 CRTCONFIG_PATH = os.path.join(CRTCONTENT_PATH, "config_files")
+CFG_FIXMODES_FILE = os.path.join(CRTCONFIG_PATH, "modes.cfg")
+CFG_VIDEOUTILITY_FILE = os.path.join(CRTCONFIG_PATH, "utility.cfg")
+CFG_NETPLAY_FILE = os.path.join(CRTCONFIG_PATH, "netplay.cfg")
+CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 
 # CRT resources
 CRTRESOURCES_PATH = os.path.join(CRTCONTENT_PATH, "resources")
