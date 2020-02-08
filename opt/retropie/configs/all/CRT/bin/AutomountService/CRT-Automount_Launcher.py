@@ -147,6 +147,7 @@ class automount(object):
             self._restart_ES()
 
     def eject_usb(self):
+        self._show_info('EJECTING, EMULATIONSTATION WILL RESTART...')
         os.system('sudo umount %s > /dev/null 2>&1'%self.m_sMountedPath[0])
         while not os.path.exists(TRG_UMNT_FILE):
             pass
@@ -155,7 +156,7 @@ class automount(object):
         """ Restart ES if it's running """
         sOutput = commands.getoutput('ps -A')
         if 'emulationstatio' in sOutput:
-            self._show_info('STOPPING, EMULATIONSTATION WILL REBOOT...')
+            self._show_info('STOPPING, EMULATIONSTATION WILL RESTART...')
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
