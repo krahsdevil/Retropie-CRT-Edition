@@ -3,7 +3,7 @@
 
 
 """
-USB Automount
+USB Automount Launcher
 
 Module to check and load/unload USB Automount service for Retropie by -krahs-
 
