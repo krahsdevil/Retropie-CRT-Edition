@@ -122,7 +122,9 @@ class CTRLSPi2Jamma(object):
                     {'line': 'input_enable_hotkey', 
                      'value': 'nul', 'dis': 'nul'},
                     {'line': 'input_exit_emulator', 
-                     'value': 'escape', 'dis': 'escape'})
+                     'value': 'escape', 'dis': 'escape'},
+                    {'line': 'input_menu_toggle', 
+                     'value': 'f1', 'dis': 'f1'})
                     
     # emulationstation keyboard configuration xml for PI2JAMMA
     m_lESP2JInputs = ({'name': 'a', 'type': 'key', 'id': '1073742048', 'value': '1'},
@@ -137,7 +139,7 @@ class CTRLSPi2Jamma(object):
                       {'name': 'start', 'type': 'key', 'id': '49', 'value': '1'},
                       {'name': 'up', 'type': 'key', 'id': '1073741906', 'value': '1'},
                       {'name': 'x', 'type': 'key', 'id': '32', 'value': '1'},
-                      {'name': 'y', 'type': 'key', 'id': '1073742049', 'value': '1'},)
+                      {'name': 'y', 'type': 'key', 'id': '1073742049', 'value': '1'})
                       
     # emulationstation keyboard configuration xml for STANTARD KEYBOARD (not for play)
     m_lESKBDInputs = ({'name': 'a', 'type': 'key', 'id': '13', 'value': '1'},
