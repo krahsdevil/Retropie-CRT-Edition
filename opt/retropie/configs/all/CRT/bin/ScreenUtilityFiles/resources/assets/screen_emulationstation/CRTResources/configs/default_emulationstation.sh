@@ -1,4 +1,5 @@
 #!/bin/bash
+exec 2> /dev/null
 esdir="$(dirname $0)"
 
 ROTATION_CFG_PATH="/opt/retropie/configs/all"
@@ -7,6 +8,7 @@ ROTATION_CFG_PATH+="/assets/screen_emulationstation/CRTResources/configs"
 CABLE_SELECTOR_FILE="/opt/retropie/configs/all"
 CABLE_SELECTOR_FILE+="/CRT/bin/ScreenUtilityFiles/bin"
 CABLE_SELECTOR_FILE+="/module_rgb_cable_switcher/CRT-RGB-Cable_Launcher.py"
+
 
 RES_X=0
 RES_Y=0
@@ -21,9 +23,9 @@ function rotate_screen ()
 {
     read RES_X RES_Y <<<$(cat /sys/class/graphics/fb0/virtual_size | awk -F'[,]' '{print $1, $2}')
 	if [ -f $MODE_TATE1_FILE ]; then
-		ES_ROTATION_FLAGS="--screenrotate 1 -screensize ${RES_Y} ${RES_X}"
+		ES_ROTATION_FLAGS="--screenrotate 1 --screensize ${RES_Y} ${RES_X}"
 	elif [ -f $MODE_TATE3_FILE ]; then
-		ES_ROTATION_FLAGS="--screenrotate 3 -screensize ${RES_Y} ${RES_X}"
+		ES_ROTATION_FLAGS="--screenrotate 3 --screensize ${RES_Y} ${RES_X}"
 	else
 		ES_ROTATION_FLAGS=""
 	fi
@@ -39,9 +41,8 @@ while true; do
 	rotate_screen
 	"$esdir/emulationstation" $ES_ROTATION_FLAGS "$@"
     ret=$?
-    if [ -f /tmp/es-restart ]; then
-        continue
-    fi
+
+    [ -f /tmp/es-restart ] && continue
     if [ -f /tmp/es-sysrestart ]; then
         rm -f /tmp/es-sysrestart
         sudo reboot
@@ -54,6 +55,5 @@ while true; do
     fi
     break
 done
-
 exit $ret
 
