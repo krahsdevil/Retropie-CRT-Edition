@@ -53,6 +53,14 @@ def get_xy_screen():
             x_screen = int(ResMode[1])
             y_screen = int(ResMode[2])
             return (x_screen, y_screen)
+            
+def get_screen_resolution():
+    commandline = "cat /sys/class/graphics/fb0/virtual_size"
+    output = commands.getoutput(commandline)
+    VirtRes = output.replace(',',' ').split(' ')
+    RES_X = int(VirtRes[0])
+    RES_Y = int(VirtRes[1])
+    return (RES_X, RES_Y)
 
 def splash_info(SplashImagePath):
     get_xy_screen()
