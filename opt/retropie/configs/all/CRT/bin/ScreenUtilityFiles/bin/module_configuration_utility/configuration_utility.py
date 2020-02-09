@@ -30,7 +30,7 @@ sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line
-from launcher_module.utils import get_xy_screen
+from launcher_module.utils import get_xy_screen, something_is_bad
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
 
