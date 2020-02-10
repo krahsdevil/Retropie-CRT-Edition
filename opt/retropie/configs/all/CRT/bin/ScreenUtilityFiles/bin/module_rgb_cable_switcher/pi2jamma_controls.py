@@ -34,6 +34,8 @@ sys.path.append(RESOURCES_PATH)
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
 
+ADVMAMECFG_FILE = os.path.join(RETROPIECFG_PATH, "mame-advmame/advmame.rc")
+
 class CTRLSPi2Jamma(object):
     """
     This class for keyboard configuration for PI2JAMMA is based on MAME 
@@ -72,7 +74,7 @@ class CTRLSPi2Jamma(object):
                       {'line': 'input_player1_up', 'value': 'up'},         #P1UP
                       {'line': 'input_player1_down', 'value': 'down'})     #P1DOWN
 
-    # player 1 keyboard config for pi2jamma
+    # player 1 keyboard retroarch config for pi2jamma
     m_lRArchKBP1 = ({'line': 'input_player1_b', 'value': 'ctrl'},          #P1BTN1
                     {'line': 'input_player1_a', 'value': 'alt'},           #P1BTN2
                     {'line': 'input_player1_x', 'value': 'space'},         #P1BTN3
@@ -86,7 +88,7 @@ class CTRLSPi2Jamma(object):
                     {'line': 'input_player1_up', 'value': 'up'},           #P1UP
                     {'line': 'input_player1_down', 'value': 'down'})       #P1DOWN
                  
-    # player 2 keyboard config for pi2jamma
+    # player 2 keyboard retroarch config for pi2jamma
     m_lRArchKBP2 = ({'line': 'input_player2_b', 'value': 'a'},             #P2BTN1
                     {'line': 'input_player2_a', 'value': 's'},             #P2BTN2
                     {'line': 'input_player2_x', 'value': 'q'},             #P2BTN3
@@ -109,6 +111,7 @@ class CTRLSPi2Jamma(object):
         value : standard value when pi2jamma is disabled
         dis   : value to apply when pi2jamma is enabled
     """
+    # hotkeys keyboard retroarch disabling for conflicts
     m_lRarchKBDS = ({'line': 'input_toggle_fast_forward',
                      'value': 'space', 'dis': 'nul'},
                     {'line': 'input_toggle_fullscreen',
@@ -151,17 +154,25 @@ class CTRLSPi2Jamma(object):
                       {'name': 'select', 'type': 'key', 'id': '53', 'value': '1'},
                       {'name': 'start', 'type': 'key', 'id': '49', 'value': '1'},
                       {'name': 'up', 'type': 'key', 'id': '1073741906', 'value': '1'})
+                      
+    # advmame keyboard configuration User Interface
+    m_lADVMAMEKBDUI = ({'line': 'input_map[ui_select]',
+                        'value': 'auto', 'dis': 'keyboard[0,enter] or keyboard[0,lcontrol]'},
+                       {'line': 'input_map[ui_cancel]',
+                        'value': 'auto', 'dis': 'keyboard[0,esc] or keyboard[0,backspace]'})
 
     m_bChange = False
 
     def enable_controls(self):
         self.inputs_retroarch_pi2jamma_enable()
         self.inputs_emulationstation_pi2jamma()
+        self.inputs_advmame_pi2jamma_enable()
         return self.m_bChange
 
     def disable_controls(self):
         self.inputs_retroarch_pi2jamma_disable()
         self.inputs_emulationstation_keyboard()
+        self.inputs_advmame_pi2jamma_disable()
         return self.m_bChange
 
     def inputs_retroarch_pi2jamma_enable(self):
@@ -213,8 +224,8 @@ class CTRLSPi2Jamma(object):
         """ 
         This function enable or disable some retroarch hotkey controls
         to avoid keyboard keystrokes conflicts.
-        p_bEnable = True    Enable keyboard inputs
-        p_bEnable = False   Enable keyboard inputs
+        p_bEnable = True    Enable for pi2jamma keyboard inputs
+        p_bEnable = False   Disable for pi2jamma keyboard inputs
         """
         if not self._check_file(RETROARCHCFG_FILE):
             return
@@ -241,6 +252,46 @@ class CTRLSPi2Jamma(object):
                 if p_bChange:
                     self.m_bChange = True
                     modify_line(RETROARCHCFG_FILE, 
+                                      key['line'] + ' ', p_sCFGLine)
+
+    def inputs_advmame_pi2jamma_enable(self):
+        """ All actions to enable pi2jamma in advmame """
+        self._inputs_advmame_keys(self.m_lADVMAMEKBDUI, True)
+        
+    def inputs_advmame_pi2jamma_disable(self):
+        """ All actions to enable pi2jamma in advmame """
+        self._inputs_advmame_keys(self.m_lADVMAMEKBDUI, False)
+
+    def _inputs_advmame_keys(self, p_lInputs, p_bEnable):
+        """ 
+        This function some advmame hotkey controls like UI select.
+        p_bEnable = True    Enable for pi2jamma keyboard inputs
+        p_bEnable = False   Disable for pi2jamma keyboard inputs
+        """
+        if not self._check_file(ADVMAMECFG_FILE):
+            return
+        for key in p_lInputs:
+            p_Return = self._ini_get(ADVMAMECFG_FILE, key['line'])
+            p_bChange = False
+            p_sValue = key['dis']
+            p_sCFGLine = key['line'] + " "
+            if not p_bEnable:
+                p_sValue = key['value']
+            p_sCFGLine += p_sValue
+
+            if p_Return[0] == False:
+                add_line(ADVMAMECFG_FILE, p_sCFGLine)
+                self.m_bChange = True
+            else:
+                if p_Return[1] and p_bEnable:
+                    p_bChange = True
+                if p_Return[2]:
+                    p_Return[2] = p_Return[2].replace(']or', '] or ')
+                    if p_Return[2] != p_sValue:
+                        p_bChange = True
+                if p_bChange:
+                    self.m_bChange = True
+                    modify_line(ADVMAMECFG_FILE, 
                                       key['line'] + ' ', p_sCFGLine)
    
     def inputs_emulationstation_pi2jamma(self):
@@ -332,7 +383,8 @@ class CTRLSPi2Jamma(object):
             return p_lCheck
         with open(p_sFile, "r") as f:
             for line in f:
-                lValues = line.strip().replace(' ','').split('=')
+                line = line.strip().replace('=',' ').replace(' or ','or')
+                lValues = line.strip().replace('# ','#').split(' ')
                 if p_sFindMask == lValues[0].strip('# '):
                     p_lCheck[0] = True
                     if line[:1] == '#':
