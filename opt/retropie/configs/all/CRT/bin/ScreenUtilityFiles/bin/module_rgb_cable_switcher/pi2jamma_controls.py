@@ -165,13 +165,13 @@ class CTRLSPi2Jamma(object):
 
     def enable_controls(self):
         self.inputs_retroarch_pi2jamma_enable()
-        self.inputs_emulationstation_pi2jamma()
+        self.inputs_emulationstation_pi2jamma_enable()
         self.inputs_advmame_pi2jamma_enable()
         return self.m_bChange
 
     def disable_controls(self):
         self.inputs_retroarch_pi2jamma_disable()
-        self.inputs_emulationstation_keyboard()
+        self.inputs_emulationstation_pi2jamma_disable()
         self.inputs_advmame_pi2jamma_disable()
         return self.m_bChange
 
@@ -289,61 +289,114 @@ class CTRLSPi2Jamma(object):
                     p_Return[2] = p_Return[2].replace(']or', '] or ')
                     if p_Return[2] != p_sValue:
                         p_bChange = True
+                        if not p_bEnable:
+                            # don't change if custom kbd/joy found
+                            p_bChange = True if p_Return[2] == key['dis'] else False
                 if p_bChange:
                     self.m_bChange = True
                     modify_line(ADVMAMECFG_FILE, 
                                       key['line'] + ' ', p_sCFGLine)
    
-    def inputs_emulationstation_pi2jamma(self):
-        """ 
-        Configure in es_input.cfg inputs for pi2jamma, first will
-        clean any keyboard existing configuration and then apply.
-        """
-        self.inputs_emulationstation_ctrls_clean()
-        self._inputs_emulationstation_ctrls_create(self.m_lESP2JInputs)
+    def inputs_emulationstation_pi2jamma_enable(self):
+        """ All actions to enable pi2jamma in emulationstation """
+        self.inputs_emulationstation_ctrls(True)
         
-    def inputs_emulationstation_keyboard(self):
-        """ 
-        Configure in es_input.cfg inputs for regular keyboard,
-        first will clean any keyboard configuration existent and then apply.
-        Only for ES menu navigation, will not be valid for playing.
-        ENTER = Select
-        ESC   = Back
-        """
-        self.inputs_emulationstation_ctrls_clean()
-        # next function call leave a regular keyboard configured
-        #self._inputs_emulationstation_ctrls_create(self.m_lESKBDInputs)
+    def inputs_emulationstation_pi2jamma_disable(self):
+        """ All actions to disable pi2jamma in emulationstation """
+        self.inputs_emulationstation_ctrls(False)
 
-    def inputs_emulationstation_ctrls_clean(self):
-        """ Clean any keyboard configuration in es_input.cfg """
+    def inputs_emulationstation_ctrls(self, p_bEnable):
+        """
+        This function clean or install keyboard config for pi2jamma
+        in es_input.cfg. Also will try to backup and/or restore any user's
+        custom keyboard configuration 
+        p_bEnable = True    Enable pi2jamma keyboard inputs and backup
+                            any pre-existent custom keyboard config.
+        p_bEnable = False   Remove any pi2jamma keyboard inputs and restore
+                            any pre-existent custom keyboard config. 
+        """
+        p_bXMLSave = False
+        p_lCtmDev = []
+        p_lBckDev = []
+        p_lP2JDev = []
+        
+        # create emulationstation 'es_input.cfg' file if doesn't exist 
         if not self._check_file(ESCTRLS_FILE):
-            # create default emulationstation 'es_input.cfg' file
-            root = ET.Element("inputList")
-            root.text = "\n  "
-            p_sNewAction = ET.Element("inputAction")
-            p_sNewAction.set("type", "onfinish")
-            p_sNewAction.text = ("\n    ")
-            p_sNewAction.tail = "\n"
-            p_sNewCommand = ET.SubElement(p_sNewAction, "command")
-            p_sNewCommand.text = "/opt/retropie/supplementary/emulationstation"
-            p_sNewCommand.text += "/scripts/inputconfiguration.sh"
-            p_sNewCommand.tail = "\n  "
-            root.append(p_sNewAction)
-            tree = ET.ElementTree(root)
-            tree.write(ESCTRLS_FILE, encoding='UTF-8')
+            self._emulationstation_create_inputs_file()
+        # analize xml configurations
         else:
             tree = ET.parse(ESCTRLS_FILE)
             root = tree.getroot()
             p_lClean = []
             for device in root:
                 if device.attrib['type'].lower() == "keyboard":
-                    p_lClean.append(device)
-            if p_lClean:
-                self.m_bChange = True
-                for device in p_lClean:
-                    root.remove(device)
+                    if 'class' in device.attrib:
+                        if device.attrib['class'].lower() == "pi2jamma":
+                            p_lP2JDev.append(device)
+                        elif device.attrib['class'].lower() == "custom":
+                            p_lCtmDev.append(device)
+                    else:
+                        p_lCtmDev.append(device)
+                elif device.attrib['type'].lower() == "backup":
+                    p_lBckDev.append(device)
+
+            # always clean pi2jamma config even if already exist
+            # will be applied again at the end if p_bEnable = True
+            for device in p_lP2JDev:
+                root.remove(device)
+                p_bXMLSave = True
+
+            if p_bEnable:
+                if len(p_lCtmDev) > 1:
+                    for device in p_lCtmDev:
+                        root.remove(device)
+                        p_bXMLSave = True
+                elif len(p_lCtmDev) == 1:
+                    for device in p_lBckDev:
+                        root.remove(device)
+                    p_lCtmDev[0].attrib['type'] = 'backup'
+                    p_lCtmDev[0].attrib['class'] = 'custom'
+                    p_bXMLSave = True
+            else:
+                if len(p_lCtmDev) > 1:
+                    for device in p_lCtmDev:
+                        root.remove(device)
+                        p_bXMLSave = True
+                elif len(p_lCtmDev) == 1:
+                    for device in p_lBckDev:
+                        root.remove(device)
+                        p_bXMLSave = True
+                else:
+                    if len(p_lBckDev) == 1:
+                        p_lBckDev[0].attrib['type'] = 'keyboard'
+                        p_bXMLSave = True
+                    else:
+                        for device in p_lBckDev:
+                            root.remove(device)
+                            p_bXMLSave = True
+
+            # save 'es_input.cfg' only if any change happens
+            if p_bXMLSave:
                 tree.write(ESCTRLS_FILE, encoding='UTF-8')
-        
+                # once xml is reorganized, create clean pi2jamma config
+                if p_bEnable:
+                    self._inputs_emulationstation_ctrls_create(self.m_lESP2JInputs)
+                self.m_bChange = True
+
+    def _emulationstation_create_inputs_file(self):
+        root = ET.Element("inputList")
+        root.text = "\n  "
+        p_sNewAction = ET.Element("inputAction")
+        p_sNewAction.set("type", "onfinish")
+        p_sNewAction.text = ("\n    ")
+        p_sNewAction.tail = "\n"
+        p_sNewCommand = ET.SubElement(p_sNewAction, "command")
+        p_sNewCommand.text = "/opt/retropie/supplementary/emulationstation"
+        p_sNewCommand.text += "/scripts/inputconfiguration.sh"
+        p_sNewCommand.tail = "\n  "
+        root.append(p_sNewAction)
+        tree = ET.ElementTree(root)
+        tree.write(ESCTRLS_FILE, encoding='UTF-8')
 
     def _inputs_emulationstation_ctrls_create(self, p_lESInputs):
         """ Create keyboard inputs for manage EmulationStation"""
@@ -355,6 +408,7 @@ class CTRLSPi2Jamma(object):
         p_sNewDevice.set("deviceGUID", "-1")
         p_sNewDevice.set("deviceName", "Keyboard")
         p_sNewDevice.set("type", "keyboard")
+        p_sNewDevice.set("class", "pi2jamma")
         p_sNewDevice.tail = "\n"
         p_sNewDevice.text = "\n    "
         for input in p_lESInputs:
@@ -407,3 +461,4 @@ class CTRLSPi2Jamma(object):
         if os.path.exists(p_sFile):
             return True
         return False
+
