@@ -53,7 +53,9 @@ KEY_CFG     = {
     pygame.K_RIGHT  : CRT_RIGHT,
     pygame.K_RETURN : CRT_OK,
     pygame.K_SPACE  : CRT_OK,
+    pygame.K_LCTRL  : CRT_OK,
     pygame.K_ESCAPE : CRT_CANCEL,
+    pygame.K_LALT : CRT_CANCEL,
 }
 
 HAT_CFG = {
