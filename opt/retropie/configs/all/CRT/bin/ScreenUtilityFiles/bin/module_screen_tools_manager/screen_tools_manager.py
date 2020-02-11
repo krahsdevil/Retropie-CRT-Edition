@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import pygame
+import pygame, time
 import sys, os, commands, subprocess
 import filecmp
 
@@ -28,6 +28,7 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
+from launcher_module.core_choices_dynamic import choices
 from launcher_module.file_helpers import modify_line
 from launcher_module.screen import CRT
 from launcher_module.utils import ra_check_version, get_xy_screen
@@ -61,9 +62,9 @@ data_x = 0
 list_x = 0
 iCurOption = 0
 
-SaveConfig = False
-SaveModes = False
-ResModeChange = False
+bChangeMode = False
+bChangeRes = False
+bESReload = False
 
 sESResLabel50 = 'system50'
 sESResLabel60 = 'system60'
@@ -112,6 +113,13 @@ opt = [["1.SYSTEM RESOLUTION" ,
         "empty"],
        ["<BACK" ,
         "Save and back to main menu"]]
+
+def show_info(p_sMessage, p_iTime = 2000, p_sTitle = None):
+    ch = choices()
+    if p_sTitle:
+        ch.set_title(p_sTitle)
+    ch.load_choices([(p_sMessage, "OK")])
+    ch.show(p_iTime)
 
 def get_screen_size_adjust():
     global x_screen
@@ -194,6 +202,13 @@ def draw_arrow_right():
     PGoScreen.blit((PGoFont.render('>>', 1, (YELLOW))),
                     (data_x+2, (30+y_margin+LineMov)+iCurOption*Interline))
 
+def fix_icons_image():
+    for file in os.listdir(CRTICONS_PATH):
+        IconImg = CRTICONS_PATH + "/" + file
+        IconImgMode = CRTICONS_SET_PATH + "/" + file[:-4] + "_" + opt[0][2] + ".png"
+        if not os.path.isdir(IconImg):
+            os.system('cp "%s" "%s" >> /dev/null 2>&1' % (IconImgMode, IconImg))
+
 def replace_launching_image(p_sImage):
     p_lMask = (".png", ".jpg")
     if not p_sImage[-4:] in p_lMask:
@@ -211,14 +226,7 @@ def replace_launching_image(p_sImage):
     except:
         pass
 
-def replace_icons_image():
-    for file in os.listdir(CRTICONS_PATH):
-        IconImg = CRTICONS_PATH + "/" + file
-        IconImgMode = CRTICONS_SET_PATH + "/" + file[:-4] + "_" + opt[0][2] + ".png"
-        if not os.path.isdir(IconImg):
-            os.system('cp "%s" "%s" >> /dev/null 2>&1' % (IconImgMode, IconImg))
-
-def search_launching_image():
+def fix_launching_image():
     for Level1 in os.listdir(RETROPIECFG_PATH):
         LEVEL1 = os.path.join(RETROPIECFG_PATH, Level1)
         if os.path.isdir(LEVEL1):
@@ -240,8 +248,16 @@ def search_launching_image():
                 else:
                     replace_launching_image(sFile2)
 
+def fix_aspect_ratio_images():
+    show_info("WAIT, PREPARING RESOLUTION CHANGE")
+    fix_launching_image()
+    fix_icons_image() 
+
 def save_configuration():
-    if SaveConfig == True:
+    # save resolution change parameters
+    if bChangeRes == True:
+        # replace with rigth aspect ratio images
+        fix_aspect_ratio_images()
         modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_horizontal ' % opt[0][3],
                        '%s_theme_horizontal %s' % (opt[0][3], CurTheme))
         if opt[0][2] == '240p':
@@ -252,27 +268,27 @@ def save_configuration():
             modify_line(CFG_VIDEOUTILITY_FILE,'default', 'default %s' % sESResLabel50)
             modify_line(ESCFG_FILE, '"ThemeSet"',
                            '<string name="ThemeSet" value="%s" />' % HorTheme270p)
-        search_launching_image()
-        replace_icons_image()
-    if SaveModes == True:
+    # save mode change parameters
+    if bChangeMode == True:
         modify_line(CFG_FIXMODES_FILE,'mode_default',
                        'mode_default %s' % SelectedMode[0])
-
 def quit_manager():
     iExitCode = 0
     pygame_unload()
     save_configuration()
-    if ResModeChange == True or SaveModes == True:
+    if bESReload:
         commandline = "/usr/bin/python %s force" % PATTERN_LAUNCHER_FILE
-        os.system(commandline)
         output = commands.getoutput('ps -A')
         # Restart ES if it is running
         if 'emulationstatio' in output:
-            commandline = "touch /tmp/es-restart "
+            commandline += " && "
+            commandline += "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            os.system(commandline)
+            show_info("EMULATIONSTATION WILL RESTART NOW")
             iExitCode = 1
+        os.system(commandline)
+        time.sleep(1)
     sys.exit(iExitCode)
 
 def launch_application(sCommandline, bShell = False):
@@ -384,9 +400,9 @@ def get_config():
 
 def draw_menu():
     global opt
-    global ResModeChange
-    global SaveConfig
-    global SaveModes
+    global bChangeRes
+    global bChangeMode
+    global bESReload
 
     # draw background color and main frame
     PGoScreen.fill(BLUELIGHT)
@@ -404,12 +420,12 @@ def draw_menu():
 
     # draw whole list of options in base color
     for i in range(0,9):
-        if (i <= 4 or i == 8) and ResModeChange == False:
+        if (i <= 4 or i == 8) and bChangeRes == False:
             opt[8][0] = '<BACK'
             opt[8][1] = 'Save and back to main menu'
             PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUELIGHT)),
                             (list_x, (30 + y_margin + LineMov) + i * Interline))
-        elif (i <= 4 or i == 8) and ResModeChange == True:
+        elif (i <= 4 or i == 8) and bChangeRes == True:
             opt[8][0] = '<RESTART'
             opt[8][1] = 'Restart ES to apply new resolution...'
             if i == 0 or i == 8:
@@ -422,12 +438,12 @@ def draw_menu():
 
     # draw all selectables values in base color
     for i in range(0,9):
-        if (i < 2) and ResModeChange == False:
+        if (i < 2) and bChangeRes == False:
             esres = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
             PGoScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
                                             (30 + y_margin + LineMov) \
                                             + i * Interline))
-        elif (i < 2) and ResModeChange == True:
+        elif (i < 2) and bChangeRes == True:
             if i == 0:
                 mode = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
                 PGoScreen.blit(mode, (data_x-(len(str(opt[i][2])) * 8),
@@ -439,8 +455,6 @@ def draw_menu():
                                         + i * Interline))
 
     # clear any previous warning top red message
-    ResModeChange = False
-    SaveModes = False
     text_print('SYSTEM NEEDS TO SHUTDOWN NOW', 0,
                y_margin - 13, BLUELIGHT, True)
     text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
@@ -449,13 +463,19 @@ def draw_menu():
                y_margin - 13, BLUELIGHT, True)
 
     # draw if apply warning message on top
+    bESReload = False
+    bChangeRes = False
+    bChangeMode = False
+
     if opt[0][2] != opt[0][3]:
-        ResModeChange = True
-        SaveConfig = True
+        bChangeRes = True
+        bESReload = True
         text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
                    y_margin - 13, RED, True)
-    elif opt[1][2] != opt[1][3]:
-        SaveModes = True
+
+    if opt[1][2] != opt[1][3]:
+        bChangeMode = True
+        bESReload = True
         text_print('FIX WILL APPLY ON BACK/CENTERING', 0,
                     y_margin - 13, RED, True)
 
@@ -512,11 +532,11 @@ while True:
     event = PGoJoyHandler.event_wait()
     #button
     if event & CRT_BUTTON:
-        if iCurOption == 2 and ResModeChange == False:
+        if iCurOption == 2 and bChangeRes == False:
             launch_center_utility_es()
-        if iCurOption == 3 and ResModeChange == False:
+        if iCurOption == 3 and bChangeRes == False:
             launch_center_utility_ingame()
-        if iCurOption == 4 and ResModeChange == False:
+        if iCurOption == 4 and bChangeRes == False:
             launch_test_suite()
         if iCurOption == 8:
             quit_manager()
@@ -550,7 +570,7 @@ while True:
                 opt[1][1] = SelectedMode[1]
     #up
     elif event & CRT_UP:
-        if ResModeChange == True:
+        if bChangeRes == True:
             if iCurOption == 8:
                 iCurOption = 0
         else:
@@ -562,7 +582,7 @@ while True:
                 iCurOption = 8
     #down
     elif event & CRT_DOWN:
-        if ResModeChange == True:
+        if bChangeRes == True:
             if iCurOption == 0:
                 iCurOption = 8
         else:

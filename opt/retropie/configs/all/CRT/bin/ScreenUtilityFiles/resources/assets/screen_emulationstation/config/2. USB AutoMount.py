@@ -165,6 +165,7 @@ def DesInstallServiceAutomount():
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
             os.system(commandline)
+            time.sleep(1)
             sys.exit()
     else:
         pygame.display.quit()

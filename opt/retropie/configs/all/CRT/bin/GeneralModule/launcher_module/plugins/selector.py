@@ -67,7 +67,7 @@ class selector(libretro):
                 AutoSelection = "FORCED TO 50Hz / PAL"
             elif self.m_sSelectFreq == "60":
                 AutoSelection = "FORCED TO 60Hz / NTSC"
-            self.show_auto_selection(AutoSelection)
+            self.show_info(AutoSelection)
         elif self.m_sSelectFreq == "100":
             logging.info("Frequency selector mode auto")
             self.m_sSelectFreq = self.frecuency_auto()
@@ -101,16 +101,14 @@ class selector(libretro):
                 AutoSelection = "AUTO: 50Hz / PAL"
             elif sFrequency == "60":
                 AutoSelection = "AUTO: 60Hz / NTSC"
-            self.show_auto_selection(AutoSelection)
+            self.show_info(AutoSelection)
         return sFrequency
 
-    def show_auto_selection(self, m_sMessage, m_sTitle = None):
+    def show_info(self, m_sMessage, m_sTitle = None):
         ch = choices()
         if m_sTitle:
             ch.set_title(m_sTitle)
-        ch.load_choices([
-                (m_sMessage, "OK"),
-            ])
+        ch.load_choices([(m_sMessage, "OK")])
         ch.show(3000)
         ch.cleanup()        
 

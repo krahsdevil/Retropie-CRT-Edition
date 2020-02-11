@@ -29,6 +29,7 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
+from launcher_module.core_choices_dynamic import choices
 from launcher_module.file_helpers import modify_line
 from launcher_module.utils import get_xy_screen, something_is_bad
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
@@ -109,6 +110,13 @@ DEFAULT_CONFIG += "240p_theme_vertical V270P-CRT-BASE\n"
 DEFAULT_CONFIG += "270p_theme_vertical V270P-CRT-BASE\n"
 DEFAULT_CONFIG += "240p_theme_horizontal 240P-CRT-BUBBLEGUM\n"
 DEFAULT_CONFIG += "270p_theme_horizontal 270P-CRT-SNES-MINI\n\""
+
+def show_info(p_sMessage, p_iTime = 2000, p_sTitle = None):
+    ch = choices()
+    if p_sTitle:
+        ch.set_title(p_sTitle)
+    ch.load_choices([(p_sMessage, "OK")])
+    ch.show(p_iTime)
 
 def get_screen_size_adjust():
     global y_margin
@@ -196,7 +204,7 @@ def save_configuration():
     modify_line(CFG_VIDEOUTILITY_FILE,'freq_selector','freq_selector %s'%opt[3][2])
     modify_line(CFG_VIDEOUTILITY_FILE,'integer_scale','integer_scale %s'%opt[6][2])
 
-def Check_BackGround_Music():
+def background_music_check():
     global opt
     global ServiceRunning
     global ServiceExist
@@ -217,7 +225,7 @@ def Check_BackGround_Music():
         ServiceRunning = False
         opt[5][2] = "OFF"
 
-def InstallServiceBackGroundMusic():
+def background_music_install():
     global ServiceRunning
     global ServiceExist
     if ServiceExist == False:
@@ -225,15 +233,16 @@ def InstallServiceBackGroundMusic():
             os.system('sudo cp /opt/retropie/configs/all/CRT/bin/BackGroundMusic/BackGroundMusic.service /etc/systemd/system/ > /dev/null 2>&1')
     os.system('sudo systemctl enable BackGroundMusic.service > /dev/null 2>&1')
     os.system('sudo systemctl start BackGroundMusic.service > /dev/null 2>&1')
-    Check_BackGround_Music()
+    background_music_check()
 
-def DesInstallServiceBackGroundMusic():
+def background_music_remove():
     if os.path.exists('/opt/retropie/configs/all/CRT/bin/BackGroundMusic/BackGroundMusic.service') and os.path.exists('/opt/retropie/configs/all/CRT/bin/BackGroundMusic/BGM.py'):
         os.system('sudo systemctl stop BackGroundMusic.service > /dev/null 2>&1')
         os.system('sudo systemctl disable BackGroundMusic.service > /dev/null 2>&1')
-    Check_BackGround_Music()
+    background_music_check()
 
 def rotate_frontend():
+    show_info ("WAIT, PREPARING ROTATION...")
     if RotateFrontEnd == True:
         os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1 >> /dev/null 2>&1')
         os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3 >> /dev/null 2>&1')
@@ -299,6 +308,7 @@ def quit_utility():
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+            show_info ("EMULATIONSTATION WILL RESTART NOW")
             os.system(commandline)
             time.sleep(1)
     sys.exit(0)
@@ -396,7 +406,7 @@ def get_config():
         opt[1][2] = 0
         opt[1][3] = 0
         modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
-    Check_BackGround_Music()
+    background_music_check()
 
 def draw_menu():
     global option
@@ -517,11 +527,11 @@ def draw_menu():
                 PGoScreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
 
     # message if reboot is needed and deactivated options in red
-    text_print('EMULATIONSTATION NEEDS TO RESTART NOW', 0, y_margin-13, BLUELIGHT, True)
+    text_print('EMULATIONSTATION NEEDS TO RESTART', 0, y_margin-13, BLUELIGHT, True)
     RotateFrontEnd = False
     if opt[1][2] != opt[1][3]:
         RotateFrontEnd = True
-        text_print('EMULATIONSTATION NEEDS TO RESTART NOW', 0, y_margin-13, RED, True)
+        text_print('EMULATIONSTATION NEEDS TO RESTART', 0, y_margin-13, RED, True)
         if opt[1][2] != 0:
             opt[0][2] = 0
 
@@ -657,7 +667,7 @@ while True:
         elif y == 3 and opt[3][2] == 60:
             opt[3][2] = 100
         elif y == 5 and opt[5][2] == "OFF":
-            InstallServiceBackGroundMusic()
+            background_music_install()
         elif y == 6 and opt[6][2] == 0:
             opt[6][2] = 1
     #left
@@ -676,7 +686,7 @@ while True:
         elif y == 3 and opt[3][2] == 50:
             opt[3][2] = 0
         elif y == 5 and opt[5][2] == "YES":
-            DesInstallServiceBackGroundMusic()
+            background_music_remove()
         elif y == 6 and opt[6][2] == 1:
             opt[6][2] = 0
     #up            

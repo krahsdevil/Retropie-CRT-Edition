@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys, traceback
-import commands, random, hashlib
+import commands, random, hashlib, time
 import logging
 
 sys.dont_write_bytecode = True
@@ -133,9 +133,9 @@ class CableSelector(object):
         result = ch.run()
         return result
 
-    def _show_info(self, p_sMessage, p_iTime = 2000, p_sTitle = ""):
+    def _show_info(self, p_sMessage, p_iTime = 2000, p_sTitle = None):
         ch = choices()
-        if p_sTitle != "":
+        if p_sTitle:
             ch.set_title(p_sTitle)
         ch.load_choices([(p_sMessage, "OK")])
         ch.show(p_iTime)
@@ -520,17 +520,18 @@ class CableSelector(object):
                          'no reboot needed')
             # check if ES must reboot
             if self.m_bRebootES and self._check_process('emulationstatio', 3):
-                self._show_info('RESTORING KEYBOARD CONFIG', 2000)
-                self._show_info('EMULATIONSTATION WILL RESTART NOW...')
+                self._show_info('CLEANING KEYBOARD CONFIG', 2000)
+                self._show_info('EMULATIONSTATION WILL RESTART NOW')
                 commandline = "touch /tmp/es-restart "
                 commandline += "&& pkill -f \"/opt/retropie"
                 commandline += "/supplementary/.*/emulationstation([^.]|$)\""
                 os.system(commandline)
+                time.sleep(1)
         else:
             commandline = 'sudo reboot now'
             self._show_info('SYSTEM WILL REBOOT NOW...')
             os.system(commandline)
-        sys.exit()
+        sys.exit(0)
 
     def _clone_boot_cfg(self):
         os.system('cp %s %s' %(BOOTCFG_FILE, self.m_sBootTempFile))

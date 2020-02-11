@@ -50,7 +50,7 @@ class abandonware(emulator):
 
     def configure(self):
         super(abandonware, self).configure()
-        self.abandonware_show_info("Better with keyboard and mouse")
+        self.show_info("Better with keyboard and mouse")
 
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
@@ -62,7 +62,7 @@ class abandonware(emulator):
         logging.info("clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
 
-    def abandonware_show_info(self, m_sMessage, m_sTitle = None):
+    def show_info(self, m_sMessage, m_sTitle = None):
         ch = choices()
         if m_sTitle:
             ch.set_title(m_sTitle)
@@ -73,7 +73,7 @@ class abandonware(emulator):
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         if "+Start " in self.m_sGameName:
-            self.abandonware_show_info("Launching SCUMMVM Configurator!")
+            self.show_info("Launching SCUMMVM Configurator!")
             commandline = "%s bash \"%s\" > /dev/null 2>&1" % \
                           (self.m_sSleeper, self.m_sFilePath)
             self.m_oRunProcess = subprocess.Popen(commandline, shell=True)

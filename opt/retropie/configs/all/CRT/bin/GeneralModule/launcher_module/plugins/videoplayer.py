@@ -155,9 +155,7 @@ class videoplayer(launcher):
     def video_options(self):
         ch = choices()
         ch.set_title("VIDEO PLAYER")
-        ch.load_choices([
-                ("Just this video...", "False"),
-                ("Play ALL from this!", "True"),
-            ])
+        ch.load_choices([("Just this video...", "False"),
+                         ("Play ALL from this!", "True")])
         result = ch.run()
         return result

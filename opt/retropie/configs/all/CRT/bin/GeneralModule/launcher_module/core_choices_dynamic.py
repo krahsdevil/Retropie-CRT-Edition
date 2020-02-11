@@ -103,7 +103,7 @@ class choices(object):
     m_oTable = None
 
     def __init__(self, p_dChoices = DEFAULT_CFG):
-        self.dCFG = p_dChoices
+        self.dCFG = p_dChoices.copy()
         self.m_sSkinPath = os.path.join(SKINSELECTOR_PATH, self.dCFG['style'])
         pygame.mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
@@ -257,6 +257,7 @@ class choices(object):
         self.m_bShowCursor = p_bShowCursor
         self._update_screen()
         pygame.time.delay(p_iTimeOut)
+        self._clean_on_finish()
 
     def run(self):
         #if self.oJoyHandler.get_num() < 1:
@@ -265,6 +266,7 @@ class choices(object):
         #    return self._choice_select()
         self._update_screen()
         result = self.loop()
+        self._clean_on_finish()
         return result
 
     def loop(self):
@@ -328,6 +330,9 @@ class choices(object):
         if self.m_bShowCursor:
             self.m_oScreen.blit(self.c, (self.m_oTable.position.x,y))
         pygame.display.flip()
+        
+    def _clean_on_finish(self):
+        pygame.quit()
 
 
 class Table(object):

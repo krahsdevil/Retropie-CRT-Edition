@@ -234,7 +234,7 @@ def quit_module(RebootSys):
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
             os.system(commandline)
-            sys.exit()
+            time.sleep(1)
     sys.exit()
 
 #fullscreen.blit(Frame, (119,80))

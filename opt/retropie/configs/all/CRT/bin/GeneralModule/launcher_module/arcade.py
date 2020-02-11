@@ -253,8 +253,6 @@ class arcade(emulator):
         ch = choices()
         if m_sTitle:
             ch.set_title(m_sTitle)
-        ch.load_choices([
-                (m_sMessage, "OK"),
-            ])
+        ch.load_choices([(m_sMessage, "OK")])
         ch.show(3000)
         ch.cleanup()

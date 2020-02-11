@@ -92,16 +92,16 @@ class amiga(emulator):
         modify_line(AMIBERRY_HOSTPREFS_FILE, "ASPECT_RATIO_FIX=", "ASPECT_RATIO_FIX=FALSE")
         
     def amiberry_config_generator(self):
-        self.amiberry_show_info("Loading AMIBERRY WHDLoad Database...")
+        self.show_info("Loading AMIBERRY WHDLoad Database...")
         logging.info("preparing amiberry configuration")
         if self.amiberry_database_search():
             if self.amiberry_stretch_selector():
                 self.m_sAmigaResolution = "amiga_amiberry_" + self.m_nAmiberryVertRes
         else:
             if self.m_bAmiberriWHDLoadDBGameFound == False:
-                self.amiberry_show_info("Game not found in WHDLoad Database!", "AMIBERRY INFORMATION")
+                self.show_info("Game not found in WHDLoad Database!", "AMIBERRY INFORMATION")
             else:
-                self.amiberry_show_info("Applying default vertical resolution!", "AMIBERRY INFORMATION")
+                self.show_info("Applying default vertical resolution!", "AMIBERRY INFORMATION")
 
     def amiberry_database_search(self):
         """
@@ -148,13 +148,11 @@ class amiga(emulator):
             return True
         return False
         
-    def amiberry_show_info(self, m_sMessage, m_sTitle = None):
+    def show_info(self, m_sMessage, m_sTitle = None):
         ch = choices()
         if m_sTitle:
             ch.set_title(m_sTitle)
-        ch.load_choices([
-                (m_sMessage, "OK"),
-            ])
+        ch.load_choices([(m_sMessage, "OK")])
         ch.show(3000)
         ch.cleanup()
         

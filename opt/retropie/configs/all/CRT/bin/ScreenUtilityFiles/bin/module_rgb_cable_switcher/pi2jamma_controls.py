@@ -206,7 +206,6 @@ class CTRLSPi2Jamma(object):
 
             if p_Return[0] == False:
                 add_line(RETROARCHCFG_FILE, p_sCFGLine)
-                self.m_bChange = True
             else:
                 if not p_Return[1] and not p_bEnable:
                     p_bChange = True
@@ -216,7 +215,6 @@ class CTRLSPi2Jamma(object):
                     p_bChange = True
                 # edit line if needed
                 if p_bChange:
-                    self.m_bChange = True
                     modify_line(RETROARCHCFG_FILE, 
                                       key['line'] + ' ', p_sCFGLine)
     
@@ -243,14 +241,12 @@ class CTRLSPi2Jamma(object):
 
             if p_Return[0] == False:
                 add_line(RETROARCHCFG_FILE, p_sCFGLine)
-                self.m_bChange = True
             else:
                 if p_Return[1] and p_bEnable:
                     p_bChange = True
                 if p_Return[2] != p_sValue.strip('"'):
                         p_bChange = True
                 if p_bChange:
-                    self.m_bChange = True
                     modify_line(RETROARCHCFG_FILE, 
                                       key['line'] + ' ', p_sCFGLine)
 
@@ -281,7 +277,6 @@ class CTRLSPi2Jamma(object):
 
             if p_Return[0] == False:
                 add_line(ADVMAMECFG_FILE, p_sCFGLine)
-                self.m_bChange = True
             else:
                 if p_Return[1] and p_bEnable:
                     p_bChange = True
@@ -293,7 +288,6 @@ class CTRLSPi2Jamma(object):
                             # don't change if custom kbd/joy found
                             p_bChange = True if p_Return[2] == key['dis'] else False
                 if p_bChange:
-                    self.m_bChange = True
                     modify_line(ADVMAMECFG_FILE, 
                                       key['line'] + ' ', p_sCFGLine)
    
@@ -421,7 +415,6 @@ class CTRLSPi2Jamma(object):
             root[-1].tail = "\n  "      # Edit the previous element's tail
         root.append(p_sNewDevice)       # Add the element to the tree.
         tree.write(ESCTRLS_FILE, encoding='UTF-8')
-        self.m_bChange = True
 
     def _ini_get(self, p_sFile, p_sFindMask):
         """

@@ -81,7 +81,7 @@ class amiga(amiga):
         Else, follow standar procedure
         """
         if "+Start Amiberry" in self.m_sGameName:
-            self.amiberry_show_info("Launching AMIBERRY Configurator!")
+            self.show_info("Launching AMIBERRY Configurator!")
             commandline = "%s bash \"%s\"" % (self.m_sSleeper, self.m_sFilePath)
             self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
             logging.info("Subprocess running: %s", commandline)

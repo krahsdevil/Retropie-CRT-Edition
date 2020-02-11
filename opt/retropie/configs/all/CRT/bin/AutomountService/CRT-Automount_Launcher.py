@@ -24,7 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys, traceback
-import commands
+import commands, time
 import logging
 
 CRT_PATH = "/opt/retropie/configs/all/CRT"
@@ -116,6 +116,7 @@ class automount(object):
     def _automount_act(self, p_sOption):
         if p_sOption == "start":
             self._install_service()
+            time.sleep(1)
         elif p_sOption == "stop":
             self._remove_service()
         elif p_sOption == "eject":
@@ -147,7 +148,7 @@ class automount(object):
             self._restart_ES()
 
     def eject_usb(self):
-        self._show_info('EJECTING, EMULATIONSTATION WILL RESTART...')
+        self._show_info('EJECTING, EMULATIONSTATION WILL RESTART NOW')
         os.system('sudo umount %s > /dev/null 2>&1'%self.m_sMountedPath[0])
         while not os.path.exists(TRG_UMNT_FILE):
             pass
@@ -156,12 +157,13 @@ class automount(object):
         """ Restart ES if it's running """
         sOutput = commands.getoutput('ps -A')
         if 'emulationstatio' in sOutput:
-            self._show_info('STOPPING, EMULATIONSTATION WILL RESTART...')
+            self._show_info('STOPPING, EMULATIONSTATION WILL RESTART NOW')
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
             os.system(commandline)
             os.system('clear')
+            time.sleep(1)
        
     def _show_info(self, p_sMessage, p_iTime = 2000):
         ch = choices()

@@ -74,7 +74,7 @@ def splash_info(SplashImagePath):
     try:
         fullscreen = pygame.display.set_mode([x_screen, y_screen], PYGAME_FLAGS)
         fullscreen.fill(black)
-        logging.info("black screen %s x %s applied"%(x_screen, y_screen))
+        logging.info("black screen %s x %s applied" % (x_screen, y_screen))
     except:
         pygame.quit()
         raise
