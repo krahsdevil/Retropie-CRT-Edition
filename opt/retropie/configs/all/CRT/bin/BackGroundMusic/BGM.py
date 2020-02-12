@@ -290,13 +290,12 @@ class BGM(object):
                 logging.info("INFO: ES is not running, stopping music")
                 self.music_stop(True)
                 self._wait_process("emulationstatio", 'start', 3)
-            self.music_start()
             if self._check_process(self.m_dEmulatorsName):
                 logging.info("INFO: emulator - omxplayer found!")
                 self.music_stop()
                 self._wait_process(self.m_dEmulatorsName, 'stop')
-            else:
-                time.sleep(1)
+            self.music_start()
+            time.sleep(1)
 
     def cleanup(self):
         os.system('clear')
