@@ -324,15 +324,16 @@ class CTRLSPi2Jamma(object):
             p_lClean = []
             for device in root:
                 if device.attrib['type'].lower() == "keyboard":
-                    if 'class' in device.attrib:
-                        if device.attrib['class'].lower() == "pi2jamma":
-                            p_lP2JDev.append(device)
-                        elif device.attrib['class'].lower() == "custom":
-                            p_lCtmDev.append(device)
+                    if device.attrib['deviceGUID'] == 'disabled':
+                        p_lBckDev.append(device)
                     else:
-                        p_lCtmDev.append(device)
-                elif device.attrib['type'].lower() == "backup":
-                    p_lBckDev.append(device)
+                        if 'class' in device.attrib:
+                            if device.attrib['class'].lower() == "pi2jamma":
+                                p_lP2JDev.append(device)
+                            elif device.attrib['class'].lower() == "custom":
+                                p_lCtmDev.append(device)
+                        else:
+                            p_lCtmDev.append(device)
 
             # always clean pi2jamma config even if already exist
             # will be applied again at the end if p_bEnable = True
@@ -348,33 +349,35 @@ class CTRLSPi2Jamma(object):
                 elif len(p_lCtmDev) == 1:
                     for device in p_lBckDev:
                         root.remove(device)
-                    p_lCtmDev[0].attrib['type'] = 'backup'
                     p_lCtmDev[0].attrib['class'] = 'custom'
+                    p_lCtmDev[0].attrib['deviceGUID'] = 'disabled'
+                    p_lCtmDev[0].attrib['deviceName'] = 'Keyboard'
+                    p_lCtmDev[0].attrib['type'] = 'keyboard'
                     p_bXMLSave = True
             else:
-                if len(p_lCtmDev) > 1:
-                    for device in p_lCtmDev:
-                        root.remove(device)
-                        p_bXMLSave = True
-                elif len(p_lCtmDev) == 1:
+                if len(p_lBckDev) > 1:
                     for device in p_lBckDev:
                         root.remove(device)
                         p_bXMLSave = True
-                else:
-                    if len(p_lBckDev) == 1:
-                        p_lBckDev[0].attrib['type'] = 'keyboard'
-                        p_bXMLSave = True
-                    else:
-                        for device in p_lBckDev:
-                            root.remove(device)
-                            p_bXMLSave = True
+                    for device in p_lCtmDev:
+                        root.remove(device)
+                        p_bXMLSave = True                    
+                elif len(p_lBckDev) == 1:
+                    for device in p_lCtmDev:
+                        root.remove(device)
+                    p_lBckDev[0].attrib['class'] = 'custom'
+                    p_lBckDev[0].attrib['deviceGUID'] = '-1'
+                    p_lBckDev[0].attrib['deviceName'] = 'Keyboard'
+                    p_lBckDev[0].attrib['type'] = 'keyboard'
+                    p_bXMLSave = True
 
             # save 'es_input.cfg' only if any change happens
             if p_bXMLSave:
                 tree.write(ESCTRLS_FILE, encoding='UTF-8')
-                # once xml is reorganized, create clean pi2jamma config
-                if p_bEnable:
-                    self._inputs_emulationstation_ctrls_create(self.m_lESP2JInputs)
+
+            # once xml is reorganized, create clean pi2jamma config
+            if p_bEnable:
+                self._inputs_emulationstation_ctrls_create(self.m_lESP2JInputs)
                 self.m_bChange = True
 
     def _emulationstation_create_inputs_file(self):
