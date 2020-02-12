@@ -288,7 +288,7 @@ def quit_manager():
             show_info("EMULATIONSTATION WILL RESTART NOW")
             iExitCode = 1
         os.system(commandline)
-        time.sleep(1)
+    time.sleep(1)
     sys.exit(iExitCode)
 
 def launch_application(sCommandline, bShell = False):
@@ -412,11 +412,36 @@ def draw_menu():
     # draw title and version
     title = PGoFont.render("Configuration Utility", 1, BLUELIGHT)
     PGoScreen.blit(title, (32, y_margin + 8))
-    text_print("v3.1", x_screen - 62, y_margin + 8, BLUEUNS, False)
+    text_print("v3.5", x_screen - 62, y_margin + 8, BLUEUNS, False)
 
     # draw options list frame
     pygame.draw.rect(PGoScreen, BLUELIGHT, (32, y_margin + 24,
                                              x_screen - 62, Interline * 9), 1)
+
+    # clear any previous warning top red message
+    text_print('SYSTEM NEEDS TO SHUTDOWN NOW', 0,
+               y_margin - 13, BLUELIGHT, True)
+    text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
+               y_margin - 13, BLUELIGHT, True)
+    text_print('FIX WILL APPLY ON BACK/CENTERING', 0,
+               y_margin - 13, BLUELIGHT, True)
+
+    # draw if apply warning message on top
+    bESReload = False
+    bChangeRes = False
+    bChangeMode = False
+
+    if opt[0][2] != opt[0][3]:
+        bChangeRes = True
+        bESReload = True
+        text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
+                   y_margin - 13, RED, True)
+
+    if opt[1][2] != opt[1][3]:
+        bChangeMode = True
+        bESReload = True
+        text_print('FIX WILL APPLY ON BACK/CENTERING', 0,
+                    y_margin - 13, RED, True)
 
     # draw whole list of options in base color
     for i in range(0,9):
@@ -453,31 +478,6 @@ def draw_menu():
                 PGoScreen.blit(esres, (data_x-(len(str(opt[i][2])) * 8),
                                         (30 + y_margin + LineMov) \
                                         + i * Interline))
-
-    # clear any previous warning top red message
-    text_print('SYSTEM NEEDS TO SHUTDOWN NOW', 0,
-               y_margin - 13, BLUELIGHT, True)
-    text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
-               y_margin - 13, BLUELIGHT, True)
-    text_print('FIX WILL APPLY ON BACK/CENTERING', 0,
-               y_margin - 13, BLUELIGHT, True)
-
-    # draw if apply warning message on top
-    bESReload = False
-    bChangeRes = False
-    bChangeMode = False
-
-    if opt[0][2] != opt[0][3]:
-        bChangeRes = True
-        bESReload = True
-        text_print('RESOLUTION WILL APPLY ON BACK/CENTERING', 0,
-                   y_margin - 13, RED, True)
-
-    if opt[1][2] != opt[1][3]:
-        bChangeMode = True
-        bESReload = True
-        text_print('FIX WILL APPLY ON BACK/CENTERING', 0,
-                    y_margin - 13, RED, True)
 
     # draw current selection frame color
     pygame.draw.rect(PGoScreen, BLUELIGHT,

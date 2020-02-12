@@ -52,6 +52,7 @@ data_x = 0
 list_x = 0
 x = 0
 y = 0
+iCurOption = 0
 
 SystemRes = ""
 ES_Res_50hz = 'system50'
@@ -62,7 +63,7 @@ HorTheme = "270P-CRT-SNES-MINI"
 ServiceRunning = False
 ServiceExist = False
 ES_Restart = False
-RotateFrontEnd = False
+bRotateES = False
 
 # pygame configurations
 PGoJoyHandler = None
@@ -82,7 +83,7 @@ opt = [["1.GAMES ROTATION" , "Not PixelPerfect but playable on AdvMAME" , 0],
       ["5.VIDEO CONFIG>" , "Advanced Video Configuration"],
       ['6.BACKGROUND MUSIC' , 'Play your music with emulationstation', 0],
       ['7.INTEGER SCALE' , 'ONLY for LibRetro Arcade and NEOGEO Games', 0],
-      ['none' , 'none'],
+      ['8.SCUMMVM ARC' , 'Aspect Ratio Correction: Stretch but NO PixelPerfect', 0],
       ["<EXIT" , "Save and Exit"]]
       
 DEFAULT_CONFIG = "\"default system50\n"
@@ -106,6 +107,7 @@ DEFAULT_CONFIG += "frontend_rotation 0\n"
 DEFAULT_CONFIG += "handheld_bezel 0\n"
 DEFAULT_CONFIG += "freq_selector 0\n"
 DEFAULT_CONFIG += "integer_scale 0\n"
+DEFAULT_CONFIG += "scummvm_arc 0\n"
 DEFAULT_CONFIG += "240p_theme_vertical V270P-CRT-BASE\n"
 DEFAULT_CONFIG += "270p_theme_vertical V270P-CRT-BASE\n"
 DEFAULT_CONFIG += "240p_theme_horizontal 240P-CRT-BUBBLEGUM\n"
@@ -192,10 +194,10 @@ def text_print(txt, xcoord, ycoord, color, center):
         PGoScreen.blit(PGoFont.render(txt, 1, color), (xcoord, ycoord))
 
 def draw_arrow_left(add_space=0):
-    PGoScreen.blit((PGoFont.render('<<', 1, (YELLOW))), (data_x-(len(str(opt[option][2]))*8)-18-(8*add_space), (30+y_margin+LineMov)+y*Interline))
+    PGoScreen.blit((PGoFont.render('<<', 1, (YELLOW))), (data_x-(len(str(opt[iCurOption][2]))*8)-18-(8*add_space), (30+y_margin+LineMov) + iCurOption * Interline))
 
 def draw_arrow_right():
-    PGoScreen.blit((PGoFont.render('>>', 1, (YELLOW))), (data_x+2, (30+y_margin+LineMov)+y*Interline))
+    PGoScreen.blit((PGoFont.render('>>', 1, (YELLOW))), (data_x+2, (30+y_margin+LineMov)+ iCurOption *Interline))
 
 def save_configuration():
     modify_line(CFG_VIDEOUTILITY_FILE,'game_rotation','game_rotation %s'%opt[0][2])
@@ -203,6 +205,7 @@ def save_configuration():
     modify_line(CFG_VIDEOUTILITY_FILE,'handheld_bezel','handheld_bezel %s'%opt[2][2])
     modify_line(CFG_VIDEOUTILITY_FILE,'freq_selector','freq_selector %s'%opt[3][2])
     modify_line(CFG_VIDEOUTILITY_FILE,'integer_scale','integer_scale %s'%opt[6][2])
+    modify_line(CFG_VIDEOUTILITY_FILE,'scummvm_arc','scummvm_arc %s'%opt[7][2])
 
 def background_music_check():
     global opt
@@ -216,14 +219,14 @@ def background_music_check():
         ServiceExist = True
         if 'running' in CheckService:
             ServiceRunning = True
-            opt[5][2] = "YES"
+            opt[5][2] = 1
         else:
             ServiceRunning = False
-            opt[5][2] = "OFF"
+            opt[5][2] = 0
     else:
         ServiceExist = False
         ServiceRunning = False
-        opt[5][2] = "OFF"
+        opt[5][2] = 0
 
 def background_music_install():
     global ServiceRunning
@@ -243,7 +246,7 @@ def background_music_remove():
 
 def rotate_frontend():
     show_info ("WAIT, PREPARING ROTATION...")
-    if RotateFrontEnd == True:
+    if bRotateES == True:
         os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1 >> /dev/null 2>&1')
         os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3 >> /dev/null 2>&1')
         os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko >> /dev/null 2>&1')
@@ -300,7 +303,7 @@ def rotate_frontend():
 def quit_utility():
     pygame_unload()
     save_configuration()
-    if RotateFrontEnd == True:
+    if bRotateES == True:
         rotate_frontend()
         # Restart ES if it is running
         output = commands.getoutput('ps -A')
@@ -310,7 +313,7 @@ def quit_utility():
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
             show_info ("EMULATIONSTATION WILL RESTART NOW")
             os.system(commandline)
-            time.sleep(1)
+    time.sleep(1)
     sys.exit(0)
 
 def launch_application(sCommandline, bShell = False):
@@ -350,6 +353,8 @@ def get_config():
                 opt[3][2] = int(line[1])
             elif line[0] == 'integer_scale':
                 opt[6][2] = int(line[1])
+            elif line[0] == 'scummvm_arc':
+                opt[7][2] = int(line[1])
             elif line[0] == '240p_theme_horizontal':
                 HorTheme240p = line[1]
             elif line[0] == '270p_theme_horizontal':
@@ -409,192 +414,234 @@ def get_config():
     background_music_check()
 
 def draw_menu():
-    global option
+    global iCurOption
     global opt
-    global RotateFrontEnd
+    global bRotateES
     
-    PGoScreen.fill((BLUELIGHT)) 
-    
-    # SHOW BACKGROUND
-    pygame.draw.rect(PGoScreen, (BLUEDARK), (20,y_margin,x_screen-40,(20+(Interline*9)+3+16+10)), 0)
+    # draw background color and main frame
+    PGoScreen.fill(BLUELIGHT) 
+    pygame.draw.rect(PGoScreen, BLUEDARK,
+                    (20,y_margin,x_screen-40,(20+(Interline*9)+3+16+10)), 0)
 
-    #title and credits
-    title = PGoFont.render("Configuration Utility", 1, (BLUELIGHT))
+    # draw title and version
+    title = PGoFont.render("Configuration Utility", 1, BLUELIGHT)
     PGoScreen.blit(title, (32, y_margin+8))
-    text_print("v3.1", x_screen-62, y_margin+8, BLUEUNS, False)
+    text_print("v3.5", x_screen-62, y_margin+8, BLUEUNS, False)
 
-    #last options
-    #text_print('last rotation = ' + str(opt[4][3]), 0, 0, RED)
-    #text_print('last ES resolution = ' + str(opt[6][3] ), 0, 8, RED)    
+    # draw options list frame
+    pygame.draw.rect(PGoScreen, BLUELIGHT, (32, y_margin + 24,
+                                              x_screen-62, Interline * 9), 1)
+
+    # clear any previous warning top red message
+    text_print('EMULATIONSTATION NEEDS TO RESTART', 0,
+                y_margin-13, BLUELIGHT, True)
+
+    # draw if apply warning message on top 
+    bRotateES = False
     
-    #list square
-    pygame.draw.rect(PGoScreen, (BLUELIGHT), (32,y_margin+24,x_screen-62,Interline*9), 1)
-
-    #list
-    for i in range(0,9):
-        option = y
-        if (i <= 6 or i == 8) and RotateFrontEnd == False:
-            opt[8][0] = '<EXIT'
-            opt[8][1] = 'Save and Exit'
-            PGoScreen.blit((PGoFont.render(opt[i][0], 1, (BLUELIGHT))), (list_x, (30+y_margin+LineMov)+i*Interline))
-        elif (i <= 6 or i == 8) and RotateFrontEnd == True:
-            opt[8][0] = '<RESTART'
-            opt[8][1] = 'Restart FrontEnd for TATE Mode'
-            if i == 1 or i == 8:
-                PGoScreen.blit((PGoFont.render(opt[i][0], 1, (BLUELIGHT))), (list_x, (30+y_margin+LineMov)+i*Interline))
-            else:
-                PGoScreen.blit((PGoFont.render(opt[i][0], 1, (BLUEUNS))), (list_x, (30+y_margin+LineMov)+i*Interline))
-    
-
-    # data values
-    
-    for i in range(0,9):
-        option = y
-        if RotateFrontEnd == False:
-            if i == 0:
-                if opt[0][2] == 0:
-                    select = PGoFont.render("OFF", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                else:
-                    select = PGoFont.render(str(opt[i][2]), 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 1:
-                if opt[1][2] == 0:
-                    select = PGoFont.render("OFF", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 2:
-                if opt[2][2] == 0:
-                    select = PGoFont.render("OFF", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[2][2] == 1:
-                    select = PGoFont.render("YES", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 3:
-                if opt[3][2] == 0:
-                    select = PGoFont.render("MAN", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[3][2] == 100:
-                    select = PGoFont.render("AUT", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+i*Interline))
-                else:
-                    select = PGoFont.render(str(opt[3][2]), 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 6:
-                if opt[6][2] == 0:
-                    select = PGoFont.render("OFF", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[6][2] == 1:
-                    select = PGoFont.render("YES", 1, (BLUELIGHT))
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i < 3 or i == 5:
-                strpor = PGoFont.render(str(opt[i][2]), 1, (BLUELIGHT))
-                PGoScreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-
-        else:
-            if i == 0:
-                if opt[0][2] == 0:
-                    select = PGoFont.render("OFF", 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 1:
-                strpor = PGoFont.render(str(opt[i][2]), 1, (BLUELIGHT))
-                PGoScreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 2:
-                if opt[2][2] == 0:
-                    select = PGoFont.render("OFF", 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[2][2] == 1:
-                    select = PGoFont.render("YES", 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 3:
-                if opt[3][2] == 0:
-                    select = PGoFont.render("MAN", 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[3][2] == 100:
-                    select = PGoFont.render("AUT", 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+i*Interline))
-                else:
-                    select = PGoFont.render(str(opt[3][2]), 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 6:
-                if opt[6][2] == 0:
-                    select = PGoFont.render("OFF", 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[6][2] == 1:
-                    select = PGoFont.render("YES", 1, (BLUEUNS))
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i < 3 or i == 5:
-                strpor = PGoFont.render(str(opt[i][2]), 1, (BLUEUNS))
-                PGoScreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-
-    # message if reboot is needed and deactivated options in red
-    text_print('EMULATIONSTATION NEEDS TO RESTART', 0, y_margin-13, BLUELIGHT, True)
-    RotateFrontEnd = False
     if opt[1][2] != opt[1][3]:
-        RotateFrontEnd = True
+        bRotateES = True
         text_print('EMULATIONSTATION NEEDS TO RESTART', 0, y_margin-13, RED, True)
         if opt[1][2] != 0:
             opt[0][2] = 0
 
-    # list selection and square and arrows
-    pygame.draw.rect(PGoScreen, (BLUELIGHT), (32,(24+y_margin)+y*Interline,x_screen-62,Interline))
-    PGoScreen.blit((PGoFont.render(opt[option][0], 1, (BLUEDARK))), (list_x, (30+y_margin+LineMov)+y*Interline))
+    # draw whole list of options in base color
+    for i in range(0,9):
+        if bRotateES == False:
+            opt[8][0] = '<EXIT'
+            opt[8][1] = 'Save and Exit'
+            PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUELIGHT)), (list_x, (30+y_margin+LineMov)+i*Interline))
+        elif bRotateES == True:
+            opt[8][0] = '<RESTART'
+            opt[8][1] = 'Restart FrontEnd for TATE Mode'
+            if i == 1 or i == 8:
+                PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUELIGHT)), (list_x, (30+y_margin+LineMov)+i*Interline))
+            else:
+                PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUEUNS)), (list_x, (30+y_margin+LineMov)+i*Interline))
 
-    # data redraw
-    if y < 4 or y == 5 or y == 6:
-        if opt[0][2] == 0 and y == 0:
-            listrndr = PGoFont.render("OFF", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
-        elif opt[1][2] == 0 and y == 1:
-            listrndr = PGoFont.render("OFF", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
-        elif opt[2][2] == 0 and y == 2:
-            listrndr = PGoFont.render("OFF", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
-        elif opt[2][2] == 1 and y == 2:
-            listrndr = PGoFont.render("YES", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+y*Interline))
-        elif opt[3][2] == 0 and y == 3:
-            listrndr = PGoFont.render("MAN", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+y*Interline))
-        elif opt[3][2] == 100 and y == 3:
-            listrndr = PGoFont.render("AUT", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+y*Interline))
-        elif opt[6][2] == 0 and y == 6:
-            listrndr = PGoFont.render("OFF", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+y*Interline))
-        elif opt[6][2] == 1 and y == 6:
-            listrndr = PGoFont.render("YES", 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+y*Interline))
+    # draw all selectables values in base color    
+    for i in range(0,9):
+        if not bRotateES:
+            if i == 0:
+                if opt[0][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                else:
+                    select = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 1:
+                if opt[1][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 2:
+                if opt[2][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[2][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 3:
+                if opt[3][2] == 0:
+                    select = PGoFont.render("MAN", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[3][2] == 100:
+                    select = PGoFont.render("AUT", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+i*Interline))
+                else:
+                    select = PGoFont.render(str(opt[3][2]), 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 5:
+                if opt[5][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[5][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 6:
+                if opt[6][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[6][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 7:
+                if opt[7][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[7][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[7][2] == 2:
+                    select = PGoFont.render("MAN", 1, BLUELIGHT)
+                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
+
         else:
-            listrndr = PGoFont.render(str(opt[option][2]), 1, (BLUEDARK))
-            PGoScreen.blit(listrndr, (data_x-(len(str(opt[option][2]))*8), (30+y_margin+LineMov)+y*Interline))
+            if i == 0:
+                if opt[0][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 1:
+                strpor = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
+                PGoScreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 2:
+                if opt[2][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[2][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 3:
+                if opt[3][2] == 0:
+                    select = PGoFont.render("MAN", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[3][2] == 100:
+                    select = PGoFont.render("AUT", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+i*Interline))
+                else:
+                    select = PGoFont.render(str(opt[3][2]), 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 5:
+                if opt[5][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[5][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 6:
+                if opt[6][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[6][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+            elif i == 7:
+                if opt[7][2] == 0:
+                    select = PGoFont.render("OFF", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[7][2] == 1:
+                    select = PGoFont.render("YES", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
+                elif opt[7][2] == 2:
+                    select = PGoFont.render("MAN", 1, BLUEUNS)
+                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
 
-    #option 1
-    if y == 0 and opt[0][2] < 0:
-        draw_arrow_right()
-    elif y == 0 and opt[0][2] == 0 and opt[1][2] == 0:
-        draw_arrow_left(2)
-    #elif y == 0 and opt[1][2] != 0:
-    #    PGoScreen.blit((PGoFont.render(opt[option][0], 1, (136,136,255))), (list_x, (30+y_margin+LineMov)+y*Interline))
+    # draw current selection frame color
+    pygame.draw.rect(PGoScreen, BLUELIGHT,
+                    (32,(24 + y_margin) + iCurOption * Interline, x_screen \
+                    - 62, Interline))
+    PGoScreen.blit((PGoFont.render(opt[iCurOption][0], 1, BLUEDARK)),
+                    (list_x, (30 + y_margin + LineMov) + iCurOption * Interline))
 
-    #option 2
-    if y == 1 and opt[1][2] < 0:
+    # draw active option in dark color
+    if iCurOption in (0, 1, 2, 3, 5, 6, 7):
+        if opt[0][2] == 0 and iCurOption == 0:
+            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[1][2] == 0 and iCurOption == 1:
+            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[2][2] == 0 and iCurOption == 2:
+            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[2][2] == 1 and iCurOption == 2:
+            listrndr = PGoFont.render("YES", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[3][2] == 0 and iCurOption == 3:
+            listrndr = PGoFont.render("MAN", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[3][2] == 100 and iCurOption == 3:
+            listrndr = PGoFont.render("AUT", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[5][2] == 0 and iCurOption == 5:
+            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[5][2] == 1 and iCurOption == 5:
+            listrndr = PGoFont.render("YES", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[6][2] == 0 and iCurOption == 6:
+            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[6][2] == 1 and iCurOption == 6:
+            listrndr = PGoFont.render("YES", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[7][2] == 0 and iCurOption == 7:
+            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[7][2] == 1 and iCurOption == 7:
+            listrndr = PGoFont.render("YES", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        elif opt[7][2] == 2 and iCurOption == 7:
+            listrndr = PGoFont.render("MAN", 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+        else:
+            listrndr = PGoFont.render(str(opt[iCurOption][2]), 1, BLUEDARK)
+            PGoScreen.blit(listrndr, (data_x-(len(str(opt[iCurOption][2]))*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+
+    # draw arrows per option
+    # arrows for option 1
+    if iCurOption == 0 and opt[0][2] < 0:
         draw_arrow_right()
-    elif y == 1 and opt[1][2] == 0:
+    elif iCurOption == 0 and opt[0][2] == 0 and opt[1][2] == 0:
+        draw_arrow_left(2)
+
+    # arrows for option 2
+    if iCurOption == 1 and opt[1][2] < 0:
+        draw_arrow_right()
+    elif iCurOption == 1 and opt[1][2] == 0:
         draw_arrow_right()
         draw_arrow_left(2)
-    elif y == 1 and opt[1][2] > 0:
+    elif iCurOption == 1 and opt[1][2] > 0:
         draw_arrow_left()
 
-    #option 3
-    if y == 2:
+    # arrows for option 3
+    if iCurOption == 2:
         if opt[2][2] == 1:
             draw_arrow_left(2)
         else:
             draw_arrow_right()
 
-    #option 4
-    if y == 3:
+    # arrows for option 4
+    if iCurOption == 3:
         if opt[3][2] == 0:
             draw_arrow_right()
         if opt[3][2] == 50:
@@ -605,26 +652,38 @@ def draw_menu():
             draw_arrow_left()
         if opt[3][2] == 100:
             draw_arrow_left()
-    #option 6
-    if y == 5:
-        if opt[5][2] == "YES":
-            draw_arrow_left()
-        elif opt[5][2] == "OFF":
+
+    # arrows for option 6
+    if iCurOption == 5:
+        if opt[5][2] == 1:
+            draw_arrow_left(2)
+        elif opt[5][2] == 0:
             draw_arrow_right()
 
-    #option 7
-    if y == 6:
+    # arrows for option 7
+    if iCurOption == 6:
         if opt[6][2] == 1:
             draw_arrow_left(2)
         elif opt[6][2] == 0:
             draw_arrow_right()
 
-    #option 8
-    if y == 7 and opt[1][2] != opt[1][3]:
-        PGoScreen.blit((PGoFont.render(opt[option][0], 1, (136, 136, 255))), (110, (30+y_margin+LineMov)+y*Interline))
+    # arrows for option 8
+    if iCurOption == 7:
+        if opt[7][2] == 0:
+            draw_arrow_right()
+        if opt[7][2] == 1:
+            draw_arrow_right()
+            draw_arrow_left(2)
+        if opt[7][2] == 2:
+            draw_arrow_right()
+            draw_arrow_left(2)
 
-    # SHOW description on bootom in yellow and case
-    info = str(opt[y][1])
+    
+    if iCurOption == 7 and opt[1][2] != opt[1][3]:
+        PGoScreen.blit((PGoFont.render(opt[iCurOption][0], 1, (136, 136, 255))), (110, (30+y_margin+LineMov)+ iCurOption *Interline))
+
+    # draw info message on bottom
+    info = str(opt[iCurOption][1])
     if x_screen <= 340:
         info = info[0:28]
         if len(info) >= 28 :
@@ -633,8 +692,10 @@ def draw_menu():
         info = info[0:44]
         if len(info) >= 44 :
             info = info + '...'
-    PGoScreen.blit((PGoFont.render(info, 1, (YELLOW))), (38, ((y_margin+23)+Interline*9)+4))
-    pygame.draw.rect(PGoScreen, (BLUELIGHT), (32,(y_margin+23)+Interline*9,x_screen-62,16), 1)
+    PGoScreen.blit((PGoFont.render(info, 1, (YELLOW))),
+                    (38, ((y_margin + 23) + Interline * 9) + 4))
+    pygame.draw.rect(PGoScreen, BLUELIGHT, 
+                    (32,(y_margin + 23) + Interline * 9,x_screen - 62, 16), 1)
     pygame.display.flip()
 
 # MAIN PROGRAM
@@ -645,71 +706,71 @@ while True:
     event = PGoJoyHandler.event_wait()
     #button
     if event & CRT_BUTTON:
-        if y == 4:
+        if iCurOption == 4:
             launch_screen_tool_manager()
-        elif y < 3:
-            opt[option][2] = 0
-        elif y == 8:
+        elif iCurOption < 3:
+            opt[iCurOption][2] = 0
+        elif iCurOption == 8:
             quit_utility()
     #right
     elif event & CRT_RIGHT:
-        if y == 0 and opt[0][2] < 0 and opt[1][2] == 0:
+        if iCurOption == 0 and opt[0][2] < 0 and opt[1][2] == 0:
             opt[0][2] += 90
-        elif y == 1 and opt[1][2] < 90:
+        elif iCurOption == 1 and opt[1][2] < 90:
             opt[1][2] += 90
             opt[0][2] = 0
-        elif y == 2 and opt[2][2] == 0:
+        elif iCurOption == 2 and opt[2][2] == 0:
             opt[2][2] = 1
-        elif y == 3 and opt[3][2] == 0:
+        elif iCurOption == 3 and opt[3][2] == 0:
             opt[3][2] = 50
-        elif y == 3 and opt[3][2] == 50:
+        elif iCurOption == 3 and opt[3][2] == 50:
             opt[3][2] = 60
-        elif y == 3 and opt[3][2] == 60:
+        elif iCurOption == 3 and opt[3][2] == 60:
             opt[3][2] = 100
-        elif y == 5 and opt[5][2] == "OFF":
+        elif iCurOption == 5 and opt[5][2] == 0:
             background_music_install()
-        elif y == 6 and opt[6][2] == 0:
+        elif iCurOption == 6 and opt[6][2] == 0:
             opt[6][2] = 1
+        elif iCurOption == 7 and opt[7][2] < 2:
+            opt[7][2] += 1
     #left
     elif event & CRT_LEFT:
-        if y == 0 and opt[0][2] > -90 and opt[1][2] == 0:
+        if iCurOption == 0 and opt[0][2] > -90 and opt[1][2] == 0:
             opt[0][2] -= 90
-        elif y == 1 and opt[1][2] > -90:
+        elif iCurOption == 1 and opt[1][2] > -90:
             opt[1][2] -= 90
             opt[0][2] = 0
-        elif y == 2 and opt[2][2] == 1:
+        elif iCurOption == 2 and opt[2][2] == 1:
             opt[2][2] = 0
-        elif y == 3 and opt[3][2] == 100:
+        elif iCurOption == 3 and opt[3][2] == 100:
             opt[3][2] = 60
-        elif y == 3 and opt[3][2] == 60:
+        elif iCurOption == 3 and opt[3][2] == 60:
             opt[3][2] = 50
-        elif y == 3 and opt[3][2] == 50:
+        elif iCurOption == 3 and opt[3][2] == 50:
             opt[3][2] = 0
-        elif y == 5 and opt[5][2] == "YES":
+        elif iCurOption == 5 and opt[5][2] == 1:
             background_music_remove()
-        elif y == 6 and opt[6][2] == 1:
+        elif iCurOption == 6 and opt[6][2] == 1:
             opt[6][2] = 0
+        elif iCurOption == 7 and opt[7][2] > 0:
+            opt[7][2] -= 1
     #up            
     elif event & CRT_UP:
-        if RotateFrontEnd == True:
-            if y == 8:
-                y = 1
+        if bRotateES == True:
+            if iCurOption == 8:
+                iCurOption = 1
         else:
-            if y == 0:
-                y = 8
-            elif y == 8:
-                y = 6
-            elif y > 0:
-                y = y - 1
+            if iCurOption == 0:
+                iCurOption = 8
+            elif iCurOption > 0:
+                iCurOption = iCurOption - 1
     #down
     elif event & CRT_DOWN:
-        if RotateFrontEnd == True:
-            if y == 1:
-                y = 8
+        if bRotateES == True:
+            if iCurOption == 1:
+                iCurOption = 8
         else:
-            if y == 6:
-                y = 8
-            elif y == 8:
-                y = 0
-            elif y < 8:
-                y = y + 1
+            if iCurOption == 8:
+                iCurOption = 0
+            elif iCurOption < 8:
+                iCurOption = iCurOption + 1
