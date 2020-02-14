@@ -26,11 +26,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, re, sys, logging, commands, glob, subprocess
-from launcher_module.utils import splash_info
 from launcher_module.core_choices_dynamic import choices
-from launcher_module.core import launcher, CFG_TIMINGS_FILE
+from launcher_module.core import launcher
 from launcher_module.core_paths import *
-from launcher_module.screen import CRT
 
 CRTASSETS_VIDEO_PATH = os.path.join(CRTASSETS_PATH, "screen_videoplayer")
 FONT_FILE = os.path.join(CRTASSETS_VIDEO_PATH, "Ubuntu_MOD_WIDE.ttf")
@@ -81,14 +79,6 @@ class videoplayer(launcher):
                      self.m_lVideoLST[self.m_nVideoPOS])
         self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
         logging.info("Subprocess running: %s" % commandline)
-
-    def screen_set(self):
-        self.m_oCRT = CRT(self.m_sSystemFreq)
-        self.m_oCRT.screen_calculated(CFG_TIMINGS_FILE)
-        try:
-            splash_info("black") # clean screen
-        except Exception as e:
-            logging.error("splash failed: %s" % e)
 
     def wait(self):
         logging.info("wait omxplayer to finish")

@@ -31,7 +31,7 @@ from launcher_module.core import RETROPIE_PATH, TMP_LAUNCHER_PATH, TMP_SLEEPER_F
 from launcher_module.emulator import emulator
 from launcher_module.file_helpers import add_line, modify_line, remove_file
 from launcher_module.core_choices_dynamic import choices
-from launcher_module.utils import something_is_bad, splash_info
+from launcher_module.utils import something_is_bad
 from launcher_module.screen import CRT
 
 DB_AMIGA = os.path.join(CRTROOT_PATH, "Resolutions/amiga_games.txt")
@@ -67,10 +67,7 @@ class amiga(emulator):
             self.m_oCRT.screen_calculated(DB_AMIGA)
         elif "lr-puae" in self.m_sBinarySelected:
             self.m_oCRT.screen_calculated(DB_AMIGA)
-        try:
-            splash_info("black") # clean screen
-        except Exception as e:
-            logging.error("splash failed: %s" % e)
+        self.m_oBlackScreen.fill()
         logging.info("clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
 

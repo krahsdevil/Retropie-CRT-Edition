@@ -59,16 +59,6 @@ class abandonware(emulator):
                 self._scummvm_change_aspect()
         self.show_info("Better with keyboard and mouse")
 
-    def screen_set(self):
-        self.m_oCRT = CRT(self.m_sSystemFreq)
-        self.m_oCRT.screen_calculated(CFG_TIMINGS_FILE)
-        try:
-            splash_info("black") # clean screen
-        except Exception as e:
-            logging.error("splash failed: %s" % e)
-        logging.info("clean: %s", TMP_SLEEPER_FILE)
-        remove_file(TMP_SLEEPER_FILE)
-
     def show_info(self, m_sMessage, m_sTitle = None):
         ch = choices()
         if m_sTitle:
@@ -110,15 +100,14 @@ class abandonware(emulator):
     def _selector_pixel_ferfect(self):
         ch = choices()
         ch.set_title("SCUMMVM ARC")
-        ch.load_choices([("ENABLE FOR FULLSCREEN", "FIT"),
-                         ("DISABLE (PIXELPERFECT)", "PIXEL")])
+        ch.load_choices([("ENABLE / VERTICAL STRETCH", "FIT"),
+                         ("DISABLE / PIXELPERFECT", "PIXEL")])
         result = ch.run()
         return result
 
     def _scummvm_change_ini(self, p_sFile, p_sKey, p_sValue,
                                  p_sSection = "[scummvm]"):
         p_sINI = ini_get(p_sFile, p_sKey)
-        logging.info("INFO: VALOOOR %s", p_sValue)
         if p_sINI:
             logging.info("INFO: Changing {%s} to '%s'" % (p_sKey, p_sValue))
             p_sStr = p_sKey + "=" + p_sValue

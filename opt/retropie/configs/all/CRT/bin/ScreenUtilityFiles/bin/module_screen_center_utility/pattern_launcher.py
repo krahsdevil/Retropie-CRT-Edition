@@ -38,7 +38,6 @@ sys.path.append(RESOURCES_PATH)
 from launcher_module.core import CFG_VIDEOUTILITY_FILE 
 from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.screen import CRT
-from launcher_module.utils import splash_info
 from launcher_module.file_helpers import *
 from pattern_generator import *
 

@@ -31,7 +31,7 @@ import subprocess, commands
 import logging
 
 from .screen import CRT
-from .utils import something_is_bad, splash_info
+from .utils import something_is_bad, HideScreen
 from .core_paths import *
 from .file_helpers import *
 
@@ -59,6 +59,7 @@ class launcher(object):
     m_lBinaries = []
     m_lProcesses = []
 
+    m_oBlackScreen = None
     m_oRunProcess = None
     m_oCRT = None
 
@@ -69,6 +70,7 @@ class launcher(object):
         self.m_sFileName = os.path.basename(self.m_sFilePath)
         self.m_sFileDir = os.path.dirname(self.m_sFilePath)
         self.m_sGameName = os.path.splitext(self.m_sFileName)[0]
+        self.m_oBlackScreen = HideScreen()
 
         self.__temp()
         self.__clean()
@@ -212,10 +214,7 @@ class launcher(object):
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
         self.m_oCRT.screen_calculated(CFG_TIMINGS_FILE)
-        try:
-            splash_info("black") # clean screen
-        except Exception as e:
-            logging.error("splash failed: %s" % e)
+        self.m_oBlackScreen.fill()
         logging.info("clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
 
@@ -233,6 +232,7 @@ class launcher(object):
 
     def cleanup(self):
         self.m_oCRT.screen_restore()
+        self.m_oBlackScreen.fill()
         logging.info("ES mode recover")
         os.system('clear')
         self.__clean()
