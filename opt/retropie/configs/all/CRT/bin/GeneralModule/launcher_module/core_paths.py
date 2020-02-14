@@ -35,6 +35,7 @@ RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcomma
 
 # retroarch
 RETROARCHCFG_FILE = os.path.join(RETROPIECFG_PATH, "all/retroarch.cfg")
+RETROARCHBIN_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
 
 # emulationstation path setup
 ESCFG_PATH = os.path.join(RETROPIECFG_PATH, "all/emulationstation")
@@ -50,6 +51,7 @@ CRTCONTENT_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles")
 
 # CRT configurations
 CRTCONFIG_PATH = os.path.join(CRTCONTENT_PATH, "config_files")
+CFG_RAHASHDB = os.path.join(CRTCONFIG_PATH, "retroarchdb.txt")
 CFG_FIXMODES_FILE = os.path.join(CRTCONFIG_PATH, "modes.cfg")
 CFG_VIDEOUTILITY_FILE = os.path.join(CRTCONFIG_PATH, "utility.cfg")
 CFG_NETPLAY_FILE = os.path.join(CRTCONFIG_PATH, "netplay.cfg")

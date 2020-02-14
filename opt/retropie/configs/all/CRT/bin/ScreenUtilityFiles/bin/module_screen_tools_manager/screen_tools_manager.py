@@ -42,12 +42,10 @@ PATTERN_LAUNCHER_FILE = os.path.join(CRTMODULES_PATH,
                         "module_screen_center_utility/pattern_launcher.py")
 
 TEST_SUITE_FILE = os.path.join(CRTADDONS_PATH, "addon_240p_suite/240pSuite.bin")
-TIMMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 RA_MD_CFG_FILE1 = os.path.join(RETROPIECFG_PATH, "megadrive/retroarch.cfg")
 RA_MD_CFG_FILE2 = os.path.join(CRTROOT_PATH, "Retroarch/configs/megadrive.cfg")
 RA_MD_CORE_FILE = os.path.join(CRTADDONS_PATH,
                   "addon_240p_suite/genesis_plus_gx_libretro.so")
-RETROARCH_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
 
 # menu centering and screen adjusters
 x_screen = 0
@@ -297,9 +295,6 @@ def launch_application(sCommandline, bShell = False):
     save_configuration()
     oRunProcess = subprocess.Popen(sCommandline, shell=bShell)
     iExitCode = oRunProcess.wait()
-    if iExitCode:
-        time.sleep(1)
-        sys.exit()
     if oCRT:
         oCRT.screen_restore()
         oCRT = None
@@ -318,7 +313,7 @@ def launch_test_suite():
     ra_check_version(RA_MD_CFG_FILE2)
     oCRT = CRT("megadrive")
     oCRT.screen_calculated(CFG_TIMINGS_FILE)
-    commandline = "%s -L %s " % (RETROARCH_FILE, RA_MD_CORE_FILE)
+    commandline = "%s -L %s " % (RETROARCHBIN_FILE, RA_MD_CORE_FILE)
     commandline += "--config %s " % RA_MD_CFG_FILE1
     commandline += "--appendconfig %s " % RA_MD_CFG_FILE2
     commandline += "\"%s\" " % TEST_SUITE_FILE
