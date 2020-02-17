@@ -1,1 +1,1 @@
-dwc_otg.lpm_enable=0 console=serial0,115200 console=tty3 root=PARTUUID=f2d3cb4f-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet loglevel=3 consoleblank=0 plymouth.enable=0 logo.nologo quiet init=/usr/lib/raspi-config/init_resize.sh
+dwc_otg.lpm_enable=0 console=serial0,115200 console=tty3 root=PARTUUID=f2d3cb4f-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet loglevel=3 consoleblank=0 plymouth.enable=0 logo.nologo usbhid.quirks=0x16c0:0x05e1:0x040 quiet init=/usr/lib/raspi-config/init_resize.sh
