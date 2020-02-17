@@ -36,7 +36,7 @@ from launcher_module.file_helpers import *
 
 ADVMAMECFG_FILE = os.path.join(RETROPIECFG_PATH, "mame-advmame/advmame.rc")
 
-class CTRLSPi2Jamma(object):
+class CTRLSMgmt(object):
     """
     This class for keyboard configuration for PI2JAMMA is based on MAME 
     KEYBOARD defaults. Whether pikeyd165.conf or rest of software (retroarch,
@@ -163,13 +163,13 @@ class CTRLSPi2Jamma(object):
 
     m_bChange = False
 
-    def enable_controls(self):
+    def pi2jamma_enable_controls(self):
         self.inputs_retroarch_pi2jamma_enable()
         self.inputs_emulationstation_pi2jamma_enable()
         self.inputs_advmame_pi2jamma_enable()
         return self.m_bChange
 
-    def disable_controls(self):
+    def pi2jamma_disable_controls(self):
         self.inputs_retroarch_pi2jamma_disable()
         self.inputs_emulationstation_pi2jamma_disable()
         self.inputs_advmame_pi2jamma_disable()
@@ -452,6 +452,28 @@ class CTRLSPi2Jamma(object):
         if not p_lCheck[0]:
             logging.info('WARNING: %s NOT found' % p_sFindMask)
         return p_lCheck
+
+    def xinmo_usb_driver_enable(self):
+        sXinMoCfg = "usbhid.quirks=0x16c0:0x05e1:0x040"
+        sTempFile = generate_random_temp_filename(CMDLINE_FILE)
+        os.system('cp %s %s' %(CMDLINE_FILE, sTempFile))
+        bFound = False
+        bReboot = False
+        with open(sTempFile, "r+") as f:
+            new_file = f.read().replace('\n', ' ').strip()
+            lValues = new_file.strip().split(' ')
+            if sXinMoCfg in lValues: bFound = True
+            if not bFound:
+                new_file += " " + sXinMoCfg
+                f.seek(0)
+                f.truncate(0)
+                f.write(new_file)
+                f.close()
+                # upload file to /boot and set reboot to True
+                bReboot = True
+                os.system('sudo cp %s %s' %(sTempFile, CMDLINE_FILE))
+        os.system('rm %s' % sTempFile)
+        return bReboot
         
     def _check_file(self, p_sFile):
         if os.path.exists(p_sFile):

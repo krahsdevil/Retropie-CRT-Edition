@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys, traceback
-import commands, random, hashlib, time
+import commands, time
 import logging
 
 sys.dont_write_bytecode = True
@@ -34,10 +34,11 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from pi2jamma_controls import CTRLSPi2Jamma
+from controls_mapping import CTRLSMgmt
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
+from launcher_module.utils import check_process, wait_process
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_CableSelector.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
@@ -90,18 +91,19 @@ class CableSelector(object):
     m_sTitle = ""
     m_lChoices = []             #Choices for selector
     m_lToFix = []               #Options wrong configured
+    m_lInfoReboot = [("SYSTEM WILL REBOOT NOW...", "OK")]
     
-    m_oPi2Jamma = None
+    m_oControls = None
 
     def __init__(self):
         self.__clean()
         self.__temp()
         logging.info("INFO: Launching CRT cable selector")
-        self._generate_random_config_temp()
+        self.m_sBootTempFile = generate_random_temp_filename(BOOTCFG_FILE)
         self._clone_boot_cfg()
         self._check_crtdaemon() # Check service
         self._check_base_config()
-        self.m_oPi2Jamma = CTRLSPi2Jamma()
+        self.m_oControls = CTRLSMgmt()
 
     def run(self):
         self._show_info('PLEASE WAIT...')
@@ -137,7 +139,10 @@ class CableSelector(object):
         ch = choices()
         if p_sTitle:
             ch.set_title(p_sTitle)
-        ch.load_choices([(p_sMessage, "OK")])
+        if type(p_sMessage) is str:
+                ch.load_choices([(p_sMessage, "OK")])
+        else:
+            ch.load_choices(p_sMessage)
         ch.show(p_iTime)
 
     def _generate_cable_list(self):
@@ -261,13 +266,19 @@ class CableSelector(object):
         If change from pi2jamma to other then controls config
         will be cleaned.        
         """
+        # pi2jamma controls
         if p_sCableName.lower() == 'exit' and \
            self.m_sCableName == 'pi2jamma':
-            self.m_bRebootES = self.m_oPi2Jamma.enable_controls()
+            self.m_bRebootES = self.m_oControls.pi2jamma_enable_controls()
         elif p_sCableName == 'pi2jamma':
-            self.m_bRebootES = self.m_oPi2Jamma.enable_controls()
+            self.m_bRebootES = self.m_oControls.pi2jamma_enable_controls()
         else:
-            self.m_bRebootES = self.m_oPi2Jamma.disable_controls()
+            self.m_bRebootES = self.m_oControls.pi2jamma_disable_controls()
+            
+        # Xin Mo Joystick USB drivers
+        if self.m_oControls.xinmo_usb_driver_enable():
+            self.m_bUploadCFG = True
+            self.m_lInfoReboot.append(("[Xin Mo USB drivers were enabled]", "OK"))
 
     def _detect_cable_model(self):
         p_iJamma = self.get_config_line_value('jamma')
@@ -386,9 +397,9 @@ class CableSelector(object):
 
     def _check_if_first_boot(self):
         """ Check if resize2fs is working on expanding SD partition """
-        if self._check_process(self.m_sFstBootApp):
+        if check_process(self.m_sFstBootApp):
             logging.info("WARNING: Wait until resize2fs finish")
-            self._wait_process(self.m_sFstBootApp, 'stop', 1, 5)
+            wait_process(self.m_sFstBootApp, 'stop', 1, 5)
 
     def _check_crtdaemon(self):
         if self._check_service(SERVICE_FILE_NAME, 'load'):
@@ -436,50 +447,6 @@ class CableSelector(object):
             os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' \
                       % SERVICE_FILE_NAME)
 
-    def _wait_process(self, p_sProcess, p_sState = 'stop',
-                     p_iTimes = 1, p_iTime = 1):
-        """
-        This function will wait to start or stop for only one process or a
-        list of them like emulators. By default will wait to stop with
-        p_sState parameter, but you can change it on call to 'start'.
-        If a list is passed, function will validate that at least one of
-        them started or all are stopped.
-
-        """
-        bProcessFound = None
-        bCondition = True
-        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
-        if p_sState == 'stop':
-            bCondition = False
-        while bProcessFound != bCondition:
-            bProcessFound = self._check_process(p_sProcess, p_iTimes)
-            if p_sProcess == self.m_sFstBootApp:
-                self._show_info('SD CARD IS RESIZING... PLEASE WAIT',
-                                p_iTime*1000, 'Welcome to Retropie CRT Edition!')
-            else:
-                time.sleep(p_iTime)
-        logging.info("INFO: wait finished")
-
-    def _check_process(self, p_sProcess, p_iTimes = 1):
-        p_bCheck = 0
-        pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-        for pid in pids:
-            try:
-                procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-                if type(p_sProcess) is list:
-                    if procname[:-1] in p_sProcess:
-                        logging.info("INFO: found process {%s}"%procname[:-1])
-                        p_bCheck = p_iTimes
-                        break
-                elif type(p_sProcess) is str:
-                    if procname[:-1] == p_sProcess:
-                        logging.info("INFO: found process {%s}"%procname[:-1])
-                        p_bCheck += 1
-            except IOError:
-                pass
-        p_bCheck = True if p_bCheck >= p_iTimes else False 
-        return p_bCheck
-
     def _check_service(self, p_sService, p_sState):
         """
         This function will return true or false for this options:
@@ -499,19 +466,6 @@ class CableSelector(object):
         elif p_sState == 'run':
             return p_bRunning
 
-    def _generate_random_config_temp(self):
-        p_sName = str(self._md5_file(BOOTCFG_FILE))
-        p_sName += "_" + str(random.randrange(1000, 9999))
-        p_sPath = os.path.join(TMP_LAUNCHER_PATH, p_sName)
-        self.m_sBootTempFile = p_sPath
-
-    def _md5_file(self, p_sFile):
-        hasher = hashlib.md5()
-        with open(p_sFile, 'rb') as afile:
-            buf = afile.read()
-            hasher.update(buf)
-        return hasher.hexdigest()
-
     def _restart(self):
         """ Restart system or reboot ES if needed """
         commandline = ""
@@ -519,7 +473,7 @@ class CableSelector(object):
             logging.info('INFO: NO changes in /boot/config.txt; ' + \
                          'no reboot needed')
             # check if ES must reboot
-            if self.m_bRebootES and self._check_process('emulationstatio', 3):
+            if self.m_bRebootES and check_process("emulationstatio"):
                 self._show_info('CLEANING KEYBOARD CONFIG', 2000)
                 self._show_info('EMULATIONSTATION WILL RESTART NOW')
                 commandline = "touch /tmp/es-restart "
@@ -529,7 +483,7 @@ class CableSelector(object):
                 time.sleep(1)
         else:
             commandline = 'sudo reboot now'
-            self._show_info('SYSTEM WILL REBOOT NOW...')
+            self._show_info(self.m_lInfoReboot)
             os.system(commandline)
         sys.exit(0)
 
