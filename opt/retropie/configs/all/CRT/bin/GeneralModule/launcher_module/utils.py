@@ -47,7 +47,6 @@ def plugin_list(p_sPath):
 
 # load module dinamically and his main class (same name as .py file)
 # ex: userplugin.py, userplugin()
-
 def plugin_load(p_oPlugin):
     _module = imp.load_module(p_oPlugin["name"], *p_oPlugin["info"])
     return getattr(_module, p_oPlugin["name"])
@@ -126,6 +125,58 @@ def compact_rom_name(p_sRomName):
     sPreCleanedGame = re.sub('[^a-zA-Z0-9-_]+','', p_sRomName )
     sCleanedGame = re.sub(' ','', sPreCleanedGame)
     return sCleanedGame
+
+def check_process(p_sProcess, p_iTimes = 1):
+    """ 
+    Look for a process.
+    Only a name can be passed or a list of them.
+    If list is passed will break as soon as one of them is found.
+    For a single process is possible to pass the number of times 
+    that is found to be identified as 'found'; This is interesting 
+    for emulationstation because application in retropie generates
+    three 'emulationstatio' processes.
+    """
+    p_bCheck = 0
+    if p_sProcess == "emulationstatio": p_iTimes = 3
+    
+    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+    for pid in pids:
+        try:
+            procname = open(os.path.join('/proc', pid, 'comm'), 'rb').read()
+            if type(p_sProcess) is list:
+                if procname[:-1] in p_sProcess:
+                    p_bCheck = p_iTimes
+                    break
+            elif type(p_sProcess) is str:
+                if procname[:-1] == p_sProcess:
+                    p_bCheck += 1
+        except IOError:
+            pass
+    # p_iTimes >= 1 process was found
+    p_bCheck = True if p_bCheck >= p_iTimes else False 
+    return p_bCheck
+    
+def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
+    """
+    This function will wait to start or stop for only one process or
+    a list of them like emulators. By default will wait to stop with
+    'p_sState' parameter but you can change it on call to 'stop'.
+    If a list is passed, function will validate that at least one of
+    them started or all are stopped.
+    For a single process is possible to pass the number of times 
+    that is found to be identified as 'found'; This is interesting 
+    for emulationstation because application in retropie generates
+    three 'emulationstatio' processes.
+    """
+    bProcessFound = None
+    bCondition = False
+    logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
+    if p_sState == 'start':
+        bCondition = True
+    while bProcessFound != bCondition:
+        bProcessFound = check_process(p_sProcess, p_iTimes)
+        time.sleep(p_iWaitScs)
+    logging.info("INFO: wait finished")
     
 class HideScreen(object):
     """ Class for hide the screen filling with a color """

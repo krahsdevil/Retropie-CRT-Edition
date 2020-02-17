@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, logging
-import hashlib, shutil
+import hashlib, shutil, random
 
 from .core_paths import TMP_LAUNCHER_PATH, CRTROOT_PATH
 
@@ -90,7 +90,6 @@ def ini_set(p_sFile, p_sKeyMask, p_sNewValue):
         f.truncate() # remove everything after the last write
         return True
 
-
 def ini_getlist(p_sFile, p_sFindMask):
     lValues = ini_get(p_sFile, p_sFindMask, True)
     if lValues:
@@ -104,7 +103,12 @@ def md5_file(p_sFile):
         buf = afile.read()
         hasher.update(buf)
     return hasher.hexdigest()
-
+    
+def generate_random_temp_filename(p_sFile):
+    p_sRandom = str(md5_file(p_sFile))
+    p_sRandom += "_" + str(random.randrange(1000, 9999))
+    p_sTMPPath = os.path.join(TMP_LAUNCHER_PATH, p_sRandom)
+    return p_sTMPPath
 
 def remove_file(p_sFile):
     try:
