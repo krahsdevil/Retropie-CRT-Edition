@@ -32,7 +32,8 @@ from launcher_module.core_paths import *
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
 from launcher_module.screen import CRT
-from launcher_module.file_helpers import remove_file, ini_get, modify_line
+from launcher_module.file_helpers import remove_file, ini_get, modify_line, \
+                                         touch_file, add_line
 
 SCUMMVMCFG_FILE = os.path.join(RETROPIECFG_PATH, "scummvm/scummvm.ini")
 
@@ -67,8 +68,15 @@ class abandonware(emulator):
         ch.show()
         ch.cleanup()
 
+    def _scummvm_create_cfg(self):
+        """ create base ini file if not exist """
+        if not os.path.isfile(SCUMMVMCFG_FILE):
+            touch_file(SCUMMVMCFG_FILE)
+            add_line(SCUMMVMCFG_FILE, "[scummvm]")
+
     def _scummvm_change_gfxmode(self):
         """ will make scummvm menu clear and crisp """
+        self._scummvm_create_cfg()
         p_sGFXValue = 'opengl'
         p_sGFXKey = 'gfx_mode'
         self._scummvm_change_ini(SCUMMVMCFG_FILE, p_sGFXKey, p_sGFXValue)
@@ -84,9 +92,14 @@ class abandonware(emulator):
         p_sARValue = 'aspect_ratio'
         
         # get aspect ratio configuration from CRT config
+        sAspect = None
         p_sScummARC = int(ini_get(CFG_VIDEOUTILITY_FILE, "scummvm_arc"))
         if p_sScummARC == 0:
-            sAspect = "PIXEL"
+            """ 
+            If Aspect Ratio Correction is not enabled leave this
+            config as it is, only change if forced required or asked.
+            """
+            pass
         if p_sScummARC == 1:
             sAspect = "FIT"
         elif p_sScummARC == 2:
