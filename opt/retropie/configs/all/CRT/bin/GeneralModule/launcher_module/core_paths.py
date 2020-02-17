@@ -70,3 +70,4 @@ CRTMODULES_PATH = os.path.join(CRTCONTENT_PATH, "bin")
 
 # raspbian path setup
 BOOTCFG_FILE = "/boot/config.txt"
+CMDLINE_FILE = "/boot/cmdline.txt"
