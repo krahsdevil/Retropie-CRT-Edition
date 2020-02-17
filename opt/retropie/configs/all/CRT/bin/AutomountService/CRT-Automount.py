@@ -344,7 +344,7 @@ class USBAutoService(object):
 
     def _restart_ES(self):
         """ Restart ES if it's running """
-        if self._check_process('emulationstatio', 3):
+        if self._check_process("emulationstatio"):
             logging.info("INFO: Restarting EmulationStation...")
             if self._check_process(self.m_dEmulatorsName):
                 logging.info("INFO: Waiting emulator stops...")
@@ -356,7 +356,7 @@ class USBAutoService(object):
             os.system('clear')
 
     def _wait_process(self, p_sProcess, p_sState = 'stop',
-                     p_iTimes = 1, p_iTime = 1):
+                     p_iTimes = 1, p_iWaitScs = 1):
         """
         This function will wait to start or stop for only one process or a 
         list of them like emulators. By default will wait to start with
@@ -372,26 +372,27 @@ class USBAutoService(object):
             bCondition = False
         while bProcessFound != bCondition:
             bProcessFound = self._check_process(p_sProcess, p_iTimes)
-            time.sleep(p_iTime)
+            time.sleep(p_iWaitScs)
         logging.info("INFO: wait finished")
 
     def _check_process(self, p_sProcess, p_iTimes = 1):
         p_bCheck = 0
+        if p_sProcess == "emulationstatio": p_iTimes = 3
+        
         pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
         for pid in pids:
             try:
                 procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
                 if type(p_sProcess) is list:
                     if procname[:-1] in p_sProcess:
-                        logging.info("INFO: found process {%s}"%procname[:-1])
                         p_bCheck = p_iTimes
                         break
                 elif type(p_sProcess) is str:
                     if procname[:-1] == p_sProcess:
-                        logging.info("INFO: found process {%s}"%procname[:-1])
                         p_bCheck += 1
             except IOError:
                 pass
+        # p_iTimes >= 1 process was found
         p_bCheck = True if p_bCheck >= p_iTimes else False 
         return p_bCheck
         
