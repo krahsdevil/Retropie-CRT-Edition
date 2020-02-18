@@ -34,11 +34,11 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
-                                          CRT_RIGHT, CRT_BUTTON
 from launcher_module.core import CFG_VIDEOUTILITY_FILE, LOG_PATH, CFG_FIXMODES_FILE
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
+from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
+                                          CRT_RIGHT, CRT_BUTTON
 from pattern_datas import *
 
 __VERSION__ = '0.1'
@@ -77,9 +77,9 @@ class generate(object):
     m_iVOverscan = 0
     m_iHOverscan = 0
 
+    m_PGoJoyHandler = None
     m_PGSndCursor = None
     m_PGSndLoad = None
-    m_PGoClock = None
     m_PGoScreen = None
     m_PGpPattern = None
     m_PGoFreqIcon = None
@@ -115,8 +115,6 @@ class generate(object):
 
     def launch(self):
         self._init_pygame()
-        self.render_test()
-        self.draw_test()
         self.loop()
         self.save()
         self.cleanup()
@@ -124,8 +122,6 @@ class generate(object):
     def _init_pygame(self):
         pygame.mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
-        self.m_PGoClock = pygame.time.Clock()
-        self.m_PGoJoyHandler.find_joy()
         self._init_screen()
         self._init_sounds()
 
@@ -339,6 +335,8 @@ class generate(object):
 
     def loop(self):
         while True:
+            self.render_test()
+            self.draw_test()
             event = self.m_PGoJoyHandler.event_wait()
             if event & CRT_UP:
                 self.choice_change(1)
@@ -356,8 +354,6 @@ class generate(object):
                     self.m_iCurrentSub = 0
                     time.sleep(1)
                     return
-            self.render_test()
-            self.draw_test()
 
     def choice_change(self, p_iDirection = 0):
         if p_iDirection == 0: # Button pressed, move through the options
