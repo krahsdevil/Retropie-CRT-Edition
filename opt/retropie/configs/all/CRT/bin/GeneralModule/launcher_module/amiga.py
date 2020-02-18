@@ -135,12 +135,9 @@ class amiga(emulator):
     def amiberry_stretch_selector(self):
         ch = choices()
         ch.set_title("VERTICAL RESOLUTION")
-        ch.load_choices([
-                ("Force 1:1 (Original)", "0"),
-                ("Try to stretch", "1"),
-            ])
+        ch.load_choices([("Force 1:1 (Original)", "0"),
+                         ("Try to stretch", "1")])
         result = ch.run()
-        ch.cleanup()
         if result == "0":
             return True
         return False
@@ -151,7 +148,6 @@ class amiga(emulator):
             ch.set_title(m_sTitle)
         ch.load_choices([(m_sMessage, "OK")])
         ch.show(3000)
-        ch.cleanup()
         
     def emulatorcfg_check_or_die(self):
         """
