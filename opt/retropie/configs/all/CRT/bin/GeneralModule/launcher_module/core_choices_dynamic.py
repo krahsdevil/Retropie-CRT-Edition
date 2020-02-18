@@ -88,7 +88,6 @@ class choices(object):
     """show a selector with choices using pygame."""
 
     m_oJoyHandler = None
-    m_oClock = None
     m_lOpts = []
     m_iCurrent = 0
     m_iUpdateScreen = 1
@@ -107,8 +106,6 @@ class choices(object):
         self.m_sSkinPath = os.path.join(SKINSELECTOR_PATH, self.dCFG['style'])
         pygame.mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
-        self.m_oClock = pygame.time.Clock()
-        self.oJoyHandler = joystick()
         self._init_screen()
         self._init_sounds()
 
@@ -249,8 +246,7 @@ class choices(object):
         return sf
 
     def cleanup(self):
-        pygame.display.quit()
-        pygame.quit()
+        self._clean_on_finish()
 
     def show(self, p_iTimeOut = 2000, p_bShowCursor = False):
         self.m_iUpdateScreen = 1
@@ -260,10 +256,7 @@ class choices(object):
         self._clean_on_finish()
 
     def run(self):
-        #if self.oJoyHandler.get_num() < 1:
-        #    # TODO: no opts or no joys
-        #    logging.error("no joysticks found, using default opt.")
-        #    return self._choice_select()
+        self.m_oJoyHandler = joystick() # Load Joystick
         self._update_screen()
         result = self.loop()
         self._clean_on_finish()
@@ -271,8 +264,7 @@ class choices(object):
 
     def loop(self):
         while True:
-            #self.m_oClock.tick(FPS)
-            event = self.oJoyHandler.event_wait()
+            event = self.m_oJoyHandler.event_wait()
             #logging.info("event %s" % str(event))
             if event & CRT_UP:
                 self.m_SndCursor.play()
