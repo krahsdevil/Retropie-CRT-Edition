@@ -255,4 +255,3 @@ class arcade(emulator):
             ch.set_title(m_sTitle)
         ch.load_choices([(m_sMessage, "OK")])
         ch.show(3000)
-        ch.cleanup()
