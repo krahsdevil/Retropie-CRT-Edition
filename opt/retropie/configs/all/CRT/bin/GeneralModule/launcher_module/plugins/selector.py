@@ -110,7 +110,6 @@ class selector(libretro):
             ch.set_title(m_sTitle)
         ch.load_choices([(m_sMessage, "OK")])
         ch.show(3000)
-        ch.cleanup()        
 
     def frequency_manual(self):
         ch = choices()
@@ -127,7 +126,6 @@ class selector(libretro):
             if sFrequency != result:
                 self.m_oFreqDB.clean(self.m_sCompactedName)
                 self.m_oFreqDB.add(self.m_sCompactedName, result)
-        ch.cleanup()
         return result
 
     # TODO: optimize!
