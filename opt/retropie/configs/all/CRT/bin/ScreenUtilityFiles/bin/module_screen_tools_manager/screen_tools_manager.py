@@ -159,7 +159,6 @@ def pygame_initialization():
     pygame.init()
     pygame.mouse.set_visible(0)
     PGoJoyHandler = joystick()
-    PGoJoyHandler.find_joy()
     PGoFont = pygame.font.Font(FONT_FILE, 8)
     PGoScreen = pygame.display.set_mode((x_screen,y_screen), pygame.FULLSCREEN)
 
