@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging
+import os, logging, time, threading
 import pygame
 
 from .core_paths import RETROPIECFG_PATH
@@ -77,18 +77,29 @@ class joystick(object):
     m_iNumJoys = 0
     m_iAxisTriggered = False
     def __init__(self):
-        self.find_joy()
+        self.joy_daemon_watcher()
+
+    def joy_daemon_watcher(self):
+        oJoyWatcher = threading.Thread(target = self.find_joy)
+        oJoyWatcher.setDaemon(True)
+        oJoyWatcher.start()
         
-    def find_joy(self):
-        pygame.joystick.init()
-        try:
-            for j in range(0,4):
-                self._initialize(j)
-                self.m_iNumJoys = j + 1
-        except:
-            pass
-        logging.info("joysticks found: %i" % self.m_iNumJoys)
-        # print str(self.m_lJoys)
+    def find_joy(self, p_iTime = 3):
+        while True:
+            pygame.joystick.init()
+            try:
+                for j in range(0,4):
+                    self._initialize(j)
+                    self.m_iNumJoys = j + 1
+            except:
+                pass
+            if not self.m_iNumJoys:
+                pygame.joystick.quit()
+                #logging.info("NO joysticks found, waiting %s secs" % p_iTime)
+                time.sleep(p_iTime)
+            else:
+                logging.info("joysticks found: %i" % self.m_iNumJoys)
+                break
 
     def _initialize(self, p_iJoy):
         jData = self._base_joy_config() #setting most standard parameters
@@ -195,8 +206,8 @@ class joystick(object):
 
     def event_wait(self):
         while True:
-            pygame.event.clear()
             event = pygame.event.wait()
+            pygame.event.clear()
             if event.type == pygame.KEYDOWN:
                 #logging.info("keyb: %s %s" % (event.key, str(event)))
                 return self.get_key(event.key)
