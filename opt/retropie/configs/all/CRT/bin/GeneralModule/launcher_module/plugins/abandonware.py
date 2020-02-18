@@ -66,7 +66,6 @@ class abandonware(emulator):
             ch.set_title(m_sTitle)
         ch.load_choices([(m_sMessage, "OK")])
         ch.show()
-        ch.cleanup()
 
     def _scummvm_create_cfg(self):
         """ create base ini file if not exist """
