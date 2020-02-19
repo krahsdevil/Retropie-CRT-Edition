@@ -80,26 +80,48 @@ class joystick(object):
         self.joy_daemon_watcher()
 
     def joy_daemon_watcher(self):
-        oJoyWatcher = threading.Thread(target = self.find_joy)
+        oJoyWatcher = threading.Thread(target = self.joystick_detection)
         oJoyWatcher.setDaemon(True)
         oJoyWatcher.start()
         
-    def find_joy(self, p_iTime = 3):
+    def joystick_detection(self):
+        """ 
+        This function will be continously checking if there is at least
+        one joystick connected, if not of removed, will looking for it
+        during all 'core_controls' module execution.
+        Launched internally as daemon
+        """
+        p_iTime = 1
+        p_iJoyNum = 4
         while True:
-            pygame.joystick.init()
-            try:
-                for j in range(0,4):
-                    self._initialize(j)
-                    self.m_iNumJoys = j + 1
-            except:
-                pass
             if not self.m_iNumJoys:
-                pygame.joystick.quit()
-                #logging.info("NO joysticks found, waiting %s secs" % p_iTime)
-                time.sleep(p_iTime)
+                if pygame.joystick.get_init():
+                    pygame.joystick.quit()
+                pygame.joystick.init()
+                try:
+                    for j in range(0, p_iJoyNum):
+                        self._initialize(j)
+                        self.m_iNumJoys = j + 1
+                except:
+                    pass
+                if self.m_iNumJoys:
+                    logging.info("INFO: joysticks found: %i" % self.m_iNumJoys)
+                    p_iTime = 5
             else:
-                logging.info("joysticks found: %i" % self.m_iNumJoys)
-                break
+                p_iCount = 0
+                for j in range(0, p_iJoyNum):
+                    try:
+                        pygame.joystick.Joystick(j).quit()
+                        pygame.joystick.Joystick(j).init()
+                        p_iCount += 1
+                    except:
+                        pass
+                if p_iCount == 0:
+                    if self.m_iNumJoys > 0: 
+                        logging.info("INFO: joysticks seems to be removed")
+                    self.m_iNumJoys = 0
+                    p_iTime = 1
+            time.sleep(p_iTime)
 
     def _initialize(self, p_iJoy):
         jData = self._base_joy_config() #setting most standard parameters
@@ -108,7 +130,7 @@ class joystick(object):
         sCfgFile = os.path.join(JOYCONFIG_PATH, sJoyName + '.cfg')
 
         if not os.path.exists(sCfgFile):
-            logging.info("joy config not found: %s" % sCfgFile)
+            logging.info("WARNING: joy config not found!: %s" % sCfgFile)
         else:
             #getting ES custom config for joy
             #Try to get AXIS X in joystick config file
@@ -140,9 +162,9 @@ class joystick(object):
         if temp:
             try:
                 temp = temp.replace('"', '')
-                logging.info("found value ini {%s} for %s" % (temp, p_sINI))
+                logging.info("INFO: found value ini {%s} for %s" % (temp, p_sINI))
             except:
-                logging.info("not possible to find value for %s in %s" % (p_sINI, p_sCfgFile))
+                logging.info("WARNING: not possible to find value for %s in %s" % (p_sINI, p_sCfgFile))
                 return False
         return temp
         
@@ -209,7 +231,6 @@ class joystick(object):
             event = pygame.event.wait()
             pygame.event.clear()
             if event.type == pygame.KEYDOWN:
-                #logging.info("keyb: %s %s" % (event.key, str(event)))
                 return self.get_key(event.key)
             elif event.type == pygame.JOYBUTTONDOWN:
                 return self.get_button(event.joy, event.button)
