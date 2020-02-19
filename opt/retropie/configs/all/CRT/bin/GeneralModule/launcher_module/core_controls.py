@@ -83,6 +83,7 @@ class joystick(object):
         oJoyWatcher = threading.Thread(target = self.joystick_detection)
         oJoyWatcher.setDaemon(True)
         oJoyWatcher.start()
+        time.sleep(1) # give time to load joystick module
         
     def joystick_detection(self):
         """ 
