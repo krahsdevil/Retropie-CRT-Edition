@@ -91,41 +91,69 @@ class joystick(object):
         during all 'core_controls' module execution.
         Launched internally as daemon
         """
-        p_iTime = 1
+        p_iTime = 2
         p_iJoyNum = 4
+        pygame.joystick.init()
         while True:
-            if not self.m_iNumJoys:
+            p_iCount = 0
+            p_lJoyRem = []
+            p_lJoyAdd = []
+
+            # detect how many joys are connected reading /dev/input
+            for j in range(0, p_iJoyNum):
+                if os.path.exists("/dev/input/js%s" % j):
+                    p_lJoyAdd.append(j) # joy number existent
+                    p_iCount += 1
+                else:
+                    p_lJoyRem.append(j) # joy number missing
+            
+            # if there is MORE joys configured than counted
+            if self.m_iNumJoys > p_iCount:
+                for joy in p_lJoyRem:
+                    try:
+                        self._remove(joy)
+                    except:
+                        pass
+
+            # if there is LESS joys configured than counted            
+            elif self.m_iNumJoys < p_iCount:
+                # reset pygame joystick module to load all joys
                 if pygame.joystick.get_init():
                     pygame.joystick.quit()
                 pygame.joystick.init()
+                # load all joys detected in system
+                self.m_lJoys = []       # cleaning db buttons of joys
                 try:
-                    for j in range(0, p_iJoyNum):
-                        self._initialize(j)
-                        self.m_iNumJoys = j + 1
+                    for joy in p_lJoyAdd:
+                        self._initialize(joy)
                 except:
                     pass
-                if self.m_iNumJoys:
-                    logging.info("INFO: joysticks found: %i" % self.m_iNumJoys)
-                    p_iTime = 5
-            else:
-                p_iCount = 0
-                for j in range(0, p_iJoyNum):
-                    try:
-                        pygame.joystick.Joystick(j).quit()
-                        pygame.joystick.Joystick(j).init()
-                        p_iCount += 1
-                    except:
-                        pass
-                if p_iCount == 0:
-                    if self.m_iNumJoys > 0: 
-                        logging.info("INFO: joysticks seems to be removed")
-                    self.m_iNumJoys = 0
-                    p_iTime = 1
+
+            # detecting how many joystick are loaded in pygame
+            self.m_iNumJoys = 0
+            for j in range(0, p_iJoyNum):
+                try:
+                    if pygame.joystick.Joystick(j).get_init():
+                        self.m_iNumJoys += 1
+                except:
+                    pass
+
             time.sleep(p_iTime)
 
+    def _remove(self, p_iJoy):
+        pygame.joystick.Joystick(p_iJoy).quit()
+        logging.info("INFO: disconnected device at /dev/input/js%s" % p_iJoy)
+        logging.info("INFO: unloaded joystick %s" % self.m_lJoys[p_iJoy]['name'])
+            
     def _initialize(self, p_iJoy):
-        jData = self._base_joy_config() #setting most standard parameters
         pygame.joystick.Joystick(p_iJoy).init()
+        logging.info("INFO: connected device at /dev/input/js%s" % p_iJoy)
+        sJoyName = pygame.joystick.Joystick(p_iJoy).get_name()
+        logging.info("INFO: loading joystick %s" % sJoyName)
+        self._joy_configuration(p_iJoy)
+ 
+    def _joy_configuration(self, p_iJoy):
+        jData = self._joy_base_cfg(p_iJoy) #setting default config
         sJoyName = pygame.joystick.Joystick(p_iJoy).get_name()
         sCfgFile = os.path.join(JOYCONFIG_PATH, sJoyName + '.cfg')
 
@@ -134,41 +162,41 @@ class joystick(object):
         else:
             #getting ES custom config for joy
             #Try to get AXIS X in joystick config file
-            axis_tmp = self._get_joy_cfg(sCfgFile, 'input_l_x_minus_axis')
+            axis_tmp = self._joy_get_cfg(sCfgFile, 'input_l_x_minus_axis')
             if not axis_tmp:
-                axis_tmp = self._get_joy_cfg(sCfgFile, 'input_left_axis')
+                axis_tmp = self._joy_get_cfg(sCfgFile, 'input_left_axis')
             if axis_tmp:
                 jData['x']['axis'] = abs(int(axis_tmp, 10))
                 jData['x']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
             #Try to get AXIS Y in joystick config file
-            axis_tmp = self._get_joy_cfg(sCfgFile, 'input_l_y_minus_axis')
+            axis_tmp = self._joy_get_cfg(sCfgFile, 'input_l_y_minus_axis')
             if not axis_tmp:
-                axis_tmp = self._get_joy_cfg(sCfgFile, 'input_up_axis')
+                axis_tmp = self._joy_get_cfg(sCfgFile, 'input_up_axis')
             if axis_tmp:
                 jData['y']['axis'] = abs(int(axis_tmp, 10))
                 jData['y']['value'] = ABS_DIF if "-" not in axis_tmp else -ABS_DIF
             #Try to get BUTTON A in joystick config file
-            btn_tmp = self._get_joy_cfg(sCfgFile, 'input_a_btn')
+            btn_tmp = self._joy_get_cfg(sCfgFile, 'input_a_btn')
             if btn_tmp:
                 jData['ok'] = int(btn_tmp)
             #Try to get BUTTON B in joystick config file
-            btn_tmp = self._get_joy_cfg(sCfgFile, 'input_b_btn')
+            btn_tmp = self._joy_get_cfg(sCfgFile, 'input_b_btn')
             if btn_tmp:
                 jData['cancel'] = int(btn_tmp)
         self.m_lJoys.append(jData)
 
-    def _get_joy_cfg(self, p_sCfgFile, p_sINI):
+    def _joy_get_cfg(self, p_sCfgFile, p_sINI):
         temp = ini_get(p_sCfgFile, p_sINI)
         if temp:
             try:
                 temp = temp.replace('"', '')
-                logging.info("INFO: found value ini {%s} for %s" % (temp, p_sINI))
+                logging.info("INFO: found %s = %s" % (p_sINI, temp))
             except:
-                logging.info("WARNING: not possible to find value for %s in %s" % (p_sINI, p_sCfgFile))
+                logging.info("WARNING: value no found for %s in %s" % (p_sINI, p_sCfgFile))
                 return False
         return temp
         
-    def _base_joy_config(self):
+    def _joy_base_cfg(self, p_iJoy):
         #if config file is not found will apply this axis and 'standard' buttons
         jData = {'x': {}, 'y': {}}
         jData['axis_trigger'] = False
@@ -178,6 +206,7 @@ class joystick(object):
         jData['y']['value'] = -ABS_DIF
         jData['ok'] = 1
         jData['cancel'] = 0
+        jData['name'] = pygame.joystick.Joystick(p_iJoy).get_name()
         return jData
 
     def get_num(self):
