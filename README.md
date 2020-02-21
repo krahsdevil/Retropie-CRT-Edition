@@ -7,12 +7,9 @@
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | Developing | EVO | [BETA 2.0](https://github.com/krahsdevil/Retropie-CRT-Edition/releases/download/evo.beta.2.0/retropieCRTEVO-BETAU2.img.gz) | Retropie 4.5 | RPi 2B/3B/3A+/3B+ | [Changelog](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/1.0-Changelogs-Retropie-CRT-Edition)  |
 
-
-
 Adding support to Retropie for custom 15khz resolutions and some cool utilities like USB Automount or easy TATE mode changing.
 
-This software works with all standard (RGB) vga666 GPIO adapters (or based on like pi2scart) and some custom adapters like RGB-Pi.
-Boot, configure controls on ES and go to 'Screen Utilies' under 'CRT Config' for choosing your adapter (VGA666 > RGB-Pi > PI2SCART)
+This software works with some VGA666 based adapters, check compatibility [HERE](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/3.0-Adaptadores-RGB:-Inicio)
 
 Maybe some professional monitors like SONY PVM, BVM or DTV could face some resolution problems, most of TV or monitors seems to work great with super-resolutions.
 
