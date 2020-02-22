@@ -39,7 +39,7 @@ function rotate_screen ()
 while true; do
     rm -f /tmp/es-restart /tmp/es-sysrestart /tmp/es-shutdown
 	rotate_screen
-	"$esdir/emulationstation" $ES_ROTATION_FLAGS "$@"
+	"$esdir/emulationstation" $ES_ROTATION_FLAGS "$@" 2>&1
     ret=$?
 
     [ -f /tmp/es-restart ] && continue
