@@ -40,10 +40,12 @@ RA_GBA_CORE_FILE = os.path.join(CRTADDONS_PATH,
 oCRT = None
 oBlackScreen = None
 sSystem = 'gba'
+iExitCode = 0
 
 def launch_credits():
     global oCRT
     global oBlackScreen
+    global iExitCode
     ra_check_version(RA_GBA_CFG_FILE2)
     oCRT = CRT(sSystem)
     oBlackScreen = HideScreen()
