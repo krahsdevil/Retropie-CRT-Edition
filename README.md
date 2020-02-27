@@ -13,5 +13,7 @@ This software works with some VGA666 based adapters, check compatibility [HERE](
 
 Maybe some professional monitors like SONY PVM, BVM or DTV could face some resolution problems, most of TV or monitors seems to work great with super-resolutions.
 
+**_'On the fly' resolutions system change_** based on the work of **Sir-Ironic** ['RPi-Hdmi_Timings' GITHUB](https://github.com/Sir-Ironic/RPi-Hdmi_Timings)
+
 _Please take a look to our [Wiki](https://github.com/krahsdevil/crt-for-retropie/wiki) (in progress)._
 _You can also follow at  [EOL Forums](https://www.elotrolado.net/hilo_retropie-crt-edition-raspberry-pi-2b-3b-3b-tv-15khz-vga666-pi2scart-rgb-pi_2328132)_
