@@ -211,8 +211,8 @@ def replace_launching_image(p_sImage):
     if not p_sImage[-4:] in p_lMask:
         return
     image_cur = RETROPIECFG_PATH + "/" + p_sImage
-    sImageSetA = CRTLAUNCHIMAGES_SET_PATH + "/" + p_sImage[:-4] + "_240p.png"
-    sImageSetB = CRTLAUNCHIMAGES_SET_PATH + "/" + p_sImage[:-4] + "_270p.png"
+    sImageSetA = CRTLAUNCHIMAGES_MOD_PATH + "/" + p_sImage[:-4] + "_240p.png"
+    sImageSetB = CRTLAUNCHIMAGES_MOD_PATH + "/" + p_sImage[:-4] + "_270p.png"
     # if 240p is the chosen resolution, images are changed
     if "240" in opt[0][2]:
         sImageSetA = sImageSetA[:-9] + "_270p.png"

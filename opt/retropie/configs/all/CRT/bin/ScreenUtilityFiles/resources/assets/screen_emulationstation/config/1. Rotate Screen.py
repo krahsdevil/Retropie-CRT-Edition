@@ -1,14 +1,25 @@
 #!/usr/bin/python
-# coding: utf-8
-#
-# Retropie code/integration by -krahs- (2019)
-#
-# unlicense.org
-#
-# This script can be heavily optimized.
+# -*- coding: utf-8 -*-
 
-# IMPORTS
-import struct
+"""
+Rotate Screen
+
+https://github.com/krahsdevil/crt-for-retropie/
+
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 2 of the License, or (at your option) any
+later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
 import os
 import sys
 import pygame
@@ -18,284 +29,201 @@ import filecmp
 import subprocess
 from pygame.locals import *
 
-sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
-sys.path.append('/opt/retropie/configs/all/CRT/')
+CRT_PATH = "/opt/retropie/configs/all/CRT"
+RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
+sys.path.append(RESOURCES_PATH)
 
-from selector_module_functions import get_retropie_joy_map
-from selector_module_functions import check_joy_event
-from general_functions import modificarLinea
+from launcher_module.core_paths import *
+from launcher_module.es_rotation import frontend_rotation
+from launcher_module.file_helpers import modify_line
+from launcher_module.utils import get_screen_resolution
 from general_functions import something_is_bad
+from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
+                                          CRT_RIGHT, CRT_BUTTON
 
-os.system('clear')
+SKIN_THEME_PATH = os.path.join(CRTRESOURCES_PATH, "media/skin_rotate_screen")
 
-x_screen = 0
-y_screen = 0
-RotationCurrentMode = 0
-SystemRes = '240p'
-ES_Res_50hz = 'system50'
-ES_Res_60hz = 'system60'
-CurTheme = "none"
-VerTheme = "V270P-CRT-BASE"
-HorTheme = "270P-CRT-BASE"
-VideoUtilityCFG = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/config_files/utility.cfg"
-EsSystemcfg = "/opt/retropie/configs/all/emulationstation/es_settings.cfg"
+ES_LAUNCHER_DST_FILE = os.path.join(RETROPIE_PATH,
+                       "supplementary/emulationstation/emulationstation.sh")
+ES_LAUNCHER_SRC_FILE = os.path.join(CRT_ES_RES_PATH,
+                       "configs/default_emulationstation.sh")
+ES_LAUNCHER_BCK_FILE = os.path.join(RETROPIE_PATH,
+                       "supplementary/emulationstation/backup.emulationstation.sh")
+
+CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
+ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
+ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
+ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
+
+SND_CURSOR_FILE = os.path.join(SKIN_THEME_PATH, "cursor.wav")
+SND_LOAD_FILE = os.path.join(SKIN_THEME_PATH, "load.wav")
+
+y = 0
+RES_X = 0
+RES_Y = 0
+iCurSide = 0
+
+sCurSysRes = '240p'
+sSystem50 = 'system50'
+sSystem60 = 'system60'
+
+PGoLoad = None
+PGoCursor = None
+PGoJoyHandler = None
+oOption = None
+oPosition = None
+fullscreen = None
+MAXoptions = 2
 
 def get_config():
-    global RotationCurrentMode
-    global CurTheme
-    global HorTheme
-    global VerTheme
-    global SystemRes
-    HorTheme240p = "none"
-    HorTheme270p = "none"
-    VerTheme240p = "none"
-    VerTheme270p = "none"
-    
-    with open(VideoUtilityCFG, 'r') as file:
-        for line in file:
-            line = line.strip().replace('=',' ').split(' ')
-            if line[0] == '240p_theme_horizontal':
-                HorTheme240p = line[1]
-            elif line[0] == '270p_theme_horizontal':
-                HorTheme270p = line[1]
-            elif line[0] == '240p_theme_vertical':
-                VerTheme240p = line[1]
-            elif line[0] == '270p_theme_vertical':
-                VerTheme270p = line[1]
-            elif line[0] == 'default':
-                if line[1] == ES_Res_50hz:
-                    SystemRes = '270p'
-                elif line[1] == ES_Res_60hz:
-                    SystemRes = '240p'
-    if SystemRes == '240p':
-        HorTheme = HorTheme240p
-        VerTheme = VerTheme240p
-    elif SystemRes == '270p':
-        HorTheme = HorTheme270p
-        VerTheme = VerTheme270p
-    if os.path.exists(EsSystemcfg):
-        with open(EsSystemcfg, 'r') as file:
-            for line in file:
-                line = line.strip().replace('"','').replace(' ','').replace('/','').replace('>','').split('=')
-                if 'ThemeSet' in line[1]:
-                    CurTheme = line[2]
-    if not os.path.exists('/opt/retropie/supplementary/emulationstation/emulationstation.sh'):
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
-    ESLauncher = filecmp.cmp('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh', '/opt/retropie/supplementary/emulationstation/emulationstation.sh')
-    if ESLauncher == False:
-        os.system('sudo cp /opt/retropie/supplementary/emulationstation/emulationstation.sh /opt/retropie/supplementary/emulationstation/backup.emulationstation.sh >> /dev/null 2>&1')
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
-        os.system('sudo chmod +x /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
+    global iCurSide
+    if os.path.exists(ROTMODES_TATE1_FILE):
+        iCurSide = 1
+    elif os.path.exists(ROTMODES_TATE3_FILE):
+        iCurSide = 3
+    else:
+        sys.exit()
+
+def check_es_launcher():
+    p_bFixed = False
+    if not os.path.exists(ES_LAUNCHER_DST_FILE):
+        os.system('sudo cp %s %s >> /dev/null 2>&1' % (ES_LAUNCHER_SRC_FILE, ES_LAUNCHER_DST_FILE))
+        p_bFixed = True
+    else:
+        if not filecmp.cmp(ES_LAUNCHER_SRC_FILE, ES_LAUNCHER_DST_FILE):
+            os.system('sudo cp %s %s >> /dev/null 2>&1' % (ES_LAUNCHER_DST_FILE, ES_LAUNCHER_BCK_FILE))
+            os.system('sudo cp %s %s >> /dev/null 2>&1' % (ES_LAUNCHER_SRC_FILE, ES_LAUNCHER_DST_FILE))
+            p_bFixed = True
+    if p_bFixed:        
+        os.system('sudo chmod +x %s >> /dev/null 2>&1' % ES_LAUNCHER_DST_FILE)
         infos = "System needs to reboot, please wait..."
         infos2 = ""
         something_is_bad(infos,infos2)
         os.system('sudo reboot')
-    if os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1'):
-        RotationCurrentMode = 1
-        modificarLinea(VideoUtilityCFG, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3'):
-        RotationCurrentMode = 3
-        modificarLinea(VideoUtilityCFG, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko'):
-        RotationCurrentMode = 0
-        modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
-    else:
-        RotationCurrentMode = 0
-        modificarLinea(VideoUtilityCFG, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
-    if RotationCurrentMode == 0:
-        sys.exit()
+        
 
-def rotate_frontend(ToMode):
-    os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1 >> /dev/null 2>&1')
-    os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3 >> /dev/null 2>&1')
-    os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko >> /dev/null 2>&1')
-    if ToMode == 0:
-        os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko')
-        os.system('sudo rm /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
-        os.system('sudo mv /etc/emulationstation/disabled.themes /etc/emulationstation/themes >> /dev/null 2>&1')
-        os.system('sudo rm -R /opt/retropie/configs/all/emulationstation/themes/V270P-CRT-BASE/ >> /dev/null 2>&1')
-        if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbah_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmameh_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mameh_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxh_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_H.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
-        modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme)
-        modificarLinea(VideoUtilityCFG, 'frontend_rotation', 'frontend_rotation 0')
-    if ToMode == 3:
-        os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3')
-        os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
-        os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
-        if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
-            os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-        os.system('cp -R /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
-        if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbav3_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmamev3_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mamev3_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxv3_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V3.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
-        modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
-        modificarLinea(VideoUtilityCFG, 'frontend_rotation', 'frontend_rotation -90')
-    if ToMode == 1:
-        os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1')
-        os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
-        os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
-        if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
-            os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-        os.system('cp -R /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
-        if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbav1_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmamev1_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mamev1_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
-        if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxv1_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V1.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
-        modificarLinea(EsSystemcfg, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
-        modificarLinea(VideoUtilityCFG, 'frontend_rotation', 'frontend_rotation 90')
-
-def get_xy_screen():
-    global x_screen
-    global y_screen
-    process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
-    output = process.stdout.read()
-    for line in output.splitlines():
-        if 'x' in line and 'mode' in line:
-            ResMode = line
-            ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
-            x_screen = int(ResMode[1])
-            y_screen = int(ResMode[2])
-get_xy_screen()
-pygame.mixer.pre_init(44100, -16, 1, 512)
-pygame.init()
-pygame.display.init()
-pygame.mouse.set_visible(0)
-get_config()
-get_retropie_joy_map()
-
-
-# VARIABLES
-
-# FF files
-wait = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/wait_%s.png'%RotationCurrentMode)
-waitPos = wait.get_rect()
-waitPos.center = ((x_screen/2), (y_screen/2))
-
-option1 = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_yes_%s.png'%RotationCurrentMode)
-option1Pos = option1.get_rect()
-option1Pos.center = ((x_screen/2), (y_screen/2))
-option1_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_yes_ena_%s.png'%RotationCurrentMode)
-option1_ENAPos = option1_ENA.get_rect()
-option1_ENAPos.center = ((x_screen/2), (y_screen/2))
-
-option2 = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_180_%s.png'%RotationCurrentMode)
-option2Pos = option2.get_rect()
-option2Pos.center = ((x_screen/2), (y_screen/2))
-option2_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_180_ena_%s.png'%RotationCurrentMode)
-option2_ENAPos = option2_ENA.get_rect()
-option2_ENAPos.center = ((x_screen/2), (y_screen/2))
-
-option3 = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_cancel_%s.png'%RotationCurrentMode)
-option3Pos = option3.get_rect()
-option3Pos.center = ((x_screen/2), (y_screen/2))
-option3_ENA = pygame.image.load('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/rotate_cancel_ena_%s.png'%RotationCurrentMode)
-option3_ENAPos = option3_ENA.get_rect()
-option3_ENAPos.center = ((x_screen/2), (y_screen/2))
-
-cursor = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/cursor.wav")
-load = pygame.mixer.Sound("/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/skin_rotate_screen/load.wav")
-os.system('clear')
-
-
-# SET SCREEN
-fullscreen = pygame.display.set_mode((x_screen,y_screen), FULLSCREEN)
-fullscreen.fill((0,0,0))
-# PASTE PICTURE ON FULLSCREEN
-fullscreen.blit(wait, waitPos)
-pygame.display.flip()
-time.sleep(1)
-MAXoptions = 2
-
-def quit_module(RebootSys):
-    pygame.display.quit()
+def quit_module(p_iSide = None):
     pygame.quit()
-    if RebootSys == True:
-        output = commands.getoutput('ps -A')
-        if 'emulationstatio' in output:
-            commandline = "touch /tmp/es-restart "
-            commandline += "&& pkill -f \"/opt/retropie"
-            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            os.system(commandline)
-            time.sleep(1)
-    sys.exit()
+    if p_iSide != None:
+        frontend_rotation(p_iSide, True)
+    sys.exit(0)
 
-#fullscreen.blit(Frame, (119,80))
-fullscreen.blit(option1, option1Pos)
-pygame.display.flip()
+def init_screen():
+    global fullscreen
+    fullscreen = pygame.display.set_mode((RES_X, RES_Y), pygame.FULLSCREEN)
+    fullscreen.fill((0,0,0))
+    fullscreen.blit(wait, waitPos)
+    pygame.display.flip()
+    time.sleep(1)
 
-y = 0
+def pygame_initialization():
+    global PGoJoyHandler
+    global PGoCursor
+    global PGoLoad
+    pygame.mixer.pre_init(44100, -16, 1, 512)
+    pygame.init()
+    pygame.display.init()
+    pygame.mouse.set_visible(0)
+    PGoCursor = pygame.mixer.Sound(SND_CURSOR_FILE)
+    PGoLoad = pygame.mixer.Sound(SND_LOAD_FILE)
+    PGoJoyHandler = joystick()
 
+def script_initialization():
+    global RES_X
+    global RES_Y
+    os.system('clear')
+    RES_X, RES_Y = get_screen_resolution()
+    check_es_launcher()
+    get_config()
+    pygame_initialization()
+
+def draw_menu():
+    fullscreen.blit(oOption, oPosition)
+    pygame.display.flip()
+
+script_initialization()
+
+# Pygame Load Images
+wait = pygame.image.load(os.path.join(SKIN_THEME_PATH, "wait_%s.png" % iCurSide))
+waitPos = wait.get_rect()
+waitPos.center = ((RES_X/2), (RES_Y/2))
+
+option1 = pygame.image.load(os.path.join(SKIN_THEME_PATH, "rotate_yes_%s.png" % iCurSide))
+option1Pos = option1.get_rect()
+option1Pos.center = ((RES_X/2), (RES_Y/2))
+option1_ENA = pygame.image.load(os.path.join(SKIN_THEME_PATH, "rotate_yes_ena_%s.png" % iCurSide))
+option1_ENAPos = option1_ENA.get_rect()
+option1_ENAPos.center = ((RES_X/2), (RES_Y/2))
+
+option2 = pygame.image.load(os.path.join(SKIN_THEME_PATH, "rotate_180_%s.png" % iCurSide))
+option2Pos = option2.get_rect()
+option2Pos.center = ((RES_X/2), (RES_Y/2))
+option2_ENA = pygame.image.load(os.path.join(SKIN_THEME_PATH, "rotate_180_ena_%s.png"%iCurSide))
+option2_ENAPos = option2_ENA.get_rect()
+option2_ENAPos.center = ((RES_X/2), (RES_Y/2))
+
+option3 = pygame.image.load(os.path.join(SKIN_THEME_PATH, "rotate_cancel_%s.png" % iCurSide))
+option3Pos = option3.get_rect()
+option3Pos.center = ((RES_X/2), (RES_Y/2))
+option3_ENA = pygame.image.load(os.path.join(SKIN_THEME_PATH, "rotate_cancel_ena_%s.png" % iCurSide))
+option3_ENAPos = option3_ENA.get_rect()
+option3_ENAPos.center = ((RES_X/2), (RES_Y/2))
+
+oOption = option1
+oPosition = option1Pos
+
+init_screen()
 
 while True:
-    pygame.event.clear()
-    event = pygame.event.wait()
-    action = check_joy_event(event)
+    draw_menu()
+    event = PGoJoyHandler.event_wait()
     #button
-    if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
+    if event & CRT_BUTTON:
         if y < 1:
-            load.play()
-            fullscreen.blit(option1_ENA, option1_ENAPos)
-            pygame.display.flip()
-            rotate_frontend(0)
+            PGoLoad.play()
+            oOption = option1_ENA
+            oPosition = option1_ENAPos
+            draw_menu()
             time.sleep(1)
-            quit_module(True)
-
-        if y == 1:
-            load.play()
-            fullscreen.blit(option2_ENA, option2_ENAPos)
-            pygame.display.flip()
+            quit_module(0)
+        elif y == 1:
+            PGoLoad.play()
+            oOption = option2_ENA
+            oPosition = option2_ENAPos
+            draw_menu()
             time.sleep(1)
-            if RotationCurrentMode == 1:
-                rotate_frontend(3)
-            elif RotationCurrentMode == 3:
-                rotate_frontend(1)
-            quit_module(True)
-
-        if y == 2:
-            load.play()
-            fullscreen.blit(option3_ENA, option3_ENAPos)
-            pygame.display.flip()
+            if iCurSide == 1:
+                quit_module(-90)
+            elif iCurSide == 3:
+                quit_module(90)
+        elif y == 2:
+            PGoLoad.play()
+            oOption = option3_ENA
+            oPosition = option3_ENAPos
+            draw_menu()
             time.sleep(1)
-            quit_module(False)
-
+            quit_module()
     #down
-    elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
+    elif event & CRT_DOWN:
         if y < MAXoptions:
+            PGoCursor.play()
             y = y + 1
-            cursor.play()
             if y == 1:
-                fullscreen.blit(option2, option2Pos)
+                oOption = option2
+                oPosition = option2Pos
             elif y == 2:
-                fullscreen.blit(option3, option3Pos)
-            pygame.display.flip()
-
+                oOption = option3
+                oPosition = option3Pos
     #up
-    elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
+    elif event & CRT_UP:
         if y > 0:
+            PGoCursor.play()
             y = y - 1
-            cursor.play()
             if y == 1:
-                fullscreen.blit(option2, option2Pos)
+                oOption = option2
+                oPosition = option2Pos
             elif y == 0:
-                fullscreen.blit(option1, option1Pos)
-            pygame.display.flip()
+                oOption = option1
+                oPosition = option1Pos
 quit_module()
 

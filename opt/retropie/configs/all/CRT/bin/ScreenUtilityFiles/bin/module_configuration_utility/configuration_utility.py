@@ -29,8 +29,9 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
+from launcher_module.es_rotation import frontend_rotation
 from launcher_module.core_choices_dynamic import choices
-from launcher_module.file_helpers import modify_line
+from launcher_module.file_helpers import modify_line, ini_get
 from launcher_module.utils import get_xy_screen, something_is_bad
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
@@ -38,6 +39,18 @@ from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, 
 FONT_FILE = os.path.join(CRTFONTS_PATH, "PetMe64.ttf")
 SCREEN_MNG_PATH = os.path.join(CRTMODULES_PATH, "module_screen_tools_manager")
 SCREEN_MNG_FILE = os.path.join(SCREEN_MNG_PATH, "screen_tools_manager.py")
+
+ES_LAUNCHER_DST_FILE = os.path.join(RETROPIE_PATH,
+                       "supplementary/emulationstation/emulationstation.sh")
+ES_LAUNCHER_SRC_FILE = os.path.join(CRT_ES_RES_PATH,
+                       "configs/default_emulationstation.sh")
+ES_LAUNCHER_BCK_FILE = os.path.join(RETROPIE_PATH,
+                       "supplementary/emulationstation/backup.emulationstation.sh")
+
+CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
+ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
+ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
+ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
 
 # menu centering and screen adjusters
 x_screen = 0
@@ -54,12 +67,7 @@ x = 0
 y = 0
 iCurOption = 0
 
-SystemRes = ""
-ES_Res_50hz = 'system50'
-ES_Res_60hz = 'system60'
-CurTheme = "none"
-VerTheme = "V270P-CRT-BASE"
-HorTheme = "270P-CRT-SNES-MINI"
+iCurSide = ""
 ServiceRunning = False
 ServiceExist = False
 ES_Restart = False
@@ -81,9 +89,9 @@ opt = [["1.GAMES ROTATION" , "Not PixelPerfect but playable on AdvMAME" , 0],
       ["3.HANDHELD BEZELS" , "CAUTION!!! Long use can damage the screen" , 0],
       ["4.FREQUENCY SELECTOR" , "Set Frequency at 50/60hz, Auto or Manual" , 0],
       ["5.VIDEO CONFIG>" , "Advanced Video Configuration"],
-      ['6.BACKGROUND MUSIC' , 'Play your music with emulationstation', 0],
-      ['7.INTEGER SCALE' , 'ONLY for LibRetro Arcade and NEOGEO Games', 0],
-      ['8.SCUMMVM ARC' , 'Aspect Ratio Correction: Stretch but NO PixelPerfect', 0],
+      ["6.BACKGROUND MUSIC" , "Play your music with emulationstation", 0],
+      ["7.INTEGER SCALE" , "ONLY for LibRetro Arcade and NEOGEO Games", 0],
+      ["8.SCUMMVM ARC" , "Aspect Ratio Correction: Stretch but NO PixelPerfect", 0],
       ["<EXIT" , "Save and Exit"]]
       
 DEFAULT_CONFIG = "\"default system50\n"
@@ -170,9 +178,28 @@ def pygame_unload():
 
 def script_initialization():
     os.system('clear')
+    check_es_launcher()        # fix ES script launcher if needed
     get_screen_size_adjust()
-    get_config()
     pygame_initialization()
+    background_music_check()
+    get_config()
+
+def check_es_launcher():
+    p_bFixed = False
+    if not os.path.exists(ES_LAUNCHER_DST_FILE):
+        os.system('sudo cp %s %s >> /dev/null 2>&1' % (ES_LAUNCHER_SRC_FILE, ES_LAUNCHER_DST_FILE))
+        p_bFixed = True
+    else:
+        if not filecmp.cmp(ES_LAUNCHER_SRC_FILE, ES_LAUNCHER_DST_FILE):
+            os.system('sudo cp %s %s >> /dev/null 2>&1' % (ES_LAUNCHER_DST_FILE, ES_LAUNCHER_BCK_FILE))
+            os.system('sudo cp %s %s >> /dev/null 2>&1' % (ES_LAUNCHER_SRC_FILE, ES_LAUNCHER_DST_FILE))
+            p_bFixed = True
+    if p_bFixed:        
+        os.system('sudo chmod +x %s >> /dev/null 2>&1' % ES_LAUNCHER_DST_FILE)
+        infos = "System needs to reboot, please wait..."
+        infos2 = ""
+        something_is_bad(infos, infos2)
+        os.system('sudo reboot')
    
 def text_print(txt, xcoord, ycoord, color, center):
     if x_screen <= 340:
@@ -192,11 +219,13 @@ def text_print(txt, xcoord, ycoord, color, center):
     else:
         PGoScreen.blit(PGoFont.render(txt, 1, color), (xcoord, ycoord))
 
-def draw_arrow_left(add_space=0):
-    PGoScreen.blit((PGoFont.render('<<', 1, (YELLOW))), (data_x-(len(str(opt[iCurOption][2]))*8)-18-(8*add_space), (30+y_margin+LineMov) + iCurOption * Interline))
+def draw_arrow_left(p_sLabel = 0):
+    PGoScreen.blit((PGoFont.render('<<', 1, YELLOW)), (data_x - (len(p_sLabel) * 8) - 18,
+                   (30 + y_margin + LineMov) + iCurOption * Interline))
 
 def draw_arrow_right():
-    PGoScreen.blit((PGoFont.render('>>', 1, (YELLOW))), (data_x+2, (30+y_margin+LineMov)+ iCurOption *Interline))
+    PGoScreen.blit((PGoFont.render('>>', 1, (YELLOW))), (data_x + 2, 
+                   (30 + y_margin+LineMov) + iCurOption * Interline))
 
 def save_configuration():
     modify_line(CFG_VIDEOUTILITY_FILE,'game_rotation','game_rotation %s'%opt[0][2])
@@ -243,76 +272,11 @@ def background_music_remove():
         os.system('sudo systemctl disable BackGroundMusic.service > /dev/null 2>&1')
     background_music_check()
 
-def rotate_frontend():
-    show_info ("WAIT, PREPARING ROTATION...")
-    if bRotateES == True:
-        os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1 >> /dev/null 2>&1')
-        os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3 >> /dev/null 2>&1')
-        os.system('rm /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko >> /dev/null 2>&1')
-        if opt[1][2] == 0:
-            os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko')
-            os.system('sudo rm /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
-            os.system('sudo mv /etc/emulationstation/disabled.themes /etc/emulationstation/themes >> /dev/null 2>&1')
-            os.system('sudo rm -R /opt/retropie/configs/all/emulationstation/themes/V270P-CRT-BASE/ >> /dev/null 2>&1')
-            if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbah_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmameh_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mameh_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxh_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_H.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
-            modify_line(ESCFG_FILE, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%HorTheme)
-        if opt[1][2] == 90:
-            os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1')
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
-            os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
-            if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
-                os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-            os.system('cp -R /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
-            if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbav1_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmamev1_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mamev1_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxv1_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V1.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
-            modify_line(ESCFG_FILE, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
-        if opt[1][2] == -90:
-            os.system('touch /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3')
-            os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/vertical_es_systems.cfg /opt/retropie/configs/all/emulationstation/es_systems.cfg >> /dev/null 2>&1')
-            os.system('sudo mv /etc/emulationstation/themes /etc/emulationstation/disabled.themes >> /dev/null 2>&1')
-            if not os.path.exists('/opt/retropie/configs/all/emulationstation/themes'):
-                os.system('mkdir /opt/retropie/configs/all/emulationstation/themes >> /dev/null 2>&1')
-            os.system('cp -R /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/themes/V270P-CRT-BASE/ /opt/retropie/configs/all/emulationstation/themes/ >> /dev/null 2>&1')
-            if os.path.exists('/opt/retropie/configs/fba/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/fbav3_launching_%s.png /opt/retropie/configs/fba/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/mame-advmame/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/advmamev3_launching_%s.png /opt/retropie/configs/mame-advmame/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/mame-libretro/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/mamev3_launching_%s.png /opt/retropie/configs/mame-libretro/launching.png >> /dev/null 2>&1'%SystemRes)
-            if os.path.exists('/opt/retropie/configs/psx/launching.png'):
-                os.system('cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/launch_images/psxv3_launching_%s.png /opt/retropie/configs/psx/launching.png >> /dev/null 2>&1'%SystemRes)
-            os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/splash_screen/CRT-Retropie-Load_V3.mp4 /opt/retropie/supplementary/splashscreen/CRT-Retropie-Load.mp4 >> /dev/null 2>&1')
-            modify_line(ESCFG_FILE, '"ThemeSet"', '<string name="ThemeSet" value="%s" />'%VerTheme)
-
 def quit_utility():
     pygame_unload()
     save_configuration()
     if bRotateES == True:
-        rotate_frontend()
-        # Restart ES if it is running
-        output = commands.getoutput('ps -A')
-        if 'emulationstatio' in output:
-            commandline = "touch /tmp/es-restart "
-            commandline += "&& pkill -f \"/opt/retropie"
-            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            show_info ("EMULATIONSTATION WILL RESTART NOW")
-            os.system(commandline)
-    time.sleep(1)
+        frontend_rotation(opt[1][2], True)
     sys.exit(0)
 
 def launch_application(sCommandline, bShell = False):
@@ -331,239 +295,177 @@ def launch_screen_tool_manager():
 
 def get_config():
     global opt
-    global CurTheme
-    global HorTheme
-    global VerTheme
-    global SystemRes
-    HorTheme240p = "none"
-    HorTheme270p = "none"
-    VerTheme240p = "none"
-    VerTheme270p = "none"
+    global iCurSide
+
+    # create configuration file if not exists
     if not os.path.exists(CFG_VIDEOUTILITY_FILE):
-        os.system('echo %s > %s'%(DEFAULT_CONFIG,CFG_VIDEOUTILITY_FILE))
-    with open(CFG_VIDEOUTILITY_FILE, 'r') as file:
-        for line in file:
-            line = line.strip().replace('=',' ').split(' ')
-            if line[0] == 'game_rotation':
-                opt[0][2] = int(line[1])
-            elif line[0] == 'handheld_bezel':
-                opt[2][2] = int(line[1])
-            elif line[0] == 'freq_selector':
-                opt[3][2] = int(line[1])
-            elif line[0] == 'integer_scale':
-                opt[6][2] = int(line[1])
-            elif line[0] == 'scummvm_arc':
-                opt[7][2] = int(line[1])
-            elif line[0] == '240p_theme_horizontal':
-                HorTheme240p = line[1]
-            elif line[0] == '270p_theme_horizontal':
-                HorTheme270p = line[1]
-            elif line[0] == '240p_theme_vertical':
-                VerTheme240p = line[1]
-            elif line[0] == '270p_theme_vertical':
-                VerTheme270p = line[1]
-            elif line[0] == 'default':
-                if line[1] == ES_Res_50hz:
-                    SystemRes = '270p'
-                elif line[1] == ES_Res_60hz:
-                    SystemRes = '240p'
-    if SystemRes == '240p':
-        HorTheme = HorTheme240p
-        VerTheme = VerTheme240p
-    elif SystemRes == '270p':
-        HorTheme = HorTheme270p
-        VerTheme = VerTheme270p
+        os.system('echo %s > %s' % (DEFAULT_CONFIG, CFG_VIDEOUTILITY_FILE))
 
-    if os.path.exists(ESCFG_FILE):
-        with open(ESCFG_FILE, 'r') as file:
-            for line in file:
-                line = line.strip().replace('"','').replace(' ','').replace('/','').replace('>','').split('=')
-                if 'ThemeSet' in line[1]:
-                    CurTheme = line[2]
+    # get configuration values
+    opt[0][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "game_rotation"))
+    opt[2][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "handheld_bezel"))
+    opt[3][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "freq_selector"))
+    opt[6][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "integer_scale"))
+    opt[7][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "scummvm_arc"))
 
-    if not os.path.exists('/opt/retropie/supplementary/emulationstation/emulationstation.sh'):
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
-    ESLauncher = filecmp.cmp('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh', '/opt/retropie/supplementary/emulationstation/emulationstation.sh')
-    if ESLauncher == False:
-        os.system('sudo cp /opt/retropie/supplementary/emulationstation/emulationstation.sh /opt/retropie/supplementary/emulationstation/backup.emulationstation.sh >> /dev/null 2>&1')
-        os.system('sudo cp /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/default_emulationstation.sh /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
-        os.system('sudo chmod +x /opt/retropie/supplementary/emulationstation/emulationstation.sh >> /dev/null 2>&1')
-        infos = "System needs to reboot, please wait..."
-        infos2 = ""
-        something_is_bad(infos,infos2)
-        os.system('sudo reboot')
-    if os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate1'):
+    # get current emulationstation side
+    if os.path.exists(ROTMODES_TATE1_FILE):
         opt[1][2] = 90
         opt[1][3] = 90
         opt[0][2] = 0
-        modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-tate3'):
+    elif os.path.exists(ROTMODES_TATE3_FILE):
         opt[1][2] = -90
         opt[1][3] = -90
         opt[0][2] = 0
-        modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_vertical '%SystemRes, '%s_theme_vertical %s'%(SystemRes, CurTheme))
-    elif os.path.exists('/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/assets/screen_emulationstation/CRTResources/configs/es-select-yoko'):
-        opt[1][2] = 0
-        opt[1][3] = 0
-        modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
     else:
         opt[1][2] = 0
         opt[1][3] = 0
-        modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_horizontal '%SystemRes, '%s_theme_horizontal %s'%(SystemRes, CurTheme))
-    background_music_check()
 
-def draw_menu():
-    global iCurOption
-    global opt
+def check_rotation_mode(p_iOption = None):
     global bRotateES
-    
-    # draw background color and main frame
-    PGoScreen.fill(BLUELIGHT) 
-    pygame.draw.rect(PGoScreen, BLUEDARK,
-                    (20,y_margin,x_screen-40,(20+(Interline*9)+3+16+10)), 0)
-
-    # draw title and version
-    title = PGoFont.render("Configuration Utility", 1, BLUELIGHT)
-    PGoScreen.blit(title, (32, y_margin+8))
-    text_print("v3.5", x_screen-62, y_margin+8, BLUEUNS, False)
-
-    # draw options list frame
-    pygame.draw.rect(PGoScreen, BLUELIGHT, (32, y_margin + 24,
-                                              x_screen-62, Interline * 9), 1)
-
-    # clear any previous warning top red message
-    text_print('EMULATIONSTATION NEEDS TO RESTART', 0,
-                y_margin-13, BLUELIGHT, True)
-
-    # draw if apply warning message on top 
+    global opt
     bRotateES = False
+    p_lDisOpt = []
     
     if opt[1][2] != opt[1][3]:
         bRotateES = True
+        p_lDisOpt = [0, 2, 3, 4, 5, 6, 7, 9]
+
+    if p_iOption != None:
+        if p_iOption in p_lDisOpt and bRotateES:
+            return False
+        return True
+
+    if bRotateES:
+        opt[8][0] = '<RESTART'
+        opt[8][1] = 'Restart FrontEnd for TATE Mode'
         text_print('EMULATIONSTATION NEEDS TO RESTART', 0, y_margin-13, RED, True)
         if opt[1][2] != 0:
             opt[0][2] = 0
+    else:
+        opt[8][0] = '<EXIT'
+        opt[8][1] = 'Save and Exit'
 
-    # draw whole list of options in base color
-    for i in range(0,9):
-        if bRotateES == False:
-            opt[8][0] = '<EXIT'
-            opt[8][1] = 'Save and Exit'
-            PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUELIGHT)), (list_x, (30+y_margin+LineMov)+i*Interline))
-        elif bRotateES == True:
-            opt[8][0] = '<RESTART'
-            opt[8][1] = 'Restart FrontEnd for TATE Mode'
-            if i == 1 or i == 8:
-                PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUELIGHT)), (list_x, (30+y_margin+LineMov)+i*Interline))
-            else:
-                PGoScreen.blit((PGoFont.render(opt[i][0], 1, BLUEUNS)), (list_x, (30+y_margin+LineMov)+i*Interline))
+def get_menu_options_value_label(p_sOption):
+    p_sLabel = None
+    p_bLArrow = False
+    p_bRArrow = False
 
-    # draw all selectables values in base color    
-    for i in range(0,9):
-        if not bRotateES:
-            if i == 0:
-                if opt[0][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                else:
-                    select = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 1:
-                if opt[1][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 2:
-                if opt[2][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[2][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 3:
-                if opt[3][2] == 0:
-                    select = PGoFont.render("MAN", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[3][2] == 100:
-                    select = PGoFont.render("AUT", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+i*Interline))
-                else:
-                    select = PGoFont.render(str(opt[3][2]), 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 5:
-                if opt[5][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[5][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 6:
-                if opt[6][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[6][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 7:
-                if opt[7][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[7][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[7][2] == 2:
-                    select = PGoFont.render("MAN", 1, BLUELIGHT)
-                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
+    try:
+        p_iCurValue = int(opt[p_sOption][2])
+    except:
+        return None, None, None
 
+    if p_sOption == 0:
+        if p_iCurValue == 0:
+            p_sLabel = "OFF"
+            p_bLArrow = True
         else:
-            if i == 0:
-                if opt[0][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 1:
-                strpor = PGoFont.render(str(opt[i][2]), 1, BLUELIGHT)
-                PGoScreen.blit(strpor, (data_x-(len(str(opt[i][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 2:
-                if opt[2][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[2][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 3:
-                if opt[3][2] == 0:
-                    select = PGoFont.render("MAN", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[3][2] == 100:
-                    select = PGoFont.render("AUT", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+i*Interline))
-                else:
-                    select = PGoFont.render(str(opt[3][2]), 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len(str(opt[3][2]))*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 5:
-                if opt[5][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[5][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 6:
-                if opt[6][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[6][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-            elif i == 7:
-                if opt[7][2] == 0:
-                    select = PGoFont.render("OFF", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[7][2] == 1:
-                    select = PGoFont.render("YES", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("YES")*8), (30+y_margin+LineMov)+i*Interline))
-                elif opt[7][2] == 2:
-                    select = PGoFont.render("MAN", 1, BLUEUNS)
-                    PGoScreen.blit(select, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+i*Interline))
+            p_sLabel = str(p_iCurValue)
+            p_bRArrow = True
+    elif p_sOption == 1:
+        if p_iCurValue == 0:
+            p_sLabel = "OFF"
+            p_bRArrow = True
+            p_bLArrow = True
+        else:
+            p_sLabel = str(p_iCurValue)
+            if p_iCurValue > 0:
+                p_bLArrow = True
+            elif p_iCurValue < 0:
+                p_bRArrow = True
+    elif p_sOption == 2:
+        if p_iCurValue == 0:
+            p_sLabel = "OFF"
+            p_bRArrow = True
+        elif p_iCurValue == 1:
+            p_sLabel = "YES"
+            p_bLArrow = True
+    elif p_sOption == 3:
+        if p_iCurValue == 0:
+            p_sLabel = "MAN"
+            p_bRArrow = True
+        elif p_iCurValue == 100:
+            p_sLabel = "AUT"
+            p_bLArrow = True
+        else:
+            p_sLabel = str(p_iCurValue)
+            p_bRArrow = True
+            p_bLArrow = True
+    elif p_sOption == 4:
+        pass
+    elif p_sOption == 5:
+        if p_iCurValue == 0:
+            p_sLabel = "OFF"
+            p_bRArrow = True
+        elif p_iCurValue == 1:
+            p_sLabel = "YES"
+            p_bLArrow = True
+    elif p_sOption == 6:
+        if p_iCurValue == 0:
+            p_sLabel = "OFF"
+            p_bRArrow = True
+        elif p_iCurValue == 1:
+            p_sLabel = "YES"
+            p_bLArrow = True
+    elif p_sOption == 7:
+        if p_iCurValue == 0:
+            p_sLabel = "OFF"
+            p_bRArrow = True
+        elif p_iCurValue == 1:
+            p_sLabel = "YES"
+            p_bRArrow = True
+            p_bLArrow = True
+        elif p_iCurValue == 2:
+            p_sLabel = "MAN"
+            p_bLArrow = True
+    
+    return p_sLabel, p_bLArrow, p_bRArrow
 
+def draw_menu_options_value(p_oColor, p_iOption):
+    p_sLabel, p_bLArrow, p_bRArrow = get_menu_options_value_label(p_iOption)
+    
+    if p_sLabel:
+        sLabelLen = int(len(p_sLabel))
+        listrndr = PGoFont.render(p_sLabel, 1, p_oColor)
+        PGoScreen.blit(listrndr, ((data_x - (sLabelLen) * 8),
+                      (30 + y_margin + LineMov) + p_iOption * Interline))
+        if p_iOption == iCurOption:
+            if p_bRArrow:
+                draw_arrow_right()
+            if p_bLArrow:
+                draw_arrow_left(p_sLabel)
+
+def draw_menu_options_description(p_oColor, p_iOption):
+    try:
+        p_sLabel = str(opt[p_iOption][0])
+    except:
+        return
+
+    if p_sLabel:
+        PGoScreen.blit((PGoFont.render(p_sLabel, 1, p_oColor)),
+                       (list_x, (30 + y_margin+LineMov) + p_iOption * Interline))
+
+def draw_menu_options_info(p_iOption, p_oColor = YELLOW):
+    try:
+        p_sLabel = str(opt[p_iOption][1])
+    except:
+        return
+
+    if x_screen <= 340:
+        p_sLabel = p_sLabel[0:28]
+        if len(p_sLabel) >= 28 :
+            p_sLabel += '...'
+    else:
+        p_sLabel = p_sLabel[0:44]
+        if len(p_sLabel) >= 44 :
+            p_sLabel += '...'
+
+    if p_sLabel:
+        PGoScreen.blit((PGoFont.render(p_sLabel, 1, p_oColor)),
+                        (38, ((y_margin + 23) + Interline * 9) + 4))
+                    
+def draw_menu_options_selection_bar():
     # draw current selection frame color
     pygame.draw.rect(PGoScreen, BLUELIGHT,
                     (32,(24 + y_margin) + iCurOption * Interline, x_screen \
@@ -571,130 +473,47 @@ def draw_menu():
     PGoScreen.blit((PGoFont.render(opt[iCurOption][0], 1, BLUEDARK)),
                     (list_x, (30 + y_margin + LineMov) + iCurOption * Interline))
 
-    # draw active option in dark color
-    if iCurOption in (0, 1, 2, 3, 5, 6, 7):
-        if opt[0][2] == 0 and iCurOption == 0:
-            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[1][2] == 0 and iCurOption == 1:
-            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[2][2] == 0 and iCurOption == 2:
-            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[2][2] == 1 and iCurOption == 2:
-            listrndr = PGoFont.render("YES", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[3][2] == 0 and iCurOption == 3:
-            listrndr = PGoFont.render("MAN", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[3][2] == 100 and iCurOption == 3:
-            listrndr = PGoFont.render("AUT", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("AUT")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[5][2] == 0 and iCurOption == 5:
-            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[5][2] == 1 and iCurOption == 5:
-            listrndr = PGoFont.render("YES", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[6][2] == 0 and iCurOption == 6:
-            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[6][2] == 1 and iCurOption == 6:
-            listrndr = PGoFont.render("YES", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[7][2] == 0 and iCurOption == 7:
-            listrndr = PGoFont.render("OFF", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("OFF")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[7][2] == 1 and iCurOption == 7:
-            listrndr = PGoFont.render("YES", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("YES")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
-        elif opt[7][2] == 2 and iCurOption == 7:
-            listrndr = PGoFont.render("MAN", 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len("MAN")*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+def draw_menu_options():
+    p_iOption = 0
+    p_oColor = None
+    p_iCount = 0
+    for p_iOption in opt:
+        p_oColor = BLUELIGHT
+        if p_iCount == iCurOption:
+            draw_menu_options_selection_bar()
+            draw_menu_options_info(p_iCount)
+            p_oColor = BLUEDARK
         else:
-            listrndr = PGoFont.render(str(opt[iCurOption][2]), 1, BLUEDARK)
-            PGoScreen.blit(listrndr, (data_x-(len(str(opt[iCurOption][2]))*8), (30+y_margin+LineMov)+ iCurOption *Interline))
+            if not check_rotation_mode(p_iCount):
+                p_oColor = BLUEUNS
+        draw_menu_options_value(p_oColor, p_iCount)
+        draw_menu_options_description(p_oColor, p_iCount)
+        p_iCount += 1
 
-    # draw arrows per option
-    # arrows for option 1
-    if iCurOption == 0 and opt[0][2] < 0:
-        draw_arrow_right()
-    elif iCurOption == 0 and opt[0][2] == 0 and opt[1][2] == 0:
-        draw_arrow_left(2)
-
-    # arrows for option 2
-    if iCurOption == 1 and opt[1][2] < 0:
-        draw_arrow_right()
-    elif iCurOption == 1 and opt[1][2] == 0:
-        draw_arrow_right()
-        draw_arrow_left(2)
-    elif iCurOption == 1 and opt[1][2] > 0:
-        draw_arrow_left()
-
-    # arrows for option 3
-    if iCurOption == 2:
-        if opt[2][2] == 1:
-            draw_arrow_left(2)
-        else:
-            draw_arrow_right()
-
-    # arrows for option 4
-    if iCurOption == 3:
-        if opt[3][2] == 0:
-            draw_arrow_right()
-        if opt[3][2] == 50:
-            draw_arrow_right()
-            draw_arrow_left()
-        if opt[3][2] == 60:
-            draw_arrow_right()
-            draw_arrow_left()
-        if opt[3][2] == 100:
-            draw_arrow_left()
-
-    # arrows for option 6
-    if iCurOption == 5:
-        if opt[5][2] == 1:
-            draw_arrow_left(2)
-        elif opt[5][2] == 0:
-            draw_arrow_right()
-
-    # arrows for option 7
-    if iCurOption == 6:
-        if opt[6][2] == 1:
-            draw_arrow_left(2)
-        elif opt[6][2] == 0:
-            draw_arrow_right()
-
-    # arrows for option 8
-    if iCurOption == 7:
-        if opt[7][2] == 0:
-            draw_arrow_right()
-        if opt[7][2] == 1:
-            draw_arrow_right()
-            draw_arrow_left(2)
-        if opt[7][2] == 2:
-            draw_arrow_right()
-            draw_arrow_left(2)
-
-    
-    if iCurOption == 7 and opt[1][2] != opt[1][3]:
-        PGoScreen.blit((PGoFont.render(opt[iCurOption][0], 1, (136, 136, 255))), (110, (30+y_margin+LineMov)+ iCurOption *Interline))
-
-    # draw info message on bottom
-    info = str(opt[iCurOption][1])
-    if x_screen <= 340:
-        info = info[0:28]
-        if len(info) >= 28 :
-            info = info + '...'
-    else:
-        info = info[0:44]
-        if len(info) >= 44 :
-            info = info + '...'
-    PGoScreen.blit((PGoFont.render(info, 1, (YELLOW))),
-                    (38, ((y_margin + 23) + Interline * 9) + 4))
+def draw_menu_base_framework():
+    # draw background color and main frame
+    PGoScreen.fill(BLUELIGHT) 
+    pygame.draw.rect(PGoScreen, BLUEDARK,
+                    (20,y_margin,x_screen-40,(20+(Interline*9)+3+16+10)), 0)
+    # draw options list frame
+    pygame.draw.rect(PGoScreen, BLUELIGHT, 
+                    (32, y_margin + 24, x_screen-62, Interline * 9), 1)
+    # draw info list frame
     pygame.draw.rect(PGoScreen, BLUELIGHT, 
                     (32,(y_margin + 23) + Interline * 9,x_screen - 62, 16), 1)
+
+def draw_menu_title():
+    # draw title and version
+    sTitle = PGoFont.render("Configuration Utility", 1, BLUELIGHT)
+    PGoScreen.blit(sTitle, (32, y_margin+8))
+    text_print("v3.5", x_screen-62, y_margin+8, BLUEUNS, False)
+
+
+def draw_menu():
+    check_rotation_mode()    
+    draw_menu_base_framework()
+    draw_menu_title()
+    draw_menu_options()
     pygame.display.flip()
 
 # MAIN PROGRAM
@@ -705,9 +524,13 @@ while True:
     event = PGoJoyHandler.event_wait()
     #button
     if event & CRT_BUTTON:
-        if iCurOption == 4:
+        if iCurOption < 4:
+            opt[iCurOption][2] = 0
+        elif iCurOption == 4:
             launch_screen_tool_manager()
-        elif iCurOption < 3:
+        elif iCurOption == 5:
+            background_music_remove()
+        elif iCurOption < 8:
             opt[iCurOption][2] = 0
         elif iCurOption == 8:
             quit_utility()

@@ -30,6 +30,7 @@ RETROPIE_PATH = "/opt/retropie"
 RETROPIECFG_PATH = os.path.join(RETROPIE_PATH, "configs")
 RETROPIEEMU_PATH = os.path.join(RETROPIE_PATH, "emulators")
 RETROPIEMUS_PATH = os.path.join(RETROPIECFG_PATH, "music")
+RETROPIEINTROS_PATH = os.path.join(RETROPIE_PATH, "supplementary/splashscreen")
 CFG_VIDEOMODES_FILE = os.path.join(RETROPIECFG_PATH, "all/videomodes.cfg")
 RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
 
@@ -37,10 +38,15 @@ RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcomma
 RETROARCHCFG_FILE = os.path.join(RETROPIECFG_PATH, "all/retroarch.cfg")
 RETROARCHBIN_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
 
-# emulationstation path setup
+# EmulationStation
+ES_PATH = "/etc/emulationstation"
+ESSYSTEMS_FILE = os.path.join(ES_PATH, "es_systems.cfg")
+ESTHEMES_PRI_PATH = os.path.join(ES_PATH, "themes")
+
 ESCFG_PATH = os.path.join(RETROPIECFG_PATH, "all/emulationstation")
 ESCTRLS_FILE = os.path.join(ESCFG_PATH, "es_input.cfg")
 ESCFG_FILE = os.path.join(ESCFG_PATH, "es_settings.cfg")
+ESTHEMES_SEC_PATH = os.path.join(ESCFG_PATH, "themes")
 
 # CRT main software paths
 CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
@@ -60,10 +66,14 @@ CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
 # CRT resources
 CRTRESOURCES_PATH = os.path.join(CRTCONTENT_PATH, "resources")
 CRTASSETS_PATH = os.path.join(CRTRESOURCES_PATH, "assets")
-CRTLAUNCHIMAGES_SET_PATH = os.path.join(CRTASSETS_PATH, "screen_emulationstation/CRTResources/launch_images_modes")
-CRTICONS_SET_PATH = os.path.join(CRTASSETS_PATH, "screen_emulationstation/CRTResources/crt_icons")
-CRTFONTS_PATH = os.path.join(CRTASSETS_PATH, "screen_fonts")
 CRTADDONS_PATH = os.path.join(CRTRESOURCES_PATH, "addons")
+
+CRT_ES_RES_PATH = os.path.join(CRTASSETS_PATH, "screen_emulationstation/CRTResources")
+CRTLAUNCHIMAGES_MOD_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_modes")
+CRTLAUNCHIMAGES_ROT_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_rotate")
+CRTICONS_SET_PATH = os.path.join(CRT_ES_RES_PATH, "crt_icons")
+
+CRTFONTS_PATH = os.path.join(CRTASSETS_PATH, "screen_fonts")
 
 # CRT scripts modules
 CRTMODULES_PATH = os.path.join(CRTCONTENT_PATH, "bin")
