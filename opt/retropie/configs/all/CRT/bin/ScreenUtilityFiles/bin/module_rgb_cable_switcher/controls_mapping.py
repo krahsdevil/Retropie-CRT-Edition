@@ -42,22 +42,22 @@ class CTRLSMgmt(object):
     KEYBOARD defaults. Whether pikeyd165.conf or rest of software (retroarch,
     EmulationStation) will be configured in the same way:
 
-            PLAYER 1                           PLAYER 2
-    -----------------------              -------------------
-    Label           Key                  Label           Key
-    --------        -------              --------        ---
-    P1 START        1                    P2 START        2
-    P1 COIN         6                    P2 COIN         6
-    P1 RIGHT        R arrow              P2 RIGHT        G    
-    P1 LEFT         L arrow              P2 LEFT         D
-    P1 UP           U arrow              P2 UP           R
-    P1 DOWN         D arrow              P2 DOWN         F
-    P1 SW 1         L-ctrl               P2 SW 1         A    
-    P1 SW 2         L-alt                P2 SW 2         S    
-    P1 SW 3         space                P2 SW 3         Q    
-    P1 SW 4         L-shift              P2 SW 4         W    
-    P1 SW 5         Z                    P2 SW 5         I
-    P1 SW 6         X                    P2 SW 6         K
+            PLAYER 1               RETROPAD               PLAYER 2
+    -----------------------        --------         -------------------
+    Label           Key            Button           Label           Key
+    --------        -------        ------           --------        ---
+    P1 START        1              START            P2 START        2
+    P1 COIN         5              SELECT           P2 COIN         6
+    P1 RIGHT        R arrow        RIGHT            P2 RIGHT        G
+    P1 LEFT         L arrow        LEFT             P2 LEFT         D
+    P1 UP           U arrow        UP               P2 UP           R
+    P1 DOWN         D arrow        DOWN             P2 DOWN         F
+    P1 SW 1         L-ctrl         B BTN            P2 SW 1         A
+    P1 SW 2         L-alt          A BTN            P2 SW 2         S
+    P1 SW 3         space          X BTN            P2 SW 3         Q
+    P1 SW 4         L-shift        Y BTN            P2 SW 4         W
+    P1 SW 5         Z              L BTN            P2 SW 5         I
+    P1 SW 6         X              R BTN            P2 SW 6         K
     
     """
     # player 1 keyboard retroarch default config
@@ -130,8 +130,8 @@ class CTRLSMgmt(object):
                      'value': 'f1', 'dis': 'f1'})
                     
     # emulationstation keyboard configuration xml for PI2JAMMA
-    m_lESP2JInputs = ({'name': 'a', 'type': 'key', 'id': '1073742048', 'value': '1'},
-                      {'name': 'b', 'type': 'key', 'id': '1073742050', 'value': '1'},
+    m_lESP2JInputs = ({'name': 'b', 'type': 'key', 'id': '1073742048', 'value': '1'},
+                      {'name': 'a', 'type': 'key', 'id': '1073742050', 'value': '1'},
                       {'name': 'down', 'type': 'key', 'id': '1073741905', 'value': '1'},
                       {'name': 'hotkeyenable', 'type': 'key', 'id': '49', 'value': '1'},
                       {'name': 'left', 'type': 'key', 'id': '1073741904', 'value': '1'},
@@ -374,6 +374,7 @@ class CTRLSMgmt(object):
             # save 'es_input.cfg' only if any change happens
             if p_bXMLSave:
                 tree.write(ESCTRLS_FILE, encoding='UTF-8')
+                self.m_bChange = True
 
             # once xml is reorganized, create clean pi2jamma config
             if p_bEnable:
