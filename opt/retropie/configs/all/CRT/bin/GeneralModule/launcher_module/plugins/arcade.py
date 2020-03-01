@@ -25,57 +25,48 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, logging
-from launcher_module.core import CFG_VIDEOUTILITY_FILE
+#from launcher_module.core import CRT_UTILITY_FILE
 from launcher_module.file_helpers import ini_get
-from launcher_module.arcade import arcade, TMP_ARCADE_FILE
+from launcher_module.arcade import arcade
+from launcher_module.core_paths import RETROPIE_CFG_PATH, TMP_LAUNCHER_PATH, \
+                                       CRT_RA_MAIN_CFG_PATH, CRT_DB_PATH, \
+                                       CRT_UTILITY_FILE, CRT_RA_CORES_CFG_PATH
 
 class arcade(arcade):
-    m_oConfigureFunc = None
     m_bIntegerScale = False
+    m_sCstCoreCFG = ""
 
     @staticmethod
     def get_system_list():
         return ["arcade", "mame-advmame", "mame-libretro", "fba", "neogeo"]
 
     def pre_configure(self):
-        self.m_lBinaryUntouchable = ["advmame"] #Identifing emulators that is not necesary to change
-        
-        if self.m_sSystem == "mame-advmame":
-            self.m_oConfigureFunc = self.adv_config_generate
-            self.m_lBinaryMasks = ["advmame"]
-            self.m_lProcesses = ["advmame"] # default emulator process is retroarch
-        elif self.m_sSystem == "arcade":
-            self.m_oConfigureFunc = self.arcade_config_generate
-            self.m_lBinaryMasks = ["lr-", "advmame"]
-            self.m_lProcesses = ["retroarch", "advmame", "mame", "fba2x"] # if BinaryMask doesn't match will try to close all these process
-        else:
-            self.m_oConfigureFunc = self.ra_config_generate
-            self.m_lBinaryMasks = ["lr-"]
-            self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
-            
-        if ini_get(CFG_VIDEOUTILITY_FILE, "integer_scale") == "1":
+        if ini_get(CRT_UTILITY_FILE, "integer_scale") == "1":
             self.m_bIntegerScale = True
             logging.info("enabled integer scale for arcade/neogeo")
 
-    def arcade_config_generate(self):
-        #Check if libretro core of advmame is selected whitin
-        #arcade system to generate configuration
-        if "lr-" in self.m_sBinarySelected:
-            logging.info("INFO: generating retroarch configuration for ARCADE binary selected (%s)" % self.m_sBinarySelected)
-            self.ra_config_generate()
-        elif "advmame" in self.m_sBinarySelected:
-            logging.info("INFO: generating advmame configuration for ARCADE binary selected (%s)" % self.m_sBinarySelected)
-            self.adv_config_generate()
+        """
+        For custom core config files to apply if not, default included
+        in retroarcharcade.cfg will be loaded:
+        core_options_path = "/~/CRT/Retroarch/cores/mame-fba-core.cfg"
+        """
+        if self.m_sSystem == "neogeo":
+            sFile = self.m_sSystem + "-core.cfg"
+            self.m_sCstCoreCFG = os.path.join(CRT_RA_CORES_CFG_PATH, sFile)
+        super(arcade, self).pre_configure()
 
-    # just called if need rebuild the CMD
-    def runcommand_generate(self, p_sCMD):
-        current_cmd = super(arcade, self).runcommand_generate(p_sCMD)
+    def configure(self):
+        #Identifing emulators that is not necesary to change part of
+        #its launching string like '--append' flag
+        self.m_lBinaryUntouchable = ["advmame"]
 
-        #Check if a VALID binary of the list must be excluded of the --appendconfig flag addition (non RetroArch emulators):
-        if self.m_sNextValidBinary in self.m_lBinaryUntouchable:
-            return current_cmd
-
-        # update system_custom_cfg, used in ra_check_version
-        append_cmd = "--appendconfig %s" % TMP_ARCADE_FILE
-        append_cmd += " " + self.m_sFileNameVar
-        return current_cmd.replace(self.m_sFileNameVar, append_cmd)
+        if self.m_sSystem == "mame-advmame":
+            self.m_lBinaryMasks = ["advmame"]
+            self.m_lProcesses = ["advmame"]
+        elif self.m_sSystem == "arcade":
+            self.m_lBinaryMasks = ["lr-", "advmame"]
+            # if BinaryMask doesn't match will try to close all these process
+            self.m_lProcesses = ["retroarch", "advmame", "mame", "fba2x"]
+        else:
+            self.m_lBinaryMasks = ["lr-"]
+            self.m_lProcesses = ["retroarch"]

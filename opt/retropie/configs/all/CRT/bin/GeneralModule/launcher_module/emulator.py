@@ -26,10 +26,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, re, logging
-from launcher_module.core import launcher, RETROPIECFG_PATH
+from launcher_module.core import launcher, RETROPIE_CFG_PATH
 from launcher_module.file_helpers import remove_line, touch_file
 
-CFG_CUSTOMEMU_FILE = os.path.join(RETROPIECFG_PATH, "all/emulators.cfg")
+CFG_CUSTOMEMU_FILE = os.path.join(RETROPIE_CFG_PATH, "all/emulators.cfg")
 
 class emulator(launcher):
     """
@@ -65,9 +65,10 @@ class emulator(launcher):
         """
         try:
             self.emulatorcfg_add_systems()
-            self.emulatorcfg_per_game()
             if self.emulatorcfg_default_check() == False:
                  self.panic("selected invalid emulator", "try again!")
+            self.emulatorcfg_per_game()
+            
         except IOError as e:
             infos = "File error at emulators.cfg [%s]" % self.m_sSystem
             infos2 = "Please, install at least one emulator or core"
@@ -88,24 +89,28 @@ class emulator(launcher):
         True
             Emulator is ok or not specific emulator for this game was selected
         """
+        p_bNeedClean = False
         if not os.path.exists(CFG_CUSTOMEMU_FILE):
             #create emulators.cfg if doesn't exists
             touch_file(CFG_CUSTOMEMU_FILE)
             logging.info("Created emulators.cfg")
         sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
         sGameSystemName = "%s_%s" % (self.m_sSystem, sCleanName)
-        need_clean = False
+
         with open(CFG_CUSTOMEMU_FILE, 'r') as oFile:
             for line in oFile:
                 lValues = line.strip().split(' ')
                 if lValues[0] == sGameSystemName:
                     sBinaryName = lValues[2].replace('"', '')
                     if self.set_binary(sBinaryName):
+                        logging.info("(%s) is " % self.m_sSelCore + \
+                                     "selected for this game, will " + \
+                                     "be the chosen core to launch")
                         return True
                     else: # not valid is just ignored
-                        need_clean = True
+                        p_bNeedClean = True
         # clean emulators.cfg if have an invalid binary
-        if need_clean:
+        if p_bNeedClean:
             logging.info("cleaning line %s from %s" % (sGameSystemName, CFG_CUSTOMEMU_FILE))
             remove_line(CFG_CUSTOMEMU_FILE, sGameSystemName)
             return False
@@ -136,6 +141,7 @@ class emulator(launcher):
                         remove_line(self.m_sCfgSystemPath, "default =")
                         return False
                     else:
+                        logging.info("(%s) is selected as default" % self.m_sSelCore)
                         return True
                     #return self.set_binary(sBinaryName)
             return None
@@ -208,7 +214,7 @@ class emulator(launcher):
 
     def set_binary(self, p_sCore):
         """
-        If core is valid the set value in our m_sBinarySelected
+        If core is valid the set value in our m_sSelCore
 
         Parameters
         ----------
@@ -223,10 +229,10 @@ class emulator(launcher):
             If emulator is invalid and default value is cleaned.
         """
         if self.is_valid_binary(p_sCore):
-            self.m_sBinarySelected = p_sCore
-            logging.info("Selected binary (%s)" % self.m_sBinarySelected)
+            self.m_sSelCore = p_sCore
+            logging.info("active core: {%s}" % self.m_sSelCore)
             return True
         else:
             logging.error("INVALID - binary (%s) - mask [%s]" %
-                (self.m_sBinarySelected, str(self.m_lBinaryMasks)) )
+                (self.m_sSelCore, str(self.m_lBinaryMasks)) )
             return False

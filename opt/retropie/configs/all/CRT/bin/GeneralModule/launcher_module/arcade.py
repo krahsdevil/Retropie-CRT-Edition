@@ -27,31 +27,29 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, logging, shutil, math, commands
 from distutils.version import LooseVersion
-from launcher_module.core import RETROPIECFG_PATH, CRTROOT_PATH, TMP_LAUNCHER_PATH, RETROPIEEMU_PATH
+from launcher_module.core_paths import RETROPIE_CFG_PATH, TMP_LAUNCHER_PATH, \
+                                       CRT_RA_MAIN_CFG_PATH, CRT_DB_PATH
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
 from launcher_module.utils import ra_check_version
 from launcher_module.file_helpers import add_line, modify_line
 from launcher_module.screen import CRT
 
-RC_ADVANCEDMAME_FILE = os.path.join(RETROPIECFG_PATH, "mame-advmame/advmame.rc")
-__ARCADE_PATH = TMP_LAUNCHER_PATH
-__ARCADE_FILE = "retroarcharcade.cfg"
-CFG_ARCADE_BASE = os.path.join(CRTROOT_PATH, "Retroarch/configs", __ARCADE_FILE)
-TMP_ARCADE_FILE = os.path.join(__ARCADE_PATH, __ARCADE_FILE)
+RC_ADVANCEDMAME_FILE = os.path.join(RETROPIE_CFG_PATH, "mame-advmame/advmame.rc")
+RA_ARCADE_CFG_FILE = "retroarcharcade.cfg"
+CFG_ARCADE_BASE = os.path.join(CRT_RA_MAIN_CFG_PATH, RA_ARCADE_CFG_FILE)
+TMP_ARCADE_FILE = os.path.join(TMP_LAUNCHER_PATH, RA_ARCADE_CFG_FILE)
 
-RETROARCH_DB_FILE = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/config_files/retroarchdb.txt")
-RETROARCH_BINARY_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
 
-DB_MAME037 = os.path.join(CRTROOT_PATH, "Resolutions/mame037b5_games.txt")
-DB_MAME078 = os.path.join(CRTROOT_PATH, "Resolutions/mame078_games.txt")
-DB_MAME139 = os.path.join(CRTROOT_PATH, "Resolutions/mame0139_games.txt")
-DB_FINALBURN = os.path.join(CRTROOT_PATH, "Resolutions/fbneo_games.txt")
-DB_ADVMAME = os.path.join(CRTROOT_PATH, "Resolutions/advmame_games.txt")
+DB_MAME037_FILE = os.path.join(CRT_DB_PATH, "mame037b5_games.txt")
+DB_MAME078_FILE = os.path.join(CRT_DB_PATH, "mame078_games.txt")
+DB_MAME139_FILE = os.path.join(CRT_DB_PATH, "mame0139_games.txt")
+DB_FINALBURN_FILE = os.path.join(CRT_DB_PATH, "fbneo_games.txt")
+DB_ADVMAME_FILE = os.path.join(CRT_DB_PATH, "advmame_games.txt")
 
 
 class arcade(emulator):
-    m_sPathScreenDB = ""
+    m_sArcadeDB = ""
     m_lTimingData = []
     m_dVideo = {}
 
@@ -63,33 +61,59 @@ class arcade(emulator):
     cfg_ghres = 0 #Real Horizontal Resolution of the game
 
     def start(self):
-        self.pre_screen_set()
-        self.m_oConfigureFunc() #Config file creation
         self.runcommand_start()
+        self.emulatorcfg_check_or_die()
         self.screen_set()
 
-    def screen_prepare(self):
-        self.m_sPathScreenDB = DB_MAME078 # mame2003
-        if "2000" in self.m_sBinarySelected:
-            self.m_sPathScreenDB = DB_MAME037
-        elif "2010" in self.m_sBinarySelected:
-            self.m_sPathScreenDB = DB_MAME139
-        elif "fbneo" in self.m_sBinarySelected:
-            self.m_sPathScreenDB = DB_FINALBURN
-        elif "fbalpha" in self.m_sBinarySelected:
-            self.m_sPathScreenDB = DB_FINALBURN
-        elif "advmame" in self.m_sBinarySelected:
-            self.m_sPathScreenDB = DB_ADVMAME
-
-        logging.info("binary: %s | %s" % (self.m_sBinarySelected, self.m_sPathScreenDB))
-
-    def pre_screen_set(self):
-        self.m_oCRT = CRT(self.m_sGameName)
-        self.m_dVideo = self.m_oCRT.arcade_data(self.m_sPathScreenDB)
-        self.arcade_encapsulator()
-
     def screen_set(self):
+        self.create_arcade_config()
         self.m_oCRT.arcade_set()
+
+    def create_arcade_config(self):
+        self.final_core_database()
+        self.m_oCRT = CRT(self.m_sGameName)
+        self.m_dVideo = self.m_oCRT.arcade_data(self.m_sArcadeDB)
+        self.arcade_encapsulator()
+        self.final_core_config()    
+
+    def runcommand_generate(self, p_sCMD):
+        current_cmd = super(arcade, self).runcommand_generate(p_sCMD)
+        # Check if a VALID binary of the list must be excluded of the 
+        # --appendconfig flag addition (non RetroArch emulators):
+        if self.m_sNextValidBinary in self.m_lBinaryUntouchable:
+            return current_cmd
+
+        # update system_custom_cfg, used in ra_check_version
+        append_cmd = "--appendconfig %s" % TMP_ARCADE_FILE
+        append_cmd += " " + self.m_sFileNameVar
+        return current_cmd.replace(self.m_sFileNameVar, append_cmd)
+
+    def final_core_config(self):
+        #Check if libretro core of advmame is selected whitin
+        #arcade system to generate configuration
+        if "lr-" in self.m_sSelCore:
+            logging.info("INFO: generating retroarch configuration " + \
+                         "for ARCADE binary selected (%s)" % self.m_sSelCore)
+            self.ra_config_generate()
+        elif "advmame" in self.m_sSelCore:
+            logging.info("INFO: generating advmame configuration " + \
+                         "for ARCADE binary selected (%s)" % self.m_sSelCore)
+            self.adv_config_generate()
+
+    def final_core_database(self):
+        self.m_sArcadeDB = DB_MAME078_FILE # mame2003
+        if "2000" in self.m_sSelCore:
+            self.m_sArcadeDB = DB_MAME037_FILE
+        elif "2010" in self.m_sSelCore:
+            self.m_sArcadeDB = DB_MAME139_FILE
+        elif "fbneo" in self.m_sSelCore:
+            self.m_sArcadeDB = DB_FINALBURN_FILE
+        elif "fbalpha" in self.m_sSelCore:
+            self.m_sArcadeDB = DB_FINALBURN_FILE
+        elif "advmame" in self.m_sSelCore:
+            self.m_sArcadeDB = DB_ADVMAME_FILE
+        logging.info("FINAL binary: {%s}; database: {%s}" % \
+                    (self.m_sSelCore, self.m_sArcadeDB))
 
     def ra_config_generate(self):
         self.cfg_hres = self.m_dVideo["H_Res"]
@@ -159,34 +183,14 @@ class arcade(emulator):
         # Video Scale Integer activation
         modify_line(TMP_ARCADE_FILE, "video_scale_integer =",
                     'video_scale_integer = "%s"' % self.cfg_scaleint)
+
+        # Change custom core config if applies, like neogeo
+        if self.m_sCstCoreCFG:
+            modify_line(TMP_ARCADE_FILE, "core_options_path", 
+                        'core_options_path = "%s"' % self.m_sCstCoreCFG)
+
         # Check retroarch version
         ra_check_version(TMP_ARCADE_FILE)
-
-    def ra_integer_calculator(self):
-        """
-        Integer scaling function.
-        This function find for the real horizontal size of the game in selected database,
-        and must be located just after game side:
-
-        Example:
-        gpilots 1920 224 60.000000 -4 -27 3 48 192 240 5 15734 mame078_libretro.so H [304] <- This last
-        
-        If exist and this option is enabled on config, system will find the exact multiplier for 
-        integer scale, just above of hardware horizontal resolution, tipically 1920.
-        Image will be oversized a little bit on sides but we can espect better internal performance
-        and horizontal pixel perfect.
-        If real resolution is found in DB then self.m_dVideo["Game_H_Res"] will be different of '0'.
-        """
-        if self.cfg_ghres != 0: #H_Res of the game is present
-            int_multiplier = self.cfg_hres/(self.cfg_ghres*1.0)
-            self.cfg_hres = self.cfg_ghres*int(math.ceil(int_multiplier))
-            if (math.ceil(int_multiplier)-0.5) >= int_multiplier:
-                #manual center if divider from H_Res and Game_H_Res is below x.5
-                self.cfg_offsetx -= 64
-            else:
-                #Horizontal auto center through 'video_scale_integer'
-                self.cfg_scaleint = "true"
-            logging.info("game h_res %s - Calculated Int_Multiplier %s" % (self.cfg_ghres,int_multiplier))
 
     def adv_config_generate(self):
         display_ror = "no"
@@ -214,6 +218,32 @@ class arcade(emulator):
         modify_line(RC_ADVANCEDMAME_FILE, "display_mode ", "display_mode auto")
         modify_line(RC_ADVANCEDMAME_FILE, "display_aspect ", "display_aspect 4/3")
         modify_line(RC_ADVANCEDMAME_FILE, "display_expand ", "display_expand 1.0")
+
+    def ra_integer_calculator(self):
+        """
+        Integer scaling function.
+        This function find for the real horizontal size of the game in selected database,
+        and must be located just after game side:
+
+        Example:
+        gpilots 1920 224 60.000000 -4 -27 3 48 192 240 5 15734 mame078_libretro.so H [304] <- This last
+        
+        If exist and this option is enabled on config, system will find the exact multiplier for 
+        integer scale, just above of hardware horizontal resolution, tipically 1920.
+        Image will be oversized a little bit on sides but we can espect better internal performance
+        and horizontal pixel perfect.
+        If real resolution is found in DB then self.m_dVideo["Game_H_Res"] will be different of '0'.
+        """
+        if self.cfg_ghres != 0: #H_Res of the game is present
+            int_multiplier = self.cfg_hres/(self.cfg_ghres*1.0)
+            self.cfg_hres = self.cfg_ghres*int(math.ceil(int_multiplier))
+            if (math.ceil(int_multiplier)-0.5) >= int_multiplier:
+                #manual center if divider from H_Res and Game_H_Res is below x.5
+                self.cfg_offsetx -= 64
+            else:
+                #Horizontal auto center through 'video_scale_integer'
+                self.cfg_scaleint = "true"
+            logging.info("game h_res %s - Calculated Int_Multiplier %s" % (self.cfg_ghres,int_multiplier))
         
     def arcade_encapsulator(self):
         # Small centering if vertical resolution is 240 lines
@@ -242,10 +272,8 @@ class arcade(emulator):
     def encapsulator_selector(self):
         ch = choices()
         ch.set_title("Arcade Encapsulator")
-        ch.load_choices([
-                ("Play CROPPED", "CROPPED"),
-                ("Play FORCED", "FORCED"),
-            ])
+        ch.load_choices([("Play CROPPED", "CROPPED"),
+                         ("Play FORCED", "FORCED")])
         result = ch.run()
         return result
         

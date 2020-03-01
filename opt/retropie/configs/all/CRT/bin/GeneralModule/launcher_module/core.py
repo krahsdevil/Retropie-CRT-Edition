@@ -44,7 +44,7 @@ TMP_SLEEPER_FILE = os.path.join(TMP_LAUNCHER_PATH, TMP_SPEEPER_NAME)
 LEGACY_SLEEPER_FILE = "/tmp/lchtmp"
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 
-CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1 && "
+CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1.5 && "
 
 class launcher(object):
     """ virtual class for crt launcher """
@@ -52,7 +52,7 @@ class launcher(object):
     m_sFileNameVar = "%ROM%"
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
-    m_sBinarySelected = ""
+    m_sSelCore = ""
     m_sNextValidBinary = ""
     m_lBinaryMasks = []
     m_lBinaryUntouchable = []
@@ -85,12 +85,11 @@ class launcher(object):
 
     # called children pre_configure at start, called by __init__()
     def pre_configure(self):
-        pass
+        self.m_sCfgSystemPath = os.path.join(RETROPIE_CFG_PATH, self.m_sSystem, "emulators.cfg")
 
     # setup paths - called by __init__()
     def configure(self):
         self.m_sSystemFreq = self.m_sSystem
-        self.m_sCfgSystemPath = os.path.join(RETROPIECFG_PATH, self.m_sSystem, "emulators.cfg")
 
     # called children post_configure at start, called by __init__()
     def post_configure(self):
@@ -197,7 +196,7 @@ class launcher(object):
 
     def runcommand_start(self):
         """ launch_core: run emulator!"""
-        commandline = "%s 0 _SYS_ %s \"%s\"" % (RUNCOMMAND_FILE, self.m_sSystem, self.m_sFilePath)
+        commandline = "%s 0 _SYS_ %s \"%s\"" % (RETROPIE_RUNCOMMAND_FILE, self.m_sSystem, self.m_sFilePath)
         self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
         logging.info("Subprocess running: %s", commandline)
         self.runcommand_wait()
@@ -213,7 +212,7 @@ class launcher(object):
 
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
-        self.m_oCRT.screen_calculated(CFG_TIMINGS_FILE)
+        self.m_oCRT.screen_calculated(CRT_DB_SYSTEMS_FILE)
         self.m_oBlackScreen.fill()
         logging.info("clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
@@ -247,7 +246,7 @@ class launcher(object):
 
     def clean_videomodes(self):
         try:
-            os.remove(CFG_VIDEOMODES_FILE)
+            os.remove(RETROPIE_VIDEOMODES_FILE)
         except OSError:
             return False
         return True
