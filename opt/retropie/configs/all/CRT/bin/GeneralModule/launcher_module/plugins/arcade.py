@@ -47,8 +47,8 @@ class arcade(arcade):
 
         """
         For custom core config files to apply if not, default included
-        in retroarcharcade.cfg will be loaded:
-        core_options_path = "/~/CRT/Retroarch/cores/mame-fba-core.cfg"
+        in arcade.cfg will be loaded:
+        core_options_path = "/~/CRT/Retroarch/cores/arcade-core.cfg"
         """
         if self.m_sSystem == "neogeo":
             sFile = self.m_sSystem + "-core.cfg"

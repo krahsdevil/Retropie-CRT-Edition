@@ -569,13 +569,13 @@ def replace_line(file_name, line_num, text):
 
 
 
-def make_retroarcharcade_configfile(datas1,datas2,offsetx,offsety,datas3,datas13):
+def make_arcade_configfile(datas1,datas2,offsetx,offsety,datas3,datas13):
 
                     
-    #Copy retroarcharcade.cfg to /tmp
-    shutil.copy2('/opt/retropie/configs/all/CRT/Retroarch/configs/retroarcharcade.cfg', '/tmp')
-    # Add parameters to retroarcharcade.cfg
-    with open('/tmp/retroarcharcade.cfg', 'a') as file:
+    #Copy arcade.cfg to /tmp
+    shutil.copy2('/opt/retropie/configs/all/CRT/Retroarch/configs/arcade.cfg', '/tmp')
+    # Add parameters to arcade.cfg
+    with open('/tmp/arcade.cfg', 'a') as file:
         param = "custom_viewport_width = \"%s\"\n" % (datas1)
         file.writelines(param)
         param = "custom_viewport_height = \"%s\"\n" % (datas2)
@@ -594,7 +594,7 @@ def make_retroarcharcade_configfile(datas1,datas2,offsetx,offsety,datas3,datas13
         elif datas13 == "V":
             param = "video_rotation = \"%s\"\n" % ("0")
             file.writelines(param)
-            modificarLinea('/tmp/retroarcharcade.cfg','video_smooth = "false"','video_smooth = "true"')
+            modificarLinea('/tmp/arcade.cfg','video_smooth = "false"','video_smooth = "true"')
         elif datas13 == "V3":
             param = "video_rotation = \"%s\"\n" % ("3")
             file.writelines(param)
@@ -1154,14 +1154,14 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
             returnedDB[0] = mame078DB
         returnedDB[1] = "mame-libretro"
         # Check current Retroarch Version
-        Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/retroarcharcade.cfg")
+        Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/arcade.cfg")
     elif emulator == "fba":
         returnedDB[0] = fbalphaDB
         returnedDB[1] = "fba"
         if CustEmuLineGame[1] != "none" and not 'lr-' in CustEmuLineGame[1]:
             modificarLinea(custom_emulator_file,CustEmuLineGame[0],"")
         # Check current Retroarch Version
-        Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/retroarcharcade.cfg")
+        Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/arcade.cfg")
     elif emulator == "scummvm":
         if CustEmuLineGame[1] != "none":
             if CustEmuLineGame[1].replace('"','') != scummvm[1] and CustEmuLineGame[1].replace('"','') != scummvm[3]:
@@ -1205,14 +1205,14 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
                 returnedDB[0] = mame078DB
             returnedDB[1] = "mame-libretro"
             # Check current Retroarch Version
-            Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/retroarcharcade.cfg")
+            Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/arcade.cfg")
         if 'lr-fba' in default_moded:
             returnedDB[0] = fbalphaDB
             returnedDB[1] = "fba"
             if CustEmuLineGame[1] != "none" and not 'lr-' in CustEmuLineGame[1]:
                 modificarLinea(custom_emulator_file,CustEmuLineGame[0],"")
             # Check current Retroarch Version
-            Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/retroarcharcade.cfg")
+            Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/arcade.cfg")
         if 'advmame' in default_moded:
             returnedDB[0] = advmameDB
             returnedDB[1] = "mame-advmame"
@@ -1249,7 +1249,7 @@ def change_retropie_runcommand_emulator_init(easynet,emulator,emulatorcfg,pathem
                 returnedDB[0] = mame078DB
                 returnedDB[1] = "unknown"
             # Check current Retroarch Version
-            Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/retroarcharcade.cfg")
+            Check_RetroArch_Version ("/opt/retropie/configs/all/CRT/Retroarch/configs/arcade.cfg")
     else:
         if CustEmuLineGame[1] != "none":
             if not 'lr-' in CustEmuLineGame[1]:

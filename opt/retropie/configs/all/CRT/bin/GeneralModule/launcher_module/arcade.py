@@ -36,7 +36,7 @@ from launcher_module.file_helpers import add_line, modify_line
 from launcher_module.screen import CRT
 
 RC_ADVANCEDMAME_FILE = os.path.join(RETROPIE_CFG_PATH, "mame-advmame/advmame.rc")
-RA_ARCADE_CFG_FILE = "retroarcharcade.cfg"
+RA_ARCADE_CFG_FILE = "arcade.cfg"
 CFG_ARCADE_BASE = os.path.join(CRT_RA_MAIN_CFG_PATH, RA_ARCADE_CFG_FILE)
 TMP_ARCADE_FILE = os.path.join(TMP_LAUNCHER_PATH, RA_ARCADE_CFG_FILE)
 
