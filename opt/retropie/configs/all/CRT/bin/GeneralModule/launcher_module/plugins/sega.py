@@ -58,19 +58,19 @@ class sega(selector):
     def post_configure(self):
         super(sega, self).post_configure()
         # copy cfg base
-        self.m_sSegaTmpPath = os.path.join(TMP_LAUNCHER_PATH, os.path.basename(self.m_sSystemCfgPath))
-        logging.info("copying: %s => %s" % (self.m_sSystemCfgPath, self.m_sSegaTmpPath) )
-        shutil.copy2(self.m_sSystemCfgPath, self.m_sSegaTmpPath)
+        self.m_sSegaTmpPath = os.path.join(TMP_LAUNCHER_PATH, os.path.basename(self.m_sCustomRACFG))
+        logging.info("copying: %s => %s" % (self.m_sCustomRACFG, self.m_sSegaTmpPath) )
+        shutil.copy2(self.m_sCustomRACFG, self.m_sSegaTmpPath)
         # use tmp config
-        self.m_sSystemCfgPath = self.m_sSegaTmpPath
+        self.m_sCustomRACFG = self.m_sSegaTmpPath
 
     def segacfg_generate(self):
         try:
-            logging.info("s: %s b: %s" % (self.m_sSystemFreq, self.m_sBinarySelected) )
+            logging.info("s: %s b: %s" % (self.m_sSystemFreq, self.m_sSelCore) )
             dCFG = VDATA[self.m_sSystemFreq]
             # genesis-plus and other genesis cores by default
             self.m_sViewPortType = "default"
-            if "picodrive" in self.m_sBinarySelected:
+            if "picodrive" in self.m_sSelCore:
                 self.m_sViewPortType = "picodrive"
             self.segacfg_write(dCFG[self.m_sViewPortType])
         except:

@@ -23,8 +23,8 @@ import os, subprocess, commands
 import time, imp, re, logging
 import pygame
 
-from launcher_module.core_paths import CRTROOT_PATH, RETROPIEEMU_PATH, \
-                                       RETROARCHBIN_FILE, CFG_RAHASHDB
+from launcher_module.core_paths import CRT_ROOT_PATH, RETROPIE_EMULATORS_PATH, \
+                                       RA_BIN_FILE, CRT_RA_HASHDB_FILE
 from launcher_module.file_helpers import md5_file, ini_get, touch_file, \
                                          add_line, modify_line
 from distutils.version import LooseVersion
@@ -88,12 +88,12 @@ def ra_check_version(p_sSystemCfgPath = None):
     logging.info("checking retroarch version")
     if not p_sSystemCfgPath:
         return
-    if not os.path.isfile(CFG_RAHASHDB):
-        touch_file(CFG_RAHASHDB)
+    if not os.path.isfile(CRT_RA_HASHDB_FILE):
+        touch_file(CRT_RA_HASHDB_FILE)
         logging.info("Created retroarch database")
         
-    ra_hash = md5_file(RETROARCHBIN_FILE)
-    f = open(CFG_RAHASHDB, "r")
+    ra_hash = md5_file(RA_BIN_FILE)
+    f = open(CRT_RA_HASHDB_FILE, "r")
     full_lines = f.readlines()
     f.close()
     ra_version = None
@@ -105,12 +105,12 @@ def ra_check_version(p_sSystemCfgPath = None):
                 break
     # update file if not found
     if not ra_version:
-        ra_output = commands.getoutput("%s --version" % RETROARCHBIN_FILE)
+        ra_output = commands.getoutput("%s --version" % RA_BIN_FILE)
         for line in ra_output.splitlines():
             lValues = line.strip().split(' ')
             if 'RetroArch' in lValues[0]:
                 ra_version = lValues[5]
-                add_line(CFG_RAHASHDB, "RetroArch %s %s" % (ra_hash,ra_version))
+                add_line(CRT_RA_HASHDB_FILE, "RetroArch %s %s" % (ra_hash,ra_version))
 
     ratio = "23" # default 1.7.5 value
     if LooseVersion(ra_version) < LooseVersion("v1.7.5"):

@@ -35,13 +35,13 @@ ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
 ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
 ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
 
-ESSYSTEMS_TEMP_FILE = os.path.join(ESCFG_PATH, "es_systems.cfg")
+ESSYSTEMS_TEMP_FILE = os.path.join(ES_CFG_PATH, "es_systems.cfg")
 ESSYSTEMS_VERT_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "vertical_es_systems.cfg")
 ESTHEMES_DIS_PATH = os.path.join(ES_PATH, "disabled.themes")
-VTHEME270_DST_PATH = os.path.join(ESCFG_PATH, "themes/V270P-CRT-BASE")
+VTHEME270_DST_PATH = os.path.join(ES_CFG_PATH, "themes/V270P-CRT-BASE")
 VTHEME270_SRC_PATH = os.path.join(CRT_ES_RES_PATH, "themes/V270P-CRT-BASE")
 
-INTRO_VID_DEF_FILE = os.path.join(RETROPIEINTROS_PATH, "CRT-Retropie-Load.mp4")
+INTRO_VID_DEF_FILE = os.path.join(RETROPIE_SPLASH_PATH, "CRT-Retropie-Load.mp4")
 INTRO_VID0_FILE = os.path.join(CRT_ES_RES_PATH, "splash_screen/CRT-Retropie-Load_H.mp4")
 INTRO_VID1_FILE = os.path.join(CRT_ES_RES_PATH, "splash_screen/CRT-Retropie-Load_V1.mp4")
 INTRO_VID3_FILE = os.path.join(CRT_ES_RES_PATH, "splash_screen/CRT-Retropie-Load_V3.mp4")
@@ -85,7 +85,7 @@ class frontend_rotation():
         self._set_new_theme()
 
     def _check_current_base_res(self):
-        p_sRes = ini_get(CFG_VIDEOUTILITY_FILE, "default")
+        p_sRes = ini_get(CRT_UTILITY_FILE, "default")
         if p_sRes == self.sSystem50: self.RES_Y = 270
         elif p_sRes == self.sSystem60: self.RES_Y = 240
 
@@ -103,10 +103,10 @@ class frontend_rotation():
         if self.iCurSide != 0:
             p_sElement = str(self.RES_Y) + self.sTailSideV
         # get current saved theme for current side
-        p_sTheme = ini_get(CFG_VIDEOUTILITY_FILE, p_sElement)
+        p_sTheme = ini_get(CRT_UTILITY_FILE, p_sElement)
         self.sCurTheme = get_xml_value_esconfig("ThemeSet")
         if p_sTheme != self.sCurTheme:
-            modify_line(CFG_VIDEOUTILITY_FILE, p_sElement, 
+            modify_line(CRT_UTILITY_FILE, p_sElement, 
                         "%s %s" % (p_sElement, self.sCurTheme))
        
     def _set_new_theme(self):
@@ -120,7 +120,7 @@ class frontend_rotation():
         if self.iToMode != 0:
             p_sTail = self.sTailSideV
         p_sIniTheme = str(self.RES_Y) + p_sTail
-        p_sTheme = ini_get(CFG_VIDEOUTILITY_FILE, p_sIniTheme)
+        p_sTheme = ini_get(CRT_UTILITY_FILE, p_sIniTheme)
 
         """ If theme was not found then apply by default """
         # by default vertical theme
@@ -141,8 +141,8 @@ class frontend_rotation():
         p_sMask = p_sFileTail + p_sImage[-4:]
         if not p_sMask in p_sImage:
             return
-        image_cur = RETROPIECFG_PATH + "/" + p_sImage.replace(p_sFileTail, "")
-        sImageSet = CRTLAUNCHIMAGES_ROT_PATH + "/" + p_sImage
+        image_cur = RETROPIE_CFG_PATH + "/" + p_sImage.replace(p_sFileTail, "")
+        sImageSet = CRT_LNCH_IMG_ROT_PATH + "/" + p_sImage
         try:
             if not filecmp.cmp(image_cur, sImageSet):
                 os.system('cp "%s" "%s"' % (sImageSet, image_cur))
@@ -150,8 +150,8 @@ class frontend_rotation():
             pass
 
     def _fix_aspect_ratio_images(self, p_sFileTail):
-        for Level1 in os.listdir(CRTLAUNCHIMAGES_ROT_PATH):
-            LEVEL1 = os.path.join(CRTLAUNCHIMAGES_ROT_PATH, Level1)
+        for Level1 in os.listdir(CRT_LNCH_IMG_ROT_PATH):
+            LEVEL1 = os.path.join(CRT_LNCH_IMG_ROT_PATH, Level1)
             if os.path.isdir(LEVEL1):
                 for Level2 in os.listdir(LEVEL1):
                     LEVEL2 = os.path.join(LEVEL1, Level2)
@@ -172,14 +172,14 @@ class frontend_rotation():
             p_sIntro = INTRO_VID0_FILE
             touch_file(ROTMODES_YOKO_FILE)
             os.system('sudo rm %s >> /dev/null 2>&1' % ESSYSTEMS_TEMP_FILE)
-            os.system('sudo mv %s %s >> /dev/null 2>&1' % (ESTHEMES_DIS_PATH, ESTHEMES_PRI_PATH))
+            os.system('sudo mv %s %s >> /dev/null 2>&1' % (ESTHEMES_DIS_PATH, ES_THEMES_PRI_PATH))
             os.system('sudo rm -R %s >> /dev/null 2>&1' % VTHEME270_DST_PATH)
         else:
-            if not os.path.exists(ESTHEMES_SEC_PATH):
-                os.system('mkdir %s >> /dev/null 2>&1' % ESTHEMES_SEC_PATH)
+            if not os.path.exists(ES_THEMES_SEC_PATH):
+                os.system('mkdir %s >> /dev/null 2>&1' % ES_THEMES_SEC_PATH)
             os.system('cp %s %s >> /dev/null 2>&1' % (ESSYSTEMS_VERT_FILE, ESSYSTEMS_TEMP_FILE))
-            os.system('sudo mv %s %s >> /dev/null 2>&1' % (ESTHEMES_PRI_PATH, ESTHEMES_DIS_PATH))
-            os.system('cp -R %s %s >> /dev/null 2>&1' % (VTHEME270_SRC_PATH, ESTHEMES_SEC_PATH))
+            os.system('sudo mv %s %s >> /dev/null 2>&1' % (ES_THEMES_PRI_PATH, ESTHEMES_DIS_PATH))
+            os.system('cp -R %s %s >> /dev/null 2>&1' % (VTHEME270_SRC_PATH, ES_THEMES_SEC_PATH))
             
             if self.iToMode == 90:
                 p_sFileTail += "_1"
@@ -190,7 +190,7 @@ class frontend_rotation():
                 p_sIntro = INTRO_VID3_FILE
                 touch_file(ROTMODES_TATE3_FILE)
 
-        modify_line(CFG_VIDEOUTILITY_FILE, 'frontend_rotation', 'frontend_rotation %s' % self.iToMode)
+        modify_line(CRT_UTILITY_FILE, 'frontend_rotation', 'frontend_rotation %s' % self.iToMode)
         os.system('sudo cp %s %s >> /dev/null 2>&1' % (p_sIntro, INTRO_VID_DEF_FILE))
         self._fix_aspect_ratio_images(p_sFileTail)
 

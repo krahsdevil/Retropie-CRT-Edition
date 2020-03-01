@@ -36,8 +36,8 @@ from launcher_module.utils import get_xy_screen, something_is_bad
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
 
-FONT_FILE = os.path.join(CRTFONTS_PATH, "PetMe64.ttf")
-SCREEN_MNG_PATH = os.path.join(CRTMODULES_PATH, "module_screen_tools_manager")
+FONT_FILE = os.path.join(CRT_FONTS_PATH, "PetMe64.ttf")
+SCREEN_MNG_PATH = os.path.join(CRT_MODULES_PATH, "module_screen_tools_manager")
 SCREEN_MNG_FILE = os.path.join(SCREEN_MNG_PATH, "screen_tools_manager.py")
 
 ES_LAUNCHER_DST_FILE = os.path.join(RETROPIE_PATH,
@@ -228,20 +228,20 @@ def draw_arrow_right():
                    (30 + y_margin+LineMov) + iCurOption * Interline))
 
 def save_configuration():
-    modify_line(CFG_VIDEOUTILITY_FILE,'game_rotation','game_rotation %s'%opt[0][2])
-    modify_line(CFG_VIDEOUTILITY_FILE,'frontend_rotation','frontend_rotation %s'%opt[1][2])
-    modify_line(CFG_VIDEOUTILITY_FILE,'handheld_bezel','handheld_bezel %s'%opt[2][2])
-    modify_line(CFG_VIDEOUTILITY_FILE,'freq_selector','freq_selector %s'%opt[3][2])
-    modify_line(CFG_VIDEOUTILITY_FILE,'integer_scale','integer_scale %s'%opt[6][2])
-    modify_line(CFG_VIDEOUTILITY_FILE,'scummvm_arc','scummvm_arc %s'%opt[7][2])
+    modify_line(CRT_UTILITY_FILE,'game_rotation','game_rotation %s'%opt[0][2])
+    modify_line(CRT_UTILITY_FILE,'frontend_rotation','frontend_rotation %s'%opt[1][2])
+    modify_line(CRT_UTILITY_FILE,'handheld_bezel','handheld_bezel %s'%opt[2][2])
+    modify_line(CRT_UTILITY_FILE,'freq_selector','freq_selector %s'%opt[3][2])
+    modify_line(CRT_UTILITY_FILE,'integer_scale','integer_scale %s'%opt[6][2])
+    modify_line(CRT_UTILITY_FILE,'scummvm_arc','scummvm_arc %s'%opt[7][2])
 
 def background_music_check():
     global opt
     global ServiceRunning
     global ServiceExist
-    if not os.path.exists(RETROPIEMUS_PATH):
-        os.makedirs(RETROPIEMUS_PATH)
-        os.system('touch \"%s/place your background music here.txt\"' % RETROPIEMUS_PATH)
+    if not os.path.exists(RETROPIE_MUSIC_PATH):
+        os.makedirs(RETROPIE_MUSIC_PATH)
+        os.system('touch \"%s/place your background music here.txt\"' % RETROPIE_MUSIC_PATH)
     CheckService = commands.getoutput('systemctl list-units --all | grep \"BackGroundMusic.service\"')
     if 'BackGroundMusic.service' in CheckService:
         ServiceExist = True
@@ -285,7 +285,7 @@ def launch_application(sCommandline, bShell = False):
     oRunProcess = subprocess.Popen(sCommandline, shell=bShell)
     iExitCode = oRunProcess.wait()
     if iExitCode:
-        time.sleep(1)
+        time.sleep(1.5)
         sys.exit()
     os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -298,15 +298,15 @@ def get_config():
     global iCurSide
 
     # create configuration file if not exists
-    if not os.path.exists(CFG_VIDEOUTILITY_FILE):
-        os.system('echo %s > %s' % (DEFAULT_CONFIG, CFG_VIDEOUTILITY_FILE))
+    if not os.path.exists(CRT_UTILITY_FILE):
+        os.system('echo %s > %s' % (DEFAULT_CONFIG, CRT_UTILITY_FILE))
 
     # get configuration values
-    opt[0][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "game_rotation"))
-    opt[2][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "handheld_bezel"))
-    opt[3][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "freq_selector"))
-    opt[6][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "integer_scale"))
-    opt[7][2] = int(ini_get(CFG_VIDEOUTILITY_FILE, "scummvm_arc"))
+    opt[0][2] = int(ini_get(CRT_UTILITY_FILE, "game_rotation"))
+    opt[2][2] = int(ini_get(CRT_UTILITY_FILE, "handheld_bezel"))
+    opt[3][2] = int(ini_get(CRT_UTILITY_FILE, "freq_selector"))
+    opt[6][2] = int(ini_get(CRT_UTILITY_FILE, "integer_scale"))
+    opt[7][2] = int(ini_get(CRT_UTILITY_FILE, "scummvm_arc"))
 
     # get current emulationstation side
     if os.path.exists(ROTMODES_TATE1_FILE):

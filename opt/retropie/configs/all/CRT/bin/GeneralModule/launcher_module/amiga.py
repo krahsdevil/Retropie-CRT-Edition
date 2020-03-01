@@ -27,14 +27,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, logging, shutil
 import xml.etree.ElementTree as ET
-from launcher_module.core import RETROPIE_PATH, TMP_LAUNCHER_PATH, TMP_SLEEPER_FILE, CRTROOT_PATH
+from launcher_module.core import RETROPIE_PATH, TMP_LAUNCHER_PATH, TMP_SLEEPER_FILE, CRT_ROOT_PATH
 from launcher_module.emulator import emulator
 from launcher_module.file_helpers import add_line, modify_line, remove_file
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.utils import something_is_bad
 from launcher_module.screen import CRT
 
-DB_AMIGA = os.path.join(CRTROOT_PATH, "Resolutions/amiga_games.txt")
+DB_AMIGA = os.path.join(CRT_ROOT_PATH, "Resolutions/amiga_games.txt")
 AMIBERRY_BASE_PATH = "/opt/retropie/configs/amiga/amiberry/whdboot"
 AMIBERRY_HOSTPREFS_FILE = "%s/hostprefs.conf" % AMIBERRY_BASE_PATH
 AMIBERRY_WHDLOADDB_FILE = "%s/game-data/whdload_db.xml" % AMIBERRY_BASE_PATH
@@ -51,21 +51,21 @@ class amiga(emulator):
         if "+Start Amiberry" in self.m_sGameName:
             self.amiberry_pre_config_generator()
             self.m_sSystemFreq = self.m_sAmigaResolution
-        elif "amiberry" in self.m_sBinarySelected:
+        elif "amiberry" in self.m_sSelCore:
             self.amiberry_pre_config_generator()
             self.amiberry_config_generator()
             self.m_sSystemFreq = self.m_sAmigaResolution
-        elif "lr-puae" in self.m_sBinarySelected:
+        elif "lr-puae" in self.m_sSelCore:
             self.m_sSystemFreq = "amiga_lr-puae"
-        logging.info("binary: %s" % self.m_sBinarySelected)
+        logging.info("binary: %s" % self.m_sSelCore)
 
     def screen_set(self):
         self.m_oCRT = CRT(self.m_sSystemFreq)
         if "+Start Amiberry" in self.m_sGameName:
             self.m_oCRT.screen_calculated(DB_AMIGA)
-        elif "amiberry" in self.m_sBinarySelected:
+        elif "amiberry" in self.m_sSelCore:
             self.m_oCRT.screen_calculated(DB_AMIGA)
-        elif "lr-puae" in self.m_sBinarySelected:
+        elif "lr-puae" in self.m_sSelCore:
             self.m_oCRT.screen_calculated(DB_AMIGA)
         self.m_oBlackScreen.fill()
         logging.info("clean: %s", TMP_SLEEPER_FILE)
@@ -160,6 +160,6 @@ class amiga(emulator):
         """
         super(amiga, self).emulatorcfg_check_or_die()
 
-        if self.m_sAmigaFirstBinary != self.m_sBinarySelected:
+        if self.m_sAmigaFirstBinary != self.m_sSelCore:
             self._emulatorcfg_die()
-            self.panic("you change initial emulator", "restart for %s emulation" % self.m_sBinarySelected)
+            self.panic("you change initial emulator", "restart for %s emulation" % self.m_sSelCore)

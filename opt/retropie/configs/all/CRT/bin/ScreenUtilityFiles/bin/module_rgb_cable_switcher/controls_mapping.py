@@ -34,7 +34,7 @@ sys.path.append(RESOURCES_PATH)
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
 
-ADVMAMECFG_FILE = os.path.join(RETROPIECFG_PATH, "mame-advmame/advmame.rc")
+ADVMAMECFG_FILE = os.path.join(RETROPIE_CFG_PATH, "mame-advmame/advmame.rc")
 
 class CTRLSMgmt(object):
     """
@@ -195,17 +195,17 @@ class CTRLSMgmt(object):
         p_bEnable = True Enable keyboard inputs
         p_bEnable = False Enable keyboard inputs
         """
-        if not self._check_file(RETROARCHCFG_FILE):
+        if not self._check_file(RA_CFG_FILE):
             return
         for key in p_lInputs:
-            p_Return = self._ini_get(RETROARCHCFG_FILE, key['line'])
+            p_Return = self._ini_get(RA_CFG_FILE, key['line'])
             p_bChange = False
             p_sCFGLine = '%s = "%s"' % (key['line'], key['value'])
             if not p_bEnable:
                 p_sCFGLine = '# ' + p_sCFGLine
 
             if p_Return[0] == False:
-                add_line(RETROARCHCFG_FILE, p_sCFGLine)
+                add_line(RA_CFG_FILE, p_sCFGLine)
             else:
                 if not p_Return[1] and not p_bEnable:
                     p_bChange = True
@@ -215,7 +215,7 @@ class CTRLSMgmt(object):
                     p_bChange = True
                 # edit line if needed
                 if p_bChange:
-                    modify_line(RETROARCHCFG_FILE, 
+                    modify_line(RA_CFG_FILE, 
                                       key['line'] + ' ', p_sCFGLine)
     
     def _inputs_retroarch_hotkeys(self, p_lInputs, p_bEnable, p_bComment = False):
@@ -225,10 +225,10 @@ class CTRLSMgmt(object):
         p_bEnable = True    Enable for pi2jamma keyboard inputs
         p_bEnable = False   Disable for pi2jamma keyboard inputs
         """
-        if not self._check_file(RETROARCHCFG_FILE):
+        if not self._check_file(RA_CFG_FILE):
             return
         for key in p_lInputs:
-            p_Return = self._ini_get(RETROARCHCFG_FILE, key['line'])
+            p_Return = self._ini_get(RA_CFG_FILE, key['line'])
             p_bChange = False
             p_sValue = '"%s"' % key['dis']
             p_sCFGLine = '%s = ' % key['line']
@@ -240,14 +240,14 @@ class CTRLSMgmt(object):
             p_sCFGLine += '%s' % p_sValue
 
             if p_Return[0] == False:
-                add_line(RETROARCHCFG_FILE, p_sCFGLine)
+                add_line(RA_CFG_FILE, p_sCFGLine)
             else:
                 if p_Return[1] and p_bEnable:
                     p_bChange = True
                 if p_Return[2] != p_sValue.strip('"'):
                         p_bChange = True
                 if p_bChange:
-                    modify_line(RETROARCHCFG_FILE, 
+                    modify_line(RA_CFG_FILE, 
                                       key['line'] + ' ', p_sCFGLine)
 
     def inputs_advmame_pi2jamma_enable(self):
@@ -315,11 +315,11 @@ class CTRLSMgmt(object):
         p_lP2JDev = []
         
         # create emulationstation 'es_input.cfg' file if doesn't exist 
-        if not self._check_file(ESCTRLS_FILE):
+        if not self._check_file(ES_CONTROLS_FILE):
             self._emulationstation_create_inputs_file()
         # analize xml configurations
         else:
-            tree = ET.parse(ESCTRLS_FILE)
+            tree = ET.parse(ES_CONTROLS_FILE)
             root = tree.getroot()
             p_lClean = []
             for device in root:
@@ -373,7 +373,7 @@ class CTRLSMgmt(object):
 
             # save 'es_input.cfg' only if any change happens
             if p_bXMLSave:
-                tree.write(ESCTRLS_FILE, encoding='UTF-8')
+                tree.write(ES_CONTROLS_FILE, encoding='UTF-8')
                 self.m_bChange = True
 
             # once xml is reorganized, create clean pi2jamma config
@@ -394,13 +394,13 @@ class CTRLSMgmt(object):
         p_sNewCommand.tail = "\n  "
         root.append(p_sNewAction)
         tree = ET.ElementTree(root)
-        tree.write(ESCTRLS_FILE, encoding='UTF-8')
+        tree.write(ES_CONTROLS_FILE, encoding='UTF-8')
 
     def _inputs_emulationstation_ctrls_create(self, p_lESInputs):
         """ Create keyboard inputs for manage EmulationStation"""
         # 1 tab = 2 x spaces
         # \n    = new line
-        tree = ET.parse(ESCTRLS_FILE)
+        tree = ET.parse(ES_CONTROLS_FILE)
         root = tree.getroot()
         p_sNewDevice = ET.Element("inputConfig")
         p_sNewDevice.set("deviceGUID", "-1")
@@ -418,7 +418,7 @@ class CTRLSMgmt(object):
         if len(root) > 0:               # at least one element under root
             root[-1].tail = "\n  "      # Edit the previous element's tail
         root.append(p_sNewDevice)       # Add the element to the tree.
-        tree.write(ESCTRLS_FILE, encoding='UTF-8')
+        tree.write(ES_CONTROLS_FILE, encoding='UTF-8')
 
     def _ini_get(self, p_sFile, p_sFindMask):
         """
@@ -456,8 +456,8 @@ class CTRLSMgmt(object):
 
     def xinmo_usb_driver_enable(self):
         sXinMoCfg = "usbhid.quirks=0x16c0:0x05e1:0x040"
-        sTempFile = generate_random_temp_filename(CMDLINE_FILE)
-        os.system('cp %s %s' %(CMDLINE_FILE, sTempFile))
+        sTempFile = generate_random_temp_filename(RASP_CMDLINE_FILE)
+        os.system('cp %s %s' %(RASP_CMDLINE_FILE, sTempFile))
         bFound = False
         bReboot = False
         with open(sTempFile, "r+") as f:
@@ -472,7 +472,7 @@ class CTRLSMgmt(object):
                 f.close()
                 # upload file to /boot and set reboot to True
                 bReboot = True
-                os.system('sudo cp %s %s' %(sTempFile, CMDLINE_FILE))
+                os.system('sudo cp %s %s' %(sTempFile, RASP_CMDLINE_FILE))
         os.system('rm %s' % sTempFile)
         return bReboot
         

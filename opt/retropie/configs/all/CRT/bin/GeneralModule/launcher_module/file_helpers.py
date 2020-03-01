@@ -26,7 +26,7 @@ import os, logging
 import hashlib, shutil, random
 import xml.etree.ElementTree as ET
 
-from .core_paths import TMP_LAUNCHER_PATH, CRTROOT_PATH, ESCFG_FILE
+from .core_paths import TMP_LAUNCHER_PATH, CRT_ROOT_PATH, ES_CFG_FILE
 
 def remove_line(p_sFile, p_sRemoveMask):
     if not os.path.isfile(p_sFile):
@@ -98,7 +98,7 @@ def ini_getlist(p_sFile, p_sFindMask):
     else:
         return []
 
-def get_xml_value_esconfig(p_sFindMask, p_sFile = ESCFG_FILE):
+def get_xml_value_esconfig(p_sFindMask, p_sFile = ES_CFG_FILE):
     """ 
     Find value for element in es_settings.cfg of Emulationstation
     by default. This file must have a <root> to be parsed. This
@@ -135,7 +135,7 @@ def get_xml_value_esconfig(p_sFindMask, p_sFile = ESCFG_FILE):
             pass
     return False
                 
-def set_xml_value_esconfig(p_sFindMask, p_sValue, p_sFile = ESCFG_FILE):
+def set_xml_value_esconfig(p_sFindMask, p_sValue, p_sFile = ES_CFG_FILE):
     """ 
     Find element and set a value in es_settings.cfg of Emulationstation
     by default. This file must have a <root> to be parsed. This function

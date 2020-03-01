@@ -35,7 +35,7 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from launcher_module.core import CFG_VIDEOUTILITY_FILE 
+from launcher_module.core import CRT_UTILITY_FILE 
 from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.screen import CRT
 from launcher_module.file_helpers import *
@@ -76,7 +76,7 @@ class center(object):
     def configure(self):
         """Get from utility.cfg system resolution"""
         if self.m_sEnv == "current":
-            self.m_sEnv = ini_get(CFG_VIDEOUTILITY_FILE, "default")
+            self.m_sEnv = ini_get(CRT_UTILITY_FILE, "default")
         elif self.m_sEnv == "force":
             logging.info("INFO: Force mode, only apply sys resolution")
             self._force_system_res()
@@ -113,7 +113,7 @@ class center(object):
     def screen_prepare(self):
         self.m_oCRT = CRT(self.m_sEnv+"_timings")
         self.m_oCRT.clean_datas()
-        self.m_dVideo = self.m_oCRT.pattern_data(CFG_VIDEOUTILITY_FILE)
+        self.m_dVideo = self.m_oCRT.pattern_data(CRT_UTILITY_FILE)
 
     def screen_set(self):
         self.m_oCRT.resolution_set()

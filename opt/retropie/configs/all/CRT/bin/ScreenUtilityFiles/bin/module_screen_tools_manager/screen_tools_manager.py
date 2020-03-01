@@ -35,16 +35,16 @@ from launcher_module.utils import ra_check_version, get_xy_screen
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
 
-CRTICONS_PATH = os.path.join(CRTROOT_PATH, "config/icons")
-FONT_FILE = os.path.join(CRTFONTS_PATH, "PetMe64.ttf")
+CRTICONS_PATH = os.path.join(CRT_ROOT_PATH, "config/icons")
+FONT_FILE = os.path.join(CRT_FONTS_PATH, "PetMe64.ttf")
 
-PATTERN_LAUNCHER_FILE = os.path.join(CRTMODULES_PATH,
+PATTERN_LAUNCHER_FILE = os.path.join(CRT_MODULES_PATH,
                         "module_screen_center_utility/pattern_launcher.py")
 
-TEST_SUITE_FILE = os.path.join(CRTADDONS_PATH, "addon_240p_suite/240pSuite.bin")
-RA_MD_CFG_FILE1 = os.path.join(RETROPIECFG_PATH, "megadrive/retroarch.cfg")
-RA_MD_CFG_FILE2 = os.path.join(CRTROOT_PATH, "Retroarch/configs/megadrive.cfg")
-RA_MD_CORE_FILE = os.path.join(CRTADDONS_PATH,
+TEST_SUITE_FILE = os.path.join(CRT_ADDN_PATH, "addon_240p_suite/240pSuite.bin")
+RA_MD_CFG_FILE1 = os.path.join(RETROPIE_CFG_PATH, "megadrive/retroarch.cfg")
+RA_MD_CFG_FILE2 = os.path.join(CRT_ROOT_PATH, "Retroarch/configs/megadrive.cfg")
+RA_MD_CORE_FILE = os.path.join(CRT_ADDN_PATH,
                   "addon_240p_suite/genesis_plus_gx_libretro.so")
 
 # menu centering and screen adjusters
@@ -202,7 +202,7 @@ def draw_arrow_right():
 def fix_icons_image():
     for file in os.listdir(CRTICONS_PATH):
         IconImg = CRTICONS_PATH + "/" + file
-        IconImgMode = CRTICONS_SET_PATH + "/" + file[:-4] + "_" + opt[0][2] + ".png"
+        IconImgMode = CRT_ICONS_SET_PATH + "/" + file[:-4] + "_" + opt[0][2] + ".png"
         if not os.path.isdir(IconImg):
             os.system('cp "%s" "%s" >> /dev/null 2>&1' % (IconImgMode, IconImg))
 
@@ -210,9 +210,9 @@ def replace_launching_image(p_sImage):
     p_lMask = (".png", ".jpg")
     if not p_sImage[-4:] in p_lMask:
         return
-    image_cur = RETROPIECFG_PATH + "/" + p_sImage
-    sImageSetA = CRTLAUNCHIMAGES_MOD_PATH + "/" + p_sImage[:-4] + "_240p.png"
-    sImageSetB = CRTLAUNCHIMAGES_MOD_PATH + "/" + p_sImage[:-4] + "_270p.png"
+    image_cur = RETROPIE_CFG_PATH + "/" + p_sImage
+    sImageSetA = CRT_LNCH_IMG_MOD_PATH + "/" + p_sImage[:-4] + "_240p.png"
+    sImageSetB = CRT_LNCH_IMG_MOD_PATH + "/" + p_sImage[:-4] + "_270p.png"
     # if 240p is the chosen resolution, images are changed
     if "240" in opt[0][2]:
         sImageSetA = sImageSetA[:-9] + "_270p.png"
@@ -224,8 +224,8 @@ def replace_launching_image(p_sImage):
         pass
 
 def fix_launching_image():
-    for Level1 in os.listdir(RETROPIECFG_PATH):
-        LEVEL1 = os.path.join(RETROPIECFG_PATH, Level1)
+    for Level1 in os.listdir(RETROPIE_CFG_PATH):
+        LEVEL1 = os.path.join(RETROPIE_CFG_PATH, Level1)
         if os.path.isdir(LEVEL1):
             for Level2 in os.listdir(LEVEL1):
                 LEVEL2 = os.path.join(LEVEL1, Level2)
@@ -255,19 +255,19 @@ def save_configuration():
     if bChangeRes == True:
         # replace with rigth aspect ratio images
         fix_aspect_ratio_images()
-        modify_line(CFG_VIDEOUTILITY_FILE, '%s_theme_horizontal ' % opt[0][3],
+        modify_line(CRT_UTILITY_FILE, '%s_theme_horizontal ' % opt[0][3],
                        '%s_theme_horizontal %s' % (opt[0][3], CurTheme))
         if opt[0][2] == '240p':
-            modify_line(CFG_VIDEOUTILITY_FILE, 'default', 'default %s' % sESResLabel60)
-            modify_line(ESCFG_FILE, '"ThemeSet"',
+            modify_line(CRT_UTILITY_FILE, 'default', 'default %s' % sESResLabel60)
+            modify_line(ES_CFG_FILE, '"ThemeSet"',
                            '<string name="ThemeSet" value="%s" />' % HorTheme240p)
         elif opt[0][2] == '270p':
-            modify_line(CFG_VIDEOUTILITY_FILE,'default', 'default %s' % sESResLabel50)
-            modify_line(ESCFG_FILE, '"ThemeSet"',
+            modify_line(CRT_UTILITY_FILE,'default', 'default %s' % sESResLabel50)
+            modify_line(ES_CFG_FILE, '"ThemeSet"',
                            '<string name="ThemeSet" value="%s" />' % HorTheme270p)
     # save mode change parameters
     if bChangeMode == True:
-        modify_line(CFG_FIXMODES_FILE,'mode_default',
+        modify_line(CRT_FIXMODES_FILE,'mode_default',
                        'mode_default %s' % SelectedMode[0])
 def quit_manager():
     iExitCode = 0
@@ -311,8 +311,8 @@ def launch_test_suite():
     global oCRT
     ra_check_version(RA_MD_CFG_FILE2)
     oCRT = CRT("megadrive")
-    oCRT.screen_calculated(CFG_TIMINGS_FILE)
-    commandline = "%s -L %s " % (RETROARCHBIN_FILE, RA_MD_CORE_FILE)
+    oCRT.screen_calculated(CRT_DB_SYSTEMS_FILE)
+    commandline = "%s -L %s " % (RA_BIN_FILE, RA_MD_CORE_FILE)
     commandline += "--config %s " % RA_MD_CFG_FILE1
     commandline += "--appendconfig %s " % RA_MD_CFG_FILE2
     commandline += "\"%s\" " % TEST_SUITE_FILE
@@ -324,8 +324,8 @@ def get_available_modes():
     global MaxModes
     global SelectedMode
     global MaxModesCounter
-    if os.path.exists(CFG_FIXMODES_FILE):
-        with open(CFG_FIXMODES_FILE, 'r') as file:
+    if os.path.exists(CRT_FIXMODES_FILE):
+        with open(CRT_FIXMODES_FILE, 'r') as file:
             counter = 0
             modes.append(['DEFAULT', "Timings presets for better compatibility"])
             for line in file:
@@ -339,7 +339,7 @@ def get_available_modes():
         counter = 0
         for item in modes:
             if item[0] != 'DEFAULT':
-                with open(CFG_FIXMODES_FILE, 'r') as file:
+                with open(CRT_FIXMODES_FILE, 'r') as file:
                     for line in file:
                         line = line.strip().replace('=', ' ').split(' ')
                         if line[0] == '%s_desc' % item[0]:
@@ -365,7 +365,7 @@ def get_config():
     global HorTheme270p
     global VerTheme240p
     global VerTheme270p
-    with open(CFG_VIDEOUTILITY_FILE, 'r') as file:
+    with open(CRT_UTILITY_FILE, 'r') as file:
         for line in file:
             line = line.strip().replace('=',' ').split(' ')
             if line[0] == "default":
@@ -384,8 +384,8 @@ def get_config():
 
     get_available_modes()
 
-    if os.path.exists(ESCFG_FILE):
-        with open(ESCFG_FILE, 'r') as file:
+    if os.path.exists(ES_CFG_FILE):
+        with open(ES_CFG_FILE, 'r') as file:
             for line in file:
                 line = line.strip().replace('"','').replace(' ','')
                 line = line.replace('/','').replace('>','').split('=')

@@ -29,16 +29,16 @@ import logging, traceback
 import time
 
 RETROPIE_PATH = "/opt/retropie"
-RETROPIECFG_PATH = os.path.join(RETROPIE_PATH, "configs")
-CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
-CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
-CRTASSETS_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/resources/assets")
+RETROPIE_CFG_PATH = os.path.join(RETROPIE_PATH, "configs")
+CRT_ROOT_PATH = os.path.join(RETROPIE_CFG_PATH, "all/CRT")
+CRT_BIN_PATH = os.path.join(CRT_ROOT_PATH, "bin")
+CRT_ASST_PATH = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/resources/assets")
 
-CRTCONFIGS_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/config_files")
+CRTCONFIGS_PATH = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/config_files")
 CRTMODES_FILE = os.path.join(CRTCONFIGS_PATH, "modes.cfg")
 
 
-PI2JAMMA_PATH = os.path.join(CRTASSETS_PATH, 'driver_pi2jamma')
+PI2JAMMA_PATH = os.path.join(CRT_ASST_PATH, 'driver_pi2jamma')
 PI2JAMMA_BIN = 'pikeyd165'
 PI2JAMMA_BIN_FILE_SRC = os.path.join(PI2JAMMA_PATH, PI2JAMMA_BIN)
 PI2JAMMA_BIN_FILE_DST = os.path.join('/usr/local/bin/', PI2JAMMA_BIN)
@@ -51,7 +51,7 @@ JAMMARGBPI_MODULE = 'mk_arcade_joystick_rpi'
 
 ES_PATH = "/opt/retropie/configs/all/emulationstation"
 TMP_LAUNCHER_PATH = '/dev/shm'
-BOOTCFG_FILE = "/boot/config.txt"
+RASP_BOOTCFG_FILE = "/boot/config.txt"
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_Daemon.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
@@ -523,7 +523,7 @@ class CRTDaemon(object):
 
     def _generate_random_config_temp(self):
         self.__clean()
-        p_sName = str(self._md5_file(BOOTCFG_FILE))
+        p_sName = str(self._md5_file(RASP_BOOTCFG_FILE))
         p_sName += "_" + str(random.randrange(1000, 9999))
         p_sPath = os.path.join(TMP_LAUNCHER_PATH, p_sName)
         self.m_sBootTempFile = p_sPath
@@ -537,12 +537,12 @@ class CRTDaemon(object):
 
     def _clone_boot_cfg(self):
         self._generate_random_config_temp()
-        os.system('cp %s %s' % (BOOTCFG_FILE, self.m_sBootTempFile))
+        os.system('cp %s %s' % (RASP_BOOTCFG_FILE, self.m_sBootTempFile))
         logging.info('INFO: taking a temp copy of config.txt ' + \
                      ' at %s' % self.m_sBootTempFile)
 
     def _upload_boot_cfg(self):
-        os.system('sudo cp %s %s' %(self.m_sBootTempFile, BOOTCFG_FILE))
+        os.system('sudo cp %s %s' %(self.m_sBootTempFile, RASP_BOOTCFG_FILE))
         logging.info('INFO: uploading modified config.txt to /boot')
 
     def _exit_daemon(self):

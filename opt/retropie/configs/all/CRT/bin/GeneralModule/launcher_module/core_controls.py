@@ -28,10 +28,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os, logging, time, threading
 import pygame
 
-from .core_paths import RETROPIECFG_PATH
+from .core_paths import RETROPIE_CFG_PATH
 from .file_helpers import ini_get
 
-JOYCONFIG_PATH = os.path.join(RETROPIECFG_PATH, "all/retroarch/autoconfig")
+JOYCONFIG_PATH = os.path.join(RETROPIE_CFG_PATH, "all/retroarch/autoconfig")
 
 CRT_UP      = 1
 CRT_DOWN    = 2
@@ -76,6 +76,8 @@ class joystick(object):
     m_lJoys = []
     m_iNumJoys = 0
     m_iAxisTriggered = False
+    m_bUnload = False
+
     def __init__(self):
         self.joy_daemon_watcher()
 
@@ -94,12 +96,10 @@ class joystick(object):
         """
         p_iTime = 2
         p_iJoyNum = 4
-        pygame.joystick.init()
-        while True:
+        while not self.m_bUnload:
             p_iCount = 0
             p_lJoyRem = []
             p_lJoyAdd = []
-
             # detect how many joys are connected reading /dev/input
             for j in range(0, p_iJoyNum):
                 if os.path.exists("/dev/input/js%s" % j):
@@ -140,6 +140,12 @@ class joystick(object):
                     pass
 
             time.sleep(p_iTime)
+        pygame.joystick.quit()
+        logging.info("INFO: unloaded joystick daemon")
+
+    def quit(self):
+        pygame.quit()
+        self.m_bUnload = True
 
     def _remove(self, p_iJoy):
         pygame.joystick.Joystick(p_iJoy).quit()

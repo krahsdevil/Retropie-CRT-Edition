@@ -24,13 +24,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os, logging, subprocess
 from math import ceil, floor
 
-from launcher_module.core_paths import CRTROOT_PATH, CRTBIN_PATH
+from launcher_module.core_paths import CRT_ROOT_PATH, CRT_BIN_PATH
 from launcher_module.file_helpers import ini_get, ini_getlist
 
 
-CFG_VIDEOUTILITY_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/config_files/utility.cfg")
-CFG_COMPMODES_FILE = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles/config_files/modes.cfg")
-DEFAULT_SCREEN_BIN = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/resources/media/info_splash_screen/default.sh")
+CRT_UTILITY_FILE = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/config_files/utility.cfg")
+CFG_COMPMODES_FILE = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/config_files/modes.cfg")
+DEFAULT_SCREEN_BIN = os.path.join(CRT_ROOT_PATH, "bin/ScreenUtilityFiles/resources/media/info_splash_screen/default.sh")
 
 DEFAULT_RES = ["1920", "224", "60.000000", "-4", "-27", "3", "48", "192", "240", "5", "15734", "screen_lib", "H"]
 
@@ -155,16 +155,16 @@ class CRT(object):
         return ini_getlist(CFG_COMPMODES_FILE, p_sFindMask % sSelected)
 
     def get_fix_user(self):
-        self.timing_add("H_Pos", ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetX"))
-        self.timing_add("V_Pos", ini_get(CFG_VIDEOUTILITY_FILE, "test60_offsetY"))
-        self.timing_add("H_Zoom", ini_get(CFG_VIDEOUTILITY_FILE, "test60_width"))
-        self.m_iRSys = int(ini_get(CFG_VIDEOUTILITY_FILE, "frontend_rotation"))
-        self.m_iRGame = int(ini_get(CFG_VIDEOUTILITY_FILE, "game_rotation"))
+        self.timing_add("H_Pos", ini_get(CRT_UTILITY_FILE, "test60_offsetX"))
+        self.timing_add("V_Pos", ini_get(CRT_UTILITY_FILE, "test60_offsetY"))
+        self.timing_add("H_Zoom", ini_get(CRT_UTILITY_FILE, "test60_width"))
+        self.m_iRSys = int(ini_get(CRT_UTILITY_FILE, "frontend_rotation"))
+        self.m_iRGame = int(ini_get(CRT_UTILITY_FILE, "game_rotation"))
 
     def get_fix_user_raw(self):
-        offsetX = int(ini_get(CFG_VIDEOUTILITY_FILE, "system60_offsetX"))
-        offsetY = int(ini_get(CFG_VIDEOUTILITY_FILE, "system60_offsetY"))
-        width = int(ini_get(CFG_VIDEOUTILITY_FILE, "system60_width"))
+        offsetX = int(ini_get(CRT_UTILITY_FILE, "system60_offsetX"))
+        offsetY = int(ini_get(CRT_UTILITY_FILE, "system60_offsetY"))
+        width = int(ini_get(CRT_UTILITY_FILE, "system60_width"))
         
         #Apply width to timings
         #self.timing_add("H_Res", (2*width))

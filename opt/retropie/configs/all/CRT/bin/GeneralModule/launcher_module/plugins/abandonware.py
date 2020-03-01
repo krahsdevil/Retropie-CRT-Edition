@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, re, logging
 import subprocess
-from launcher_module.core import CFG_TIMINGS_FILE, TMP_SLEEPER_FILE, CRT_RUNCOMMAND_FORMAT
+from launcher_module.core import CRT_DB_SYSTEMS_FILE, TMP_SLEEPER_FILE, CRT_RUNCOMMAND_FORMAT
 from launcher_module.core_paths import *
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
@@ -35,7 +35,7 @@ from launcher_module.screen import CRT
 from launcher_module.file_helpers import remove_file, ini_get, modify_line, \
                                          touch_file, add_line
 
-SCUMMVMCFG_FILE = os.path.join(RETROPIECFG_PATH, "scummvm/scummvm.ini")
+SCUMMVMCFG_FILE = os.path.join(RETROPIE_CFG_PATH, "scummvm/scummvm.ini")
 
 class abandonware(emulator):
     m_sSleeper = CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
@@ -92,7 +92,7 @@ class abandonware(emulator):
         
         # get aspect ratio configuration from CRT config
         sAspect = None
-        p_sScummARC = int(ini_get(CFG_VIDEOUTILITY_FILE, "scummvm_arc"))
+        p_sScummARC = int(ini_get(CRT_UTILITY_FILE, "scummvm_arc"))
         if p_sScummARC == 0:
             """ 
             If Aspect Ratio Correction is not enabled leave this

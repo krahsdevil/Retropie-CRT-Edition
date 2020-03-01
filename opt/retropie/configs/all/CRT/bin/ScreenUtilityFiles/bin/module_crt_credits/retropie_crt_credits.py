@@ -30,10 +30,10 @@ from launcher_module.core_paths import *
 from launcher_module.utils import ra_check_version, get_xy_screen, HideScreen
 from launcher_module.screen import CRT
 
-ROM_FILE = os.path.join(CRTADDONS_PATH, "addon_credits/flappybird.gba")
-RA_GBA_CFG_FILE1 = os.path.join(RETROPIECFG_PATH, "gba/retroarch.cfg")
-RA_GBA_CFG_FILE2 = os.path.join(CRTROOT_PATH, "Retroarch/configs/credits.cfg")
-RA_GBA_CORE_FILE = os.path.join(CRTADDONS_PATH,
+ROM_FILE = os.path.join(CRT_ADDN_PATH, "addon_credits/flappybird.gba")
+RA_GBA_CFG_FILE1 = os.path.join(RETROPIE_CFG_PATH, "gba/retroarch.cfg")
+RA_GBA_CFG_FILE2 = os.path.join(CRT_ROOT_PATH, "Retroarch/configs/credits.cfg")
+RA_GBA_CORE_FILE = os.path.join(CRT_ADDN_PATH,
                   "addon_credits/mgba_libretro.so")
 
 # Screen CRT Class
@@ -50,8 +50,8 @@ def launch_credits():
     oCRT = CRT(sSystem)
     oBlackScreen = HideScreen()
     oBlackScreen.fill()
-    oCRT.screen_calculated(CFG_TIMINGS_FILE)
-    commandline = "%s -L %s " % (RETROARCHBIN_FILE, RA_GBA_CORE_FILE)
+    oCRT.screen_calculated(CRT_DB_SYSTEMS_FILE)
+    commandline = "%s -L %s " % (RA_BIN_FILE, RA_GBA_CORE_FILE)
     commandline += "--config %s " % RA_GBA_CFG_FILE1
     commandline += "--appendconfig %s " % RA_GBA_CFG_FILE2
     commandline += "\"%s\" " % ROM_FILE

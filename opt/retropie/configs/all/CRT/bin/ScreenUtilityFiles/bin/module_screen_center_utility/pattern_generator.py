@@ -34,7 +34,7 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from launcher_module.core import CFG_VIDEOUTILITY_FILE, LOG_PATH, CFG_FIXMODES_FILE
+from launcher_module.core import CRT_UTILITY_FILE, LOG_PATH, CRT_FIXMODES_FILE
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
@@ -49,9 +49,9 @@ TEST_SNDCURSOR_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_cursor.wav")
 TEST_SNDLOAD_FILE = os.path.join(TEST_MEDIA_PATH,
                     "screen_center_utility_load.wav")
-FONT_FILE = os.path.join(CRTFONTS_PATH, "PetMe64.ttf")
+FONT_FILE = os.path.join(CRT_FONTS_PATH, "PetMe64.ttf")
 
-BOOTCFG_FILE = "/boot/config.txt"
+RASP_BOOTCFG_FILE = "/boot/config.txt"
 BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
 
 FPS = 0
@@ -163,7 +163,7 @@ class generate(object):
         offsetX, offsetY, width, height
         """
         for item in self.m_dConfigFile:
-            modify_line(CFG_VIDEOUTILITY_FILE, "%s_%s" % (self.m_sEnv, item),
+            modify_line(CRT_UTILITY_FILE, "%s_%s" % (self.m_sEnv, item),
                         "%s_%s %s" %
                         (self.m_sEnv, item, self.m_dConfigFile[item]))
 
@@ -263,13 +263,13 @@ class generate(object):
 
     def prepare_cfg(self):
         """ Take config from utility.cfg """
-        self.m_dConfigFile["offsetX"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["offsetX"] = int(ini_get(CRT_UTILITY_FILE,
                                             self.m_sEnv+"_offsetX"))
-        self.m_dConfigFile["offsetY"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["offsetY"] = int(ini_get(CRT_UTILITY_FILE,
                                             self.m_sEnv+"_offsetY"))
-        self.m_dConfigFile["width"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["width"] = int(ini_get(CRT_UTILITY_FILE,
                                           self.m_sEnv+"_width"))
-        self.m_dConfigFile["height"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["height"] = int(ini_get(CRT_UTILITY_FILE,
                                            self.m_sEnv+"_height"))
 
     def prepare_screen_timings(self):
@@ -516,8 +516,8 @@ class saveboot(object):
 
     def _get_boot_timing(self):
         """ Take current system base timings from utility.cfg"""
-        self.m_sEnv = ini_get(CFG_VIDEOUTILITY_FILE, "default")
-        self.m_lBootTimings = ini_getlist(CFG_VIDEOUTILITY_FILE,
+        self.m_sEnv = ini_get(CRT_UTILITY_FILE, "default")
+        self.m_lBootTimings = ini_getlist(CRT_UTILITY_FILE,
                                           "%s_timings" % self.m_sEnv)
         self.m_lBootTimings = map(int, self.m_lBootTimings)
         if not self._apply_fix_tv():
@@ -525,10 +525,10 @@ class saveboot(object):
         logging.info("INFO: default system resolution: %s"%self.m_sEnv)
 
     def _apply_fix_tv(self):
-        sSelected = ini_get(CFG_FIXMODES_FILE, "mode_default")
+        sSelected = ini_get(CRT_FIXMODES_FILE, "mode_default")
         if not sSelected or sSelected.lower() == "default":
             return False
-        DiffTimings = ini_getlist(CFG_FIXMODES_FILE, 
+        DiffTimings = ini_getlist(CRT_FIXMODES_FILE, 
                                   "%s_%s"%(sSelected, self.m_sEnv))
         DiffTimings = map(int, DiffTimings)
         if len(DiffTimings) != 17: #If not 17 timings, not valid
@@ -542,13 +542,13 @@ class saveboot(object):
 
     def _prepare_cfg(self):
         """ Take config from utility.cfg """
-        self.m_dConfigFile["offsetX"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["offsetX"] = int(ini_get(CRT_UTILITY_FILE,
                                                     self.m_sEnv+"_offsetX"))
-        self.m_dConfigFile["offsetY"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["offsetY"] = int(ini_get(CRT_UTILITY_FILE,
                                                     self.m_sEnv+"_offsetY"))
-        self.m_dConfigFile["width"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["width"] = int(ini_get(CRT_UTILITY_FILE,
                                                   self.m_sEnv+"_width"))
-        self.m_dConfigFile["height"] = int(ini_get(CFG_VIDEOUTILITY_FILE,
+        self.m_dConfigFile["height"] = int(ini_get(CRT_UTILITY_FILE,
                                                    self.m_sEnv+"_height"))
 
     def save(self):
@@ -629,11 +629,11 @@ class saveboot(object):
         logging.info("INFO: calculated resolution to add in config.txt: %s"% \
                      self.m_lBootTimings)
 
-        os.system('cp %s %s' %(BOOTCFG_FILE, BOOTCFG_TEMP_FILE))
+        os.system('cp %s %s' %(RASP_BOOTCFG_FILE, BOOTCFG_TEMP_FILE))
         modify_line(BOOTCFG_TEMP_FILE, "hdmi_timings=", 
                     "hdmi_timings=%s"%self.m_lBootTimings)
-        os.system('sudo cp %s %s' %(BOOTCFG_TEMP_FILE, BOOTCFG_FILE))
-        logging.info("INFO: boot resolution saved at %s"%BOOTCFG_FILE)
+        os.system('sudo cp %s %s' %(BOOTCFG_TEMP_FILE, RASP_BOOTCFG_FILE))
+        logging.info("INFO: boot resolution saved at %s"%RASP_BOOTCFG_FILE)
 
     # cleanup code
     def cleanup(self):

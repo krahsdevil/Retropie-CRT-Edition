@@ -43,7 +43,7 @@ from launcher_module.utils import check_process, wait_process
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_CableSelector.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
-RGBCABLE_PATH = os.path.join(CRTMODULES_PATH, "module_rgb_cable_switcher")
+RGBCABLE_PATH = os.path.join(CRT_MODULES_PATH, "module_rgb_cable_switcher")
 SERVICE_FILE_NAME = "CRT-Daemon.service"
 SERVICE_FILE = os.path.join(RGBCABLE_PATH, SERVICE_FILE_NAME)
 SCRIPT_FILE_NAME = "CRT-Daemon.py"
@@ -99,7 +99,7 @@ class CableSelector(object):
         self.__clean()
         self.__temp()
         logging.info("INFO: Launching CRT cable selector")
-        self.m_sBootTempFile = generate_random_temp_filename(BOOTCFG_FILE)
+        self.m_sBootTempFile = generate_random_temp_filename(RASP_BOOTCFG_FILE)
         self._clone_boot_cfg()
         self._check_crtdaemon() # Check service
         self._check_base_config()
@@ -488,13 +488,13 @@ class CableSelector(object):
         sys.exit(0)
 
     def _clone_boot_cfg(self):
-        os.system('cp %s %s' %(BOOTCFG_FILE, self.m_sBootTempFile))
+        os.system('cp %s %s' %(RASP_BOOTCFG_FILE, self.m_sBootTempFile))
         logging.info('INFO: preparing a temp copy of config.txt at %s' \
                      % self.m_sBootTempFile)
 
     def _upload_boot_cfg(self):
         if self.m_bUploadCFG:
-            os.system('sudo cp %s %s' % (self.m_sBootTempFile, BOOTCFG_FILE))
+            os.system('sudo cp %s %s' % (self.m_sBootTempFile, RASP_BOOTCFG_FILE))
             logging.info('INFO: uploading modified config.txt to /boot')
         self.__clean()
 

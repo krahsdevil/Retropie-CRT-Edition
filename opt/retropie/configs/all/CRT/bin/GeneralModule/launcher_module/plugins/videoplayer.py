@@ -30,7 +30,7 @@ from launcher_module.core_choices_dynamic import choices
 from launcher_module.core import launcher
 from launcher_module.core_paths import *
 
-CRTASSETS_VIDEO_PATH = os.path.join(CRTASSETS_PATH, "screen_videoplayer")
+CRTASSETS_VIDEO_PATH = os.path.join(CRT_ASST_PATH, "screen_videoplayer")
 FONT_FILE = os.path.join(CRTASSETS_VIDEO_PATH, "Ubuntu_MOD_WIDE.ttf")
 JOY2KEY_FILE = os.path.join(CRTASSETS_VIDEO_PATH, "joy2key.py")
 

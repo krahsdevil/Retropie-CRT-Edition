@@ -46,11 +46,11 @@ import os, sys
 import logging
 import pygame
 
-from .core_paths import CRTROOT_PATH
+from .core_paths import CRT_ROOT_PATH
 from .screen import CRT
 from .core_controls import joystick, CRT_UP, CRT_DOWN, CRT_BUTTON
 
-SKINSELECTOR_PATH = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/resources/media")
+SKINSELECTOR_PATH = os.path.join(CRT_ROOT_PATH, "bin/ScreenUtilityFiles/resources/media")
 
 # BASE COLORS
 BG_COLOR = (128, 120, 211)
@@ -324,6 +324,7 @@ class choices(object):
         pygame.display.flip()
         
     def _clean_on_finish(self):
+        if self.m_oJoyHandler: self.m_oJoyHandler.quit()
         pygame.quit()
 
 

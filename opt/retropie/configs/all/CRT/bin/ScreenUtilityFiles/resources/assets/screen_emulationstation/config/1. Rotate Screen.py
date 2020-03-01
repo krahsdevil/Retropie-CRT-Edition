@@ -41,7 +41,7 @@ from general_functions import something_is_bad
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
 
-SKIN_THEME_PATH = os.path.join(CRTRESOURCES_PATH, "media/skin_rotate_screen")
+SKIN_THEME_PATH = os.path.join(CRT_RSC_PATH, "media/skin_rotate_screen")
 
 ES_LAUNCHER_DST_FILE = os.path.join(RETROPIE_PATH,
                        "supplementary/emulationstation/emulationstation.sh")

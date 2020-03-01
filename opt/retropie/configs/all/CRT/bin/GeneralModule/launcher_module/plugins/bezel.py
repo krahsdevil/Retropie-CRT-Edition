@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, logging
-from launcher_module.core import CFG_VIDEOUTILITY_FILE
+from launcher_module.core import CRT_UTILITY_FILE
 from launcher_module.file_helpers import ini_get
 from launcher_module.plugins.libretro import libretro, RETROARCH_CONFIGS_PATH
 
@@ -38,7 +38,6 @@ class bezel(libretro):
 
     def configure(self):
         super(bezel, self).configure()
-        if ini_get(CFG_VIDEOUTILITY_FILE, "handheld_bezel") == "1":
+        if ini_get(CRT_UTILITY_FILE, "handheld_bezel") == "1":
             self.m_sSystemCfg = self.m_sSystemFreq + "_s.cfg"
-            self.m_sSystemCfgPath = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)
-            logging.info("enabled bezel cfg: %s" % self.m_sSystemCfgPath)
+            logging.info("enabled bezel cfg: %s" % self.m_sSystemCfg)

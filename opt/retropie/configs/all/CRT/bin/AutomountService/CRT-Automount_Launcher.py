@@ -62,7 +62,6 @@ class automount(object):
 
     def __init__(self):
         self.__temp()
-        self.__clean()
         self._check_service_run() # Check service and usb mount status
         self._prepare_choices()
         logging.info("INFO: Launching USB Automount Selector")
@@ -71,6 +70,7 @@ class automount(object):
         self._show_info('PLEASE WAIT...')
         sChoice = self._automount_opt()
         self._automount_act(sChoice)
+        sys.exit(0)
     
     def _check_service_files(self):
         """ Check if needed service files exists """
@@ -116,7 +116,7 @@ class automount(object):
     def _automount_act(self, p_sOption):
         if p_sOption == "start":
             self._install_service()
-            time.sleep(1)
+            time.sleep(2)
         elif p_sOption == "stop":
             self._remove_service()
         elif p_sOption == "eject":
@@ -139,17 +139,19 @@ class automount(object):
 
     def _remove_service(self):
         if self._check_service_files and self.m_bUSBMounted:
+            self._show_info('STOPPING AUTOMOUNT SERVICE...')
             os.system('sudo systemctl disable %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo systemctl stop %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo umount -l /home/pi/RetroPie/roms > /dev/null 2>&1')
             os.system('sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1')
             os.system('sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1')
+            self.__clean() # clean trigger files
             self._restart_ES()
 
     def eject_usb(self):
         self._show_info('EJECTING, EMULATIONSTATION WILL RESTART NOW')
-        os.system('sudo umount %s > /dev/null 2>&1'%self.m_sMountedPath[0])
+        os.system('sudo umount %s > /dev/null 2>&1' % self.m_sMountedPath[0])
         while not os.path.exists(TRG_UMNT_FILE):
             pass
 
@@ -157,13 +159,13 @@ class automount(object):
         """ Restart ES if it's running """
         sOutput = commands.getoutput('ps -A')
         if 'emulationstatio' in sOutput:
-            self._show_info('STOPPING, EMULATIONSTATION WILL RESTART NOW')
+            self._show_info('EMULATIONSTATION WILL RESTART NOW')
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
             os.system(commandline)
             os.system('clear')
-            time.sleep(1)
+            time.sleep(1.5)
        
     def _show_info(self, p_sMessage, p_iTime = 2000):
         ch = choices()
@@ -172,7 +174,10 @@ class automount(object):
         
     # clean system
     def __clean(self):
-        pass
+        if os.path.exists(TRG_MNT_FILE):
+            os.system("rm %s > /dev/null 2>&1" % TRG_MNT_FILE)
+        if os.path.exists(TRG_UMNT_FILE):
+            os.system("rm %s > /dev/null 2>&1" % TRG_UMNT_FILE)
 
     def __temp(self):
         if CLEAN_LOG_ONSTART:

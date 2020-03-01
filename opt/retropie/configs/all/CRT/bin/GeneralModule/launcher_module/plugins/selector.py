@@ -25,13 +25,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, logging
-from launcher_module.core import CFG_VIDEOUTILITY_FILE
-from launcher_module.core_choices_dynamic import choices, DEFAULT_CFG
-from launcher_module.plugins.libretro import libretro, CRTROOT_PATH, RETROARCH_CONFIGS_PATH
+from launcher_module.core import CRT_UTILITY_FILE
+from launcher_module.core_choices_dynamic import choices
+from launcher_module.plugins.libretro import libretro, CRT_ROOT_PATH, RETROARCH_CONFIGS_PATH, RETROPIE_CFG_PATH
 from launcher_module.file_helpers import ini_get, add_line, remove_line, touch_file
 from launcher_module.utils import compact_rom_name
 
-AUTOFREQ_DATABASE = os.path.join(CRTROOT_PATH, "bin/ScreenUtilityFiles/config_files/autofreqdb.cfg")
+AUTOFREQ_DATABASE = os.path.join(CRT_ROOT_PATH, "bin/ScreenUtilityFiles/config_files/autofreqdb.cfg")
 
 LABELS50HZ = ["pal","nl","e","s","sw","fn","g","uk","gr","i","h","eu",
                 "europe","europa","spain","germany","france","italy"]
@@ -54,13 +54,19 @@ class selector(libretro):
     def pre_configure(self):
         self.m_sCompactedName = compact_rom_name(self.m_sFileName)
         self.m_oFreqDB = dbfreq()
+        super(selector, self).pre_configure()
 
     # getting correct frequency for FileName loaded
     def configure(self):
         super(selector, self).configure()
-        self.m_sSelectFreq = ini_get(CFG_VIDEOUTILITY_FILE, "freq_selector")
+        self.get_frequency()
+        if self.m_sSelectFreq == "50":
+            self.m_sSystemFreq = self.m_sSystem + "50"
+            self.m_sSystemCfg = self.m_sSystemFreq + ".cfg"
 
+    def get_frequency(self):
         # first i try to find an allowed freq
+        self.m_sSelectFreq = ini_get(CRT_UTILITY_FILE, "freq_selector")
         if self.m_sSelectFreq in ALLOWED_FREQS:
             logging.info("Frequency selector always %sHz" % self.m_sSelectFreq)
             if self.m_sSelectFreq == "50":
@@ -74,16 +80,6 @@ class selector(libretro):
         else:
             logging.info("Frequency selector mode manual")
             self.m_sSelectFreq = self.frequency_manual()
-
-        if self.m_sSelectFreq == "50":
-            self.m_sSystemFreq += "50"
-
-        self.m_sSystemCfg = self.m_sSystemFreq
-        self.m_sSystemCfg += ".cfg"
-
-        self.m_sSystemCfgPath = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)
-        logging.info("enabled selector cfg: %s" % self.m_sSystemCfgPath)
-
 
     def frecuency_auto(self):
         bFreqFound = False
@@ -112,13 +108,7 @@ class selector(libretro):
         ch.show(3000)
 
     def frequency_manual(self):
-        ch = choices()
-        #ch.set_title("FREQ SELECTOR")
-        ch.load_choices([
-                ("60Hz / NTSC", "60"),
-                ("50Hz / PAL", "50"),
-            ])
-        result = ch.run()
+        result = self.selector_options()
         sFrequency = self.m_oFreqDB.find(self.m_sCompactedName)
         if not sFrequency:
             self.m_oFreqDB.add(self.m_sCompactedName, result)
@@ -126,6 +116,13 @@ class selector(libretro):
             if sFrequency != result:
                 self.m_oFreqDB.clean(self.m_sCompactedName)
                 self.m_oFreqDB.add(self.m_sCompactedName, result)
+        return result
+
+    def selector_options(self):
+        ch = choices()
+        ch.load_choices([("60Hz / NTSC", "60"),
+                         ("50Hz / PAL", "50")])
+        result = ch.run()
         return result
 
     # TODO: optimize!

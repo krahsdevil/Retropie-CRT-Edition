@@ -25,59 +25,62 @@ import os
 
 TMP_LAUNCHER_PATH = "/dev/shm"
 
-# retropie path setup
+# RETROPIE
 RETROPIE_PATH = "/opt/retropie"
-RETROPIECFG_PATH = os.path.join(RETROPIE_PATH, "configs")
-RETROPIEEMU_PATH = os.path.join(RETROPIE_PATH, "emulators")
-RETROPIEMUS_PATH = os.path.join(RETROPIECFG_PATH, "music")
-RETROPIEINTROS_PATH = os.path.join(RETROPIE_PATH, "supplementary/splashscreen")
-CFG_VIDEOMODES_FILE = os.path.join(RETROPIECFG_PATH, "all/videomodes.cfg")
-RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
+RETROPIE_CFG_PATH = os.path.join(RETROPIE_PATH, "configs")
+RETROPIE_EMULATORS_PATH = os.path.join(RETROPIE_PATH, "emulators")
+RETROPIE_MUSIC_PATH = os.path.join(RETROPIE_CFG_PATH, "music")
+RETROPIE_SPLASH_PATH = os.path.join(RETROPIE_PATH, "supplementary/splashscreen")
+RETROPIE_VIDEOMODES_FILE = os.path.join(RETROPIE_CFG_PATH, "all/videomodes.cfg")
+RETROPIE_RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
 
-# retroarch
-RETROARCHCFG_FILE = os.path.join(RETROPIECFG_PATH, "all/retroarch.cfg")
-RETROARCHBIN_FILE = os.path.join(RETROPIEEMU_PATH, "retroarch/bin/retroarch")
+# RETROARCH
+RA_CFG_FILE = os.path.join(RETROPIE_CFG_PATH, "all/retroarch.cfg")
+RA_BIN_FILE = os.path.join(RETROPIE_EMULATORS_PATH, "retroarch/bin/retroarch")
 
-# EmulationStation
+# EMULATIONSTATION
 ES_PATH = "/etc/emulationstation"
-ESSYSTEMS_FILE = os.path.join(ES_PATH, "es_systems.cfg")
-ESTHEMES_PRI_PATH = os.path.join(ES_PATH, "themes")
+ES_CFG_PATH = os.path.join(RETROPIE_CFG_PATH, "all/emulationstation")
+ES_THEMES_PRI_PATH = os.path.join(ES_PATH, "themes")
+ES_THEMES_SEC_PATH = os.path.join(ES_CFG_PATH, "themes")
 
-ESCFG_PATH = os.path.join(RETROPIECFG_PATH, "all/emulationstation")
-ESCTRLS_FILE = os.path.join(ESCFG_PATH, "es_input.cfg")
-ESCFG_FILE = os.path.join(ESCFG_PATH, "es_settings.cfg")
-ESTHEMES_SEC_PATH = os.path.join(ESCFG_PATH, "themes")
+ES_SYSTEMS_PRI_FILE = os.path.join(ES_PATH, "es_systems.cfg")
+ES_CONTROLS_FILE = os.path.join(ES_CFG_PATH, "es_input.cfg")
+ES_CFG_FILE = os.path.join(ES_CFG_PATH, "es_settings.cfg")
 
-# CRT main software paths
-CRTROOT_PATH = os.path.join(RETROPIECFG_PATH, "all/CRT")
-CRTBIN_PATH = os.path.join(CRTROOT_PATH, "bin")
+# CRT MAIN LAUNCHING SOFTWARE
+CRT_ROOT_PATH = os.path.join(RETROPIE_CFG_PATH, "all/CRT")
+CRT_BIN_PATH = os.path.join(CRT_ROOT_PATH, "bin")
 
-# CRT main additional software path (configs, resources, modules)
-CRTCONTENT_PATH = os.path.join(CRTBIN_PATH, "ScreenUtilityFiles")
+# CRT MAIN EXTRA SOFTWARE
+CRT_APPS_PATH = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles")
+CRT_MODULES_PATH = os.path.join(CRT_APPS_PATH, "bin")
+CRT_RSC_PATH = os.path.join(CRT_APPS_PATH, "resources")
 
-# CRT configurations
-CRTCONFIG_PATH = os.path.join(CRTCONTENT_PATH, "config_files")
-CFG_RAHASHDB = os.path.join(CRTCONFIG_PATH, "retroarchdb.txt")
-CFG_FIXMODES_FILE = os.path.join(CRTCONFIG_PATH, "modes.cfg")
-CFG_VIDEOUTILITY_FILE = os.path.join(CRTCONFIG_PATH, "utility.cfg")
-CFG_NETPLAY_FILE = os.path.join(CRTCONFIG_PATH, "netplay.cfg")
-CFG_TIMINGS_FILE = os.path.join(CRTROOT_PATH, "Resolutions/base_systems.cfg")
+# CRT CONFIGURATIONS
+CRT_CONFIG_PATH = os.path.join(CRT_APPS_PATH, "config_files")
+CRT_RA_HASHDB_FILE = os.path.join(CRT_CONFIG_PATH, "retroarchdb.txt")
+CRT_FIXMODES_FILE = os.path.join(CRT_CONFIG_PATH, "modes.cfg")
+CRT_UTILITY_FILE = os.path.join(CRT_CONFIG_PATH, "utility.cfg")
+CRT_NETPLAY_FILE = os.path.join(CRT_CONFIG_PATH, "netplay.cfg")
 
-# CRT resources
-CRTRESOURCES_PATH = os.path.join(CRTCONTENT_PATH, "resources")
-CRTASSETS_PATH = os.path.join(CRTRESOURCES_PATH, "assets")
-CRTADDONS_PATH = os.path.join(CRTRESOURCES_PATH, "addons")
+# CRT CONFIGURATIONS FOR RETROARCH
+CRT_DB_PATH = os.path.join(CRT_ROOT_PATH, "Resolutions")
+CRT_DB_SYSTEMS_FILE = os.path.join(CRT_DB_PATH, "base_systems.cfg")
+CRT_RA_MAIN_CFG_PATH = os.path.join(CRT_ROOT_PATH, "Retroarch/configs")
+CRT_RA_CORES_CFG_PATH = os.path.join(CRT_ROOT_PATH, "Retroarch/cores")
 
-CRT_ES_RES_PATH = os.path.join(CRTASSETS_PATH, "screen_emulationstation/CRTResources")
-CRTLAUNCHIMAGES_MOD_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_modes")
-CRTLAUNCHIMAGES_ROT_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_rotate")
-CRTICONS_SET_PATH = os.path.join(CRT_ES_RES_PATH, "crt_icons")
+# CRT RESOURCES
+CRT_ASST_PATH = os.path.join(CRT_RSC_PATH, "assets")
+CRT_ADDN_PATH = os.path.join(CRT_RSC_PATH, "addons")
 
-CRTFONTS_PATH = os.path.join(CRTASSETS_PATH, "screen_fonts")
+CRT_ES_RES_PATH = os.path.join(CRT_ASST_PATH, "screen_emulationstation/CRTResources")
+CRT_LNCH_IMG_MOD_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_modes")
+CRT_LNCH_IMG_ROT_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_rotate")
+CRT_ICONS_SET_PATH = os.path.join(CRT_ES_RES_PATH, "crt_icons")
 
-# CRT scripts modules
-CRTMODULES_PATH = os.path.join(CRTCONTENT_PATH, "bin")
+CRT_FONTS_PATH = os.path.join(CRT_ASST_PATH, "screen_fonts")
 
-# raspbian path setup
-BOOTCFG_FILE = "/boot/config.txt"
-CMDLINE_FILE = "/boot/cmdline.txt"
+# RASPBIAN SETUP
+RASP_BOOTCFG_FILE = "/boot/config.txt"
+RASP_CMDLINE_FILE = "/boot/cmdline.txt"
