@@ -27,7 +27,7 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.utils import ra_check_version, get_xy_screen, HideScreen
+from launcher_module.utils import ra_version_fixes, get_xy_screen, HideScreen
 from launcher_module.screen import CRT
 
 ROM_FILE = os.path.join(CRT_ADDN_PATH, "addon_credits/flappybird.gba")
@@ -46,7 +46,7 @@ def launch_credits():
     global oCRT
     global oBlackScreen
     global iExitCode
-    ra_check_version(RA_GBA_CFG_FILE2)
+    ra_version_fixes(RA_GBA_CFG_FILE2)
     oCRT = CRT(sSystem)
     oBlackScreen = HideScreen()
     oBlackScreen.fill()

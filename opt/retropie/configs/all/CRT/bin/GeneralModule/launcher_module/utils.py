@@ -78,49 +78,6 @@ def get_screen_resolution():
     RES_Y = int(VirtRes[1])
     return (RES_X, RES_Y)
   
-def ra_check_version(p_sSystemCfgPath = None):
-    """
-    This function will check version of current retroarch.
-    From some or in particular version actions will be taken
-    like if it's is lower than v1.7.5 aspect_ratio_index value
-    must be change.
-    """
-    logging.info("checking retroarch version")
-    if not p_sSystemCfgPath:
-        return
-    if not os.path.isfile(CRT_RA_HASHDB_FILE):
-        touch_file(CRT_RA_HASHDB_FILE)
-        logging.info("Created retroarch database")
-        
-    ra_hash = md5_file(RA_BIN_FILE)
-    f = open(CRT_RA_HASHDB_FILE, "r")
-    full_lines = f.readlines()
-    f.close()
-    ra_version = None
-    for line in full_lines:
-        if line != "\n":
-            lValues = line.strip().split(' ')
-            if ra_hash == lValues[1]:
-                ra_version = lValues[2]
-                break
-    # update file if not found
-    if not ra_version:
-        ra_output = commands.getoutput("%s --version" % RA_BIN_FILE)
-        for line in ra_output.splitlines():
-            lValues = line.strip().split(' ')
-            if 'RetroArch' in lValues[0]:
-                ra_version = lValues[5]
-                add_line(CRT_RA_HASHDB_FILE, "RetroArch %s %s" % (ra_hash,ra_version))
-
-    ratio = "23" # default 1.7.5 value
-    if LooseVersion(ra_version) < LooseVersion("v1.7.5"):
-        logging.info("early retroarch version, fixing ratio number - %s"%LooseVersion(ra_version))
-        ratio = "22"
-    ratio_value = ini_get(p_sSystemCfgPath, "aspect_ratio_index")
-    if ratio != ratio_value.replace('"', ''):
-        modify_line(p_sSystemCfgPath, "aspect_ratio_index", "aspect_ratio_index = \"%s\"" % ratio)
-        logging.info("fixed: %s version: %s ratio: %s (%s)" % (p_sSystemCfgPath, ra_version, ratio, ratio_value))
-
 def compact_rom_name(p_sRomName):
     sPreCleanedGame = re.sub('[^a-zA-Z0-9-_]+','', p_sRomName )
     sCleanedGame = re.sub(' ','', sPreCleanedGame)
@@ -228,3 +185,93 @@ class HideScreen(object):
     def __clean(self):
         os.system("clear")
         self._pygame_unload()
+        
+class ra_version_fixes():
+    """
+    This function will check version of current retroarch and
+    apply some related version fixes.
+    From some or in particular version actions will be taken
+    like if it's is lower than v1.7.5 aspect_ratio_index value
+    must be change.
+    """
+    m_sSystemCfgPath = ""
+    m_sRAVersion = None
+    m_sRAHash = ""
+    def __init__(self, p_sSystemCfgPath = None):
+        if not self._check_custom_ra_cfg(p_sSystemCfgPath):
+            return
+        self._check_ra_db()
+        self._run()
+
+    def _run(self):
+        self._get_ra_version_from_db()
+        self._apply_fixes()
+
+    def _check_custom_ra_cfg(self, p_sSystemCfgPath):
+        p_bCheck = False
+        if not p_sSystemCfgPath:
+            p_bCheck = False
+            logging.info("WARNING: need a custom retroarch file to check")
+        if not os.path.isfile(p_sSystemCfgPath):
+            p_bCheck = False
+            logging.info("WARNING: custom retroach config NOT found")
+        else:
+            p_bCheck = True
+            self.m_sSystemCfgPath = p_sSystemCfgPath
+        return p_bCheck
+
+    def _check_ra_db(self):
+        if not os.path.isfile(CRT_RA_HASHDB_FILE):
+            touch_file(CRT_RA_HASHDB_FILE)
+            logging.info("INFO: Created retroarch hash database")
+
+    def _get_ra_version_from_db(self):
+        logging.info("INFO: checking retroarch version")
+        self.m_sRAHash = md5_file(RA_BIN_FILE)
+        f = open(CRT_RA_HASHDB_FILE, "r")
+        full_lines = f.readlines()
+        f.close()
+
+        for line in full_lines:
+            if line != "\n":
+                lValues = line.strip().split(' ')
+                if self.m_sRAHash == lValues[1]:
+                    self.m_sRAVersion = lValues[2]
+                    logging.info("INFO: found hash in db: {%s} {%s}" % \
+                                (self.m_sRAHash, self.m_sRAVersion))
+                    break
+        if not self.m_sRAVersion:
+            self._add_ra_version_to_db()
+
+    def _add_ra_version_to_db(self):
+        # update file if not found
+        output = commands.getoutput("%s --version" % RA_BIN_FILE)
+        for line in output.splitlines():
+            lValues = line.strip().split(' ')
+            if 'RetroArch' in lValues[0]:
+                self.m_sRAVersion = lValues[5]
+                add_line(CRT_RA_HASHDB_FILE, "RetroArch %s %s" % \
+                        (self.m_sRAHash, self.m_sRAVersion))
+                logging.info("INFO: added new retroach hash to db: " + \
+                             "{%s} {%s}" % (self.m_sRAHash, self.m_sRAVersion))
+
+    def _apply_fixes(self):
+        self._ra_aspect_ratio()
+
+    def _ra_aspect_ratio(self):
+        p_sVersion = "v1.7.5"
+        p_sRatioNew = "23" # default 1.7.5 value
+        p_sRatioCur = ""
+        if LooseVersion(self.m_sRAVersion) < LooseVersion(p_sVersion):
+            p_sRatioNew = "22"
+        p_sRatioCur = ini_get(self.m_sSystemCfgPath, "aspect_ratio_index")
+        logging.info("INFO: Checking if aspect ratio number is %s" % p_sRatioNew)
+        if p_sRatioNew != p_sRatioCur.replace('"', ''):
+            modify_line(self.m_sSystemCfgPath, "aspect_ratio_index",
+                        "aspect_ratio_index = \"%s\"" % p_sRatioNew)
+            logging.info("INFO: fixed: %s version: %s ratio: %s (was %s)" % \
+                        (self.m_sSystemCfgPath, self.m_sRAVersion,
+                         p_sRatioNew, p_sRatioCur))
+        else:
+            logging.info("INFO: retroarch aspect ratio number no need fix")
+        

@@ -31,7 +31,7 @@ from launcher_module.core_paths import *
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.file_helpers import modify_line
 from launcher_module.screen import CRT
-from launcher_module.utils import ra_check_version, get_xy_screen
+from launcher_module.utils import ra_version_fixes, get_xy_screen
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
 
@@ -309,7 +309,7 @@ def launch_center_utility_ingame():
 
 def launch_test_suite():
     global oCRT
-    ra_check_version(RA_MD_CFG_FILE2)
+    ra_version_fixes(RA_MD_CFG_FILE2)
     oCRT = CRT("megadrive")
     oCRT.screen_calculated(CRT_DB_SYSTEMS_FILE)
     commandline = "%s -L %s " % (RA_BIN_FILE, RA_MD_CORE_FILE)

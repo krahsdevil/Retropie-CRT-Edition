@@ -31,7 +31,7 @@ from launcher_module.core_paths import RETROPIE_CFG_PATH, TMP_LAUNCHER_PATH, \
                                        CRT_RA_MAIN_CFG_PATH, CRT_DB_PATH
 from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
-from launcher_module.utils import ra_check_version
+from launcher_module.utils import ra_version_fixes
 from launcher_module.file_helpers import add_line, modify_line
 from launcher_module.screen import CRT
 
@@ -83,7 +83,7 @@ class arcade(emulator):
         if self.m_sNextValidBinary in self.m_lBinaryUntouchable:
             return current_cmd
 
-        # update system_custom_cfg, used in ra_check_version
+        # update system_custom_cfg, used in ra_version_fixes
         append_cmd = "--appendconfig %s" % TMP_ARCADE_FILE
         append_cmd += " " + self.m_sFileNameVar
         return current_cmd.replace(self.m_sFileNameVar, append_cmd)
@@ -190,7 +190,7 @@ class arcade(emulator):
                         'core_options_path = "%s"' % self.m_sCstCoreCFG)
 
         # Check retroarch version
-        ra_check_version(TMP_ARCADE_FILE)
+        ra_version_fixes(TMP_ARCADE_FILE)
 
     def adv_config_generate(self):
         display_ror = "no"

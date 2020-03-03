@@ -29,7 +29,7 @@ import os, re, logging, commands
 from distutils.version import LooseVersion
 from launcher_module.core import CRT_ROOT_PATH, RETROPIE_EMULATORS_PATH, RETROPIE_CFG_PATH
 from launcher_module.emulator import emulator
-from launcher_module.utils import ra_check_version
+from launcher_module.utils import ra_version_fixes
 
 RETROARCH_CONFIGS_PATH = os.path.join(CRT_ROOT_PATH, "Retroarch/configs")
 RETROARCH_DB_FILE = os.path.join(CRT_ROOT_PATH, "bin/ScreenUtilityFiles/config_files/retroarchdb.txt")
@@ -63,14 +63,14 @@ class libretro(emulator):
             logging.error("not found cfg: %s" % self.m_sCustomRACFG)
             return
         logging.info("CRT Custom Retroarch cfg: %s" % self.m_sCustomRACFG)
-        ra_check_version(self.m_sCustomRACFG)
+        ra_version_fixes(self.m_sCustomRACFG)
 
     # just called if need rebuild the CMD
     def runcommand_generate(self, p_sCMD):
         current_cmd = super(libretro, self).runcommand_generate(p_sCMD)
         if not self.m_sCustomRACFG:
             return current_cmd
-        # update system_custom_cfg, used in ra_check_version
+        # update system_custom_cfg, used in ra_version_fixes
         append_cmd = "--appendconfig %s" % self.m_sCustomRACFG
         append_cmd += " " + self.m_sFileNameVar
         return current_cmd.replace(self.m_sFileNameVar, append_cmd)

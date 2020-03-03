@@ -66,7 +66,7 @@ class amiga(amiga):
         #Check if a VALID binary of the list must be excluded of the --appendconfig flag addition:
         if (self.m_sNextValidBinary in self.m_lBinaryUntouchable) or (not self.m_sCustomRACFG):
             return current_cmd
-        # update system_custom_cfg, used in ra_check_version
+        # update system_custom_cfg, used in ra_version_fixes
         append_cmd = "--appendconfig %s" % self.m_sCustomRACFG
         append_cmd += " " + self.m_sFileNameVar
         #Save first VALID binary selection, later will be compared if change and close
