@@ -32,7 +32,8 @@ from launcher_module.core_paths import *
 
 CRTASSETS_VIDEO_PATH = os.path.join(CRT_ASST_PATH, "screen_videoplayer")
 FONT_FILE = os.path.join(CRTASSETS_VIDEO_PATH, "Ubuntu_MOD_WIDE.ttf")
-JOY2KEY_FILE = os.path.join(CRTASSETS_VIDEO_PATH, "joy2key.py")
+JOY2KEY_NAME = "joy2key.py"
+JOY2KEY_FILE = os.path.join(CRTASSETS_VIDEO_PATH, JOY2KEY_NAME)
 
 class videoplayer(launcher):
     m_nVideoPOS = 0
@@ -107,21 +108,22 @@ class videoplayer(launcher):
 
     def cleanup(self):
         #os.system('echo %s >> /tmp/proces' % returncoded)
-        os.system('sudo killall joy2key.py')
+        os.system('sudo killall %s' % JOY2KEY_NAME)
         self.m_oCRT.screen_restore()
         logging.info("ES mode recover")
         os.system('clear')
         sys.exit()
 
     def _launch_joy2key(self, left, right, up, down, a, b, x, y, start, select):
+        if not os.path.exists (JOY2KEY_FILE):
+            return False
         # get the first joystick device (if not already set)
         JOY2KEY_VAR = commands.getoutput('$__joy2key_dev')
         JOY2KEY_DEV = "/dev/input/jsX"
-        if os.path.exists (JOY2KEY_VAR):
-            JOY2KEY_DEV = JOY2KEY_VAR
-        output = commands.getoutput('ps -A')
-        if os.path.exists (JOY2KEY_FILE) and JOY2KEY_DEV != "none" and \
-           not 'joy2key.py' in output:
+        if os.path.exists (JOY2KEY_VAR): JOY2KEY_DEV = JOY2KEY_VAR
+        # launch joy2key if not running
+        p_sOutput = commands.getoutput('ps -A')
+        if not JOY2KEY_NAME in p_sOutput:
             p_sJ2KCommand = '"%s" "%s" %s %s %s %s %s %s %s %s %s %s' % \
                                (JOY2KEY_FILE, JOY2KEY_DEV, left, right, up, \
                                down, a, b, x, y, start, select)
