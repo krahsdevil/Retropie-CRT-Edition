@@ -53,6 +53,11 @@ class arcade(emulator):
     m_lTimingData = []
     m_dVideo = {}
 
+    m_bRndCoreCheck = False # first core emulation check
+    m_sRndCore01  = ""  # first core selected before runcommand
+    m_sRndCore02  = ""  # second core selected after runcommand
+
+    cfg_encap = ""
     cfg_offsetx = 0
     cfg_offsety = 0
     cfg_hres = 0
@@ -65,16 +70,34 @@ class arcade(emulator):
         self.emulatorcfg_check_or_die()
         self.screen_set()
 
+    def screen_prepare(self):
+        self.core_round_checks()
+
     def screen_set(self):
-        self.create_arcade_config()
+        self.core_round_checks()
         self.m_oCRT.arcade_set()
 
+    def core_round_checks(self):
+        # first round of core check - before runcommand
+        if not self.m_bRndCoreCheck:
+            self.m_sRndCore01 = self.m_sSelCore
+            self.create_arcade_config()
+            self.m_bRndCoreCheck = True # identifying first round
+        # second round of core check - after runcommand
+        else:
+            self.m_sRndCore02 = self.m_sSelCore
+            if self.m_sRndCore01 != self.m_sRndCore02:
+                logging.info("INFO: core selection changed during " + \
+                             "runcomand execution, changing " + \
+                             "configuration")
+                self.create_arcade_config()
+
     def create_arcade_config(self):
-        self.final_core_database()
+        self.core_database()
         self.m_oCRT = CRT(self.m_sGameName)
         self.m_dVideo = self.m_oCRT.arcade_data(self.m_sArcadeDB)
         self.arcade_encapsulator()
-        self.final_core_config()    
+        self.core_config()    
 
     def runcommand_generate(self, p_sCMD):
         current_cmd = super(arcade, self).runcommand_generate(p_sCMD)
@@ -88,7 +111,7 @@ class arcade(emulator):
         append_cmd += " " + self.m_sFileNameVar
         return current_cmd.replace(self.m_sFileNameVar, append_cmd)
 
-    def final_core_config(self):
+    def core_config(self):
         #Check if libretro core of advmame is selected whitin
         #arcade system to generate configuration
         if "lr-" in self.m_sSelCore:
@@ -100,7 +123,7 @@ class arcade(emulator):
                          "for ARCADE binary selected (%s)" % self.m_sSelCore)
             self.adv_config_generate()
 
-    def final_core_database(self):
+    def core_database(self):
         self.m_sArcadeDB = DB_MAME078_FILE # mame2003
         if "2000" in self.m_sSelCore:
             self.m_sArcadeDB = DB_MAME037_FILE
@@ -112,7 +135,7 @@ class arcade(emulator):
             self.m_sArcadeDB = DB_FINALBURN_FILE
         elif "advmame" in self.m_sSelCore:
             self.m_sArcadeDB = DB_ADVMAME_FILE
-        logging.info("FINAL binary: {%s}; database: {%s}" % \
+        logging.info("CURRENT binary: {%s}; database: {%s}" % \
                     (self.m_sSelCore, self.m_sArcadeDB))
 
     def ra_config_generate(self):
@@ -260,7 +283,26 @@ class arcade(emulator):
             else:
                 self.m_dVideo["V_Res"] = 240
         elif self.m_dVideo["V_Res"] > 240: # Classic encapsulator
-            select = self.encapsulator_selector()
+            """
+            If encapsulation needed only will ask on first core check,
+            just before of runcommand launching and save selection in
+            'cfg_encap'.
+            On second round (after runcommand) will check previous 
+            selection.
+            """
+            if self.cfg_encap:
+                select = self.cfg_encap
+                logging.info("INFO: there is a previous selection for " + \
+                             "encapsulation: {%s}" % select)
+            else:
+                if not self.m_bRndCoreCheck:
+                    select = self.encapsulator_selector()
+                else:
+                    select = "CROPPED"
+                    logging.info("WARNING: AUTO SELECTION for encapsulation: " + \
+                                 "{%s}, core changed and there " % select + \
+                                 "is no previous selection")
+
             if select == "FORCED": # Encapsulate
                 self.m_dVideo["H_Freq"] = int(15841)
                 self.m_dVideo["V_Pos"] += int(10)
@@ -268,6 +310,8 @@ class arcade(emulator):
                 if self.m_dVideo["R_Rate"] < 55:
                     self.m_dVideo["H_Freq"] = int(15095)
                 self.m_dVideo["V_Pos"] -= int(10)
+            
+            self.cfg_encap = select # save selection for second check
 
     def encapsulator_selector(self):
         ch = choices()

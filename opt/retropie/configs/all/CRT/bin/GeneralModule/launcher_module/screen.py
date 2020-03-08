@@ -86,6 +86,8 @@ class CRT(object):
                 return (x_screen, y_screen)
 
     def screen_calculated(self, p_sTimingCfgPath):
+        # clean first timing values
+        self.clean_datas()
         self.p_sTimingPath = p_sTimingCfgPath
         lValues = self.get_values()
         logging.info("number of timings found in resolution: %s" % str(len(lValues)))
@@ -108,6 +110,8 @@ class CRT(object):
         self.resolution_call(**self.m_dData)
 
     def pattern_data(self, p_sTimingCfgPath):
+        # clean first timing values
+        self.clean_datas()
         self.p_sTimingPath = p_sTimingCfgPath
         lValues = self.get_values()
         logging.info("number of timings found in resolution: %s" % str(len(lValues)))
@@ -127,6 +131,8 @@ class CRT(object):
         return self.m_dData
         
     def arcade_data(self, p_sTimingCfgPath):
+        # clean first timing values
+        self.clean_datas()
         self.p_sTimingPath = p_sTimingCfgPath
         lValues = self.get_values()
         self.timing_parse_arcade(lValues)
