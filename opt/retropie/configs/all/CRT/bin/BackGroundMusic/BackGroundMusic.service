@@ -7,7 +7,7 @@ ExecStart=/usr/bin/python -u /opt/retropie/configs/all/CRT/bin/BackGroundMusic/B
 WorkingDirectory=/opt/retropie/configs/all/CRT/bin/BackGroundMusic
 StandardOutput=inherit
 StandardError=inherit
-Restart=always
+Restart=no
 User=pi
 
 [Install]
