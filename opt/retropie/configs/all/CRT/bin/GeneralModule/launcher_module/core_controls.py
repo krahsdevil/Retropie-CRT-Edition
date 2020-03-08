@@ -94,7 +94,7 @@ class joystick(object):
         during all 'core_controls' module execution.
         Launched internally as daemon
         """
-        p_iTime = 2
+        p_iTime = 0.5
         p_iJoyNum = 4
         while not self.m_bUnload:
             p_iCount = 0
@@ -121,6 +121,8 @@ class joystick(object):
                 # reset pygame joystick module to load all joys
                 if pygame.joystick.get_init():
                     pygame.joystick.quit()
+                if self.m_bUnload:
+                    break
                 pygame.joystick.init()
                 # load all joys detected in system
                 self.m_lJoys = []       # cleaning db buttons of joys
@@ -144,7 +146,8 @@ class joystick(object):
         logging.info("INFO: unloaded joystick daemon")
 
     def quit(self):
-        pygame.quit()
+        pygame.joystick.quit()
+        self.m_lJoys = []
         self.m_bUnload = True
 
     def _remove(self, p_iJoy):
