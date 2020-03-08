@@ -208,7 +208,7 @@ class frontend_rotation():
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
             if not self.iCurSide: self._show_info("EMULATIONSTATION WILL RESTART NOW")
             os.system(commandline)
-            time.sleep(1.5)
+            time.sleep(2)
             sys.exit(1)
     
     # clean system
