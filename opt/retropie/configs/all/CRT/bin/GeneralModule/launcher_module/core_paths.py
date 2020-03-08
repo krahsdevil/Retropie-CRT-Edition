@@ -84,3 +84,4 @@ CRT_FONTS_PATH = os.path.join(CRT_ASST_PATH, "screen_fonts")
 # RASPBIAN SETUP
 RASP_BOOTCFG_FILE = "/boot/config.txt"
 RASP_CMDLINE_FILE = "/boot/cmdline.txt"
+RASP_SERVICES_PATH = "/etc/systemd/system"
