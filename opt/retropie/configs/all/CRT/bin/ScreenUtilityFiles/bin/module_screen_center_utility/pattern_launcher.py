@@ -111,8 +111,7 @@ class center(object):
         sys.exit()
 
     def screen_prepare(self):
-        self.m_oCRT = CRT(self.m_sEnv+"_timings")
-        self.m_oCRT.clean_datas()
+        self.m_oCRT = CRT(self.m_sEnv + "_timings")
         self.m_dVideo = self.m_oCRT.pattern_data(CRT_UTILITY_FILE)
 
     def screen_set(self):
@@ -159,7 +158,7 @@ try:
         oLaunch = center()
         oLaunch.launch(item)
         oLaunch = None
-        #time.sleep(1)
+        CLEAN_LOG_ONSTART = False
     
 except Exception as e:
     ErrMsg = ""

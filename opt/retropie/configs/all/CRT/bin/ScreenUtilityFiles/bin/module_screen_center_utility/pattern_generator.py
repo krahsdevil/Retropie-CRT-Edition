@@ -100,7 +100,6 @@ class generate(object):
 
     def __init__(self):
         self.m_oPatternDatas = datas()
-        self.m_PGoJoyHandler = joystick()
         
     def initialize(self, m_sEnv, p_lTimings = {}):
         self.m_sEnv = m_sEnv
@@ -122,6 +121,7 @@ class generate(object):
     def _init_pygame(self):
         pygame.mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
+        self.m_PGoJoyHandler = joystick()
         self._init_screen()
         self._init_sounds()
 
@@ -481,6 +481,7 @@ class generate(object):
 
     # cleanup code
     def cleanup(self):
+        self.m_PGoJoyHandler.quit()
         pygame.display.quit()
         pygame.quit()
         self.__clean()
