@@ -80,6 +80,7 @@ CRT_LNCH_IMG_ROT_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_rotate")
 CRT_ICONS_SET_PATH = os.path.join(CRT_ES_RES_PATH, "crt_icons")
 
 CRT_FONTS_PATH = os.path.join(CRT_ASST_PATH, "screen_fonts")
+CRT_SOUNDS_PATH = os.path.join(CRT_ASST_PATH, "screen_sounds")
 
 # RASPBIAN SETUP
 RASP_BOOTCFG_FILE = "/boot/config.txt"
