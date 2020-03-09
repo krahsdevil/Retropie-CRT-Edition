@@ -45,11 +45,9 @@ __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 
 TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
-TEST_SNDCURSOR_FILE = os.path.join(TEST_MEDIA_PATH,
-                      "screen_center_utility_cursor.wav")
-TEST_SNDLOAD_FILE = os.path.join(TEST_MEDIA_PATH,
-                    "screen_center_utility_load.wav")
 FONT_FILE = os.path.join(CRT_FONTS_PATH, "PetMe64.ttf")
+CURSOR_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_cursor_01.ogg")
+CLICK_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_click_01.ogg")
 
 RASP_BOOTCFG_FILE = "/boot/config.txt"
 BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
@@ -147,8 +145,8 @@ class generate(object):
 
     def _init_sounds(self):
         try:
-            self.m_PGSndCursor = pygame.mixer.Sound(TEST_SNDCURSOR_FILE)
-            self.m_PGSndLoad = pygame.mixer.Sound(TEST_SNDLOAD_FILE)
+            self.m_PGSndCursor = pygame.mixer.Sound(CURSOR_SOUND_FILE)
+            self.m_PGSndLoad = pygame.mixer.Sound(CLICK_SOUND_FILE)
         except Exception as e:
             logging.error(e)
 
