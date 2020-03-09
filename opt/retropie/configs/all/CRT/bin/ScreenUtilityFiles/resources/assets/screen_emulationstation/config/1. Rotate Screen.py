@@ -55,8 +55,8 @@ ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
 ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
 ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
 
-SND_CURSOR_FILE = os.path.join(SKIN_THEME_PATH, "cursor.wav")
-SND_LOAD_FILE = os.path.join(SKIN_THEME_PATH, "load.wav")
+CURSOR_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_cursor_01.ogg")
+CLICK_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_click_01.ogg")
 
 y = 0
 RES_X = 0
@@ -124,8 +124,8 @@ def pygame_initialization():
     pygame.init()
     pygame.display.init()
     pygame.mouse.set_visible(0)
-    PGoCursor = pygame.mixer.Sound(SND_CURSOR_FILE)
-    PGoLoad = pygame.mixer.Sound(SND_LOAD_FILE)
+    PGoCursor = pygame.mixer.Sound(CURSOR_SOUND_FILE)
+    PGoLoad = pygame.mixer.Sound(CLICK_SOUND_FILE)
     PGoJoyHandler = joystick()
 
 def script_initialization():
