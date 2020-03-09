@@ -74,12 +74,10 @@ class BGM(object):
                                 # starting.
 
     m_iMaxVolume = 0.75
-    m_iVolume    = 0            # Store this for later use to handle fading out.
-    m_iFadeHop = 0.02
-    m_iFadeSpeed = 0.05
-    m_iSongPos = 0              # Position in miliseconds of song
+    m_iVolume    = m_iMaxVolume # Store this for later use to handle fading out.
+    m_iFadeSpeed = 0.02
 
-    m_bPauseMusic = True        # If true, this will cause the script to fade 
+    m_bMusicRestart = False     # If true, this will cause the script to fade 
                                 # the music out and -stop- the song rather 
                                 # than pause it.
 
@@ -88,6 +86,7 @@ class BGM(object):
                                 # CaSeSeNsAtIvE filename of the song you 
                                 # always want to play first on boot.
 
+    m_iTrackLast = -1
     m_iTrackCurr = -1
     m_lTrackList = []           # List of all found songs
     m_lTrackCtrl = []           # Random sequence for playing without repeat
@@ -116,13 +115,8 @@ class BGM(object):
         self._loop()
 
     def _init_pygame(self):
-        logging.info("INFO: loading pygame mixer")
         mixer.pre_init(44100, -16, 2, 1024)
         mixer.init()
-
-    def _quit_pygame(self):
-        logging.info("INFO: unloading pygame")
-        mixer.quit()
 
     def _check_paths(self):
         """if ~ is used, change it to home directory
@@ -133,12 +127,9 @@ class BGM(object):
 
     def _get_playlist(self):
         """ This will find everything that's .mp3 or .ogg """
-        self.m_lTrackList = 0
         self.m_lTrackList = [track for track in os.listdir(MUSIC_PATH) \
                             if track[-4:] == ".mp3" or track[-4:] == ".ogg"]
-        if not self.m_lTrackList:
-            logging.info("ERROR: NO music found in /config/music")
-            sys.exit(1)
+
         logging.info("INFO: found %s songs in music path" %
                      len(self.m_lTrackList))
         self._get_random_sequence()
@@ -160,39 +151,39 @@ class BGM(object):
         random.shuffle(self.m_lTrackCtrl)        
 
     def music_start(self):
-        if not mixer.get_init():
-            self._init_pygame()
         if not mixer.music.get_busy():
-            if self.m_sMusicState == 'play':
-                self.m_iSongPos = 0
             self._seek_track()
-            mixer.music.play(0, int(self.m_iSongPos))
-            logging.info("INFO: resuming music time at {%ss}" % self.m_iSongPos)
-            self._fade_in()
+            mixer.music.set_volume(self.m_iMaxVolume)
+            logging.info("INFO: playing music and setting max volume")
+            mixer.music.play()
+        else:
+            if self.m_sMusicState == 'pause':
+                logging.info("INFO: resuming music")
+                mixer.music.unpause() #resume
+                time.sleep(0.3)
+                self._fade_in()
         self.m_sMusicState = 'play'
 
-    def music_stop(self, p_bRestart = m_bPauseMusic):
+    def music_stop(self, p_bRestart = m_bMusicRestart):
         """
         You can change stop mode in function, by default will take
-        value from m_bPauseMusic, but you can change for stop
+        value from m_bMusicRestart, but you can change for stop
         instead of pause on ES exiting.
 
         """
         if mixer.music.get_busy():
             self._fade_out()
-            #we aren't going to resume the audio, so stop it outright.
-            mixer.music.stop()
             if p_bRestart:
-                self.m_sMusicState = 'pause'
-                self.m_iSongPos += mixer.music.get_pos()/1000
-                logging.info("INFO: pausing music time at {%ss}" % self.m_iSongPos)
-            else:
+                #we aren't going to resume the audio, so stop it outright.
+                mixer.music.stop()
                 self.m_sMusicState = 'stop'
-                self.m_iSongPos = 0
-            self._quit_pygame()
-            logging.info("INFO: halted music as {%s}" % self.m_sMusicState)
+                logging.info("INFO: halted music as {%s}"%self.m_sMusicState)
+            else:
+                #we are going to resume, so pause it.
+                mixer.music.pause()
+                self.m_sMusicState = 'pause'
+                logging.info("INFO: halted music as {%s}"%self.m_sMusicState)
         else:
-            self.m_iSongPos = 0
             self.m_sMusicState = 'stop'
 
     def _seek_track(self):
@@ -200,14 +191,13 @@ class BGM(object):
         # If we have more than one song, choose a new one until we get one that
         # isn't what we just played.
         if len(self.m_lTrackList) > 1:
-            if self.m_iSongPos == 0:
+            if self.m_iTrackLast == self.m_iTrackCurr:
                 logging.info("INFO: taking next song in sequence")
                 self.m_iTrackCurr = self._next_song()
         logging.info("INFO: next song: file [%s] - seq [%s]" \
                      % (self.m_lTrackList[self.m_iTrackCurr], self.m_iTrackCurr))
         p_lTrack = os.path.join(MUSIC_PATH, self.m_lTrackList[self.m_iTrackCurr])
         mixer.music.load(p_lTrack)
-        mixer.music.rewind()
         logging.info("INFO: song loaded on mixer, ready to play")
         self.m_iTrackLast = self.m_iTrackCurr
 
@@ -233,26 +223,25 @@ class BGM(object):
                 return p_Song
             except:
                 logging.info("INFO: END OF SEQUENCE, restarting reproduction")
-                self._get_playlist()
+                self._get_random_sequence()
                 
     def _fade_out(self):
         logging.info("INFO: fading out music")
         while self.m_iVolume > 0:
-            self.m_iVolume -= self.m_iFadeHop
+            self.m_iVolume -= self.m_iFadeSpeed
             if self.m_iVolume < 0:
                 self.m_iVolume = 0
             mixer.music.set_volume(self.m_iVolume);
-            time.sleep(self.m_iFadeSpeed)
+            time.sleep(0.05)
 
     def _fade_in(self):
-        if self.m_iVolume < self.m_iMaxVolume:
-            logging.info("INFO: fading in music")
-            while self.m_iVolume < self.m_iMaxVolume:
-                self.m_iVolume += self.m_iFadeHop;
-                if self.m_iVolume > self.m_iMaxVolume:
-                    self.m_iVolume = self.m_iMaxVolume
-                mixer.music.set_volume(self.m_iVolume);
-                time.sleep(self.m_iFadeSpeed)
+        logging.info("INFO: fading in music")
+        while self.m_iVolume < self.m_iMaxVolume:
+            self.m_iVolume += self.m_iFadeSpeed;
+            if self.m_iVolume > self.m_iMaxVolume:
+                self.m_iVolume = self.m_iMaxVolume
+            mixer.music.set_volume(self.m_iVolume);
+            time.sleep(0.05)
 
     def _wait_process(self, p_sProcess, p_sState = 'stop',
                      p_iTimes = 1, p_iWaitScs = 1):
