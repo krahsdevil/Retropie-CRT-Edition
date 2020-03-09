@@ -71,8 +71,8 @@ DEFAULT_CFG = {
     'cursor': "cursor.png",
     'font': "font.ttf",
     'font_size': 16,
-    'snd_cursor': "cursor.wav",
-    'snd_load': "load.wav",
+    'snd_cursor': "cursor.ogg",
+    'snd_load': "load.ogg",
 
     'bgcolor': BG_COLOR,
     'bgcolor_selected': BG_COLOR_SEL,
