@@ -9,7 +9,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -25,9 +25,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, logging
-from launcher_module.core import CRT_UTILITY_FILE
+from launcher_module.core_paths import CRT_UTILITY_FILE
 from launcher_module.file_helpers import ini_get
-from launcher_module.plugins.libretro import libretro, RETROARCH_CONFIGS_PATH
+from launcher_module.plugins.libretro import libretro
 
 class bezel(libretro):
 
