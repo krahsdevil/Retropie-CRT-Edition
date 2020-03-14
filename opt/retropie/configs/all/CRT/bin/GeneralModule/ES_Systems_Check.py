@@ -2,30 +2,18 @@
 # coding: utf-8
 # Retropie code/integration by -krahs- (2018)
 
-import struct
-import os
-import os.path
-import sys
-import shutil
-import pygame
-import time
-import subprocess
-import commands
-
-from math import *
-from pygame.locals import *
+import os, sys
+import xml.etree.ElementTree as ET
 
 # TODO: use external config
 CRT_PATH = '/opt/retropie/configs/all/CRT'
 MODULES_PATH = os.path.join(CRT_PATH, 'bin/GeneralModule')
 LAUNCHER_BIN = os.path.join(MODULES_PATH, 'emulator_launcher.py')
-
 sys.path.append(CRT_PATH)
 sys.path.append(MODULES_PATH)
 
 from general_config import *
-from general_functions import *
-import xml.etree.ElementTree as ET
+from launcher_module.utils import something_is_bad
 
 all_lines_moded = "none"
 pcenginecd_check = False
