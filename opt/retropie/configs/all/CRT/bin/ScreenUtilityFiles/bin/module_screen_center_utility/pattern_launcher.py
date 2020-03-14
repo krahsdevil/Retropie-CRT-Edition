@@ -9,7 +9,7 @@ Centering Pattern Utility for CRT image adjusting by Krahs
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -35,8 +35,7 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from launcher_module.core import CRT_UTILITY_FILE 
-from launcher_module.core_paths import TMP_LAUNCHER_PATH
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.screen import CRT
 from launcher_module.file_helpers import *
 from pattern_generator import *
