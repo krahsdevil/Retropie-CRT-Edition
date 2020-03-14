@@ -10,7 +10,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -26,10 +26,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, re, logging
-from launcher_module.core import launcher, RETROPIE_CFG_PATH
+from launcher_module.core import launcher
+from launcher_module.core_paths import RETROPIE_CUSTEMU_FILE
 from launcher_module.file_helpers import remove_line, touch_file
-
-CFG_CUSTOMEMU_FILE = os.path.join(RETROPIE_CFG_PATH, "all/emulators.cfg")
 
 class emulator(launcher):
     """
@@ -90,14 +89,14 @@ class emulator(launcher):
             Emulator is ok or not specific emulator for this game was selected
         """
         p_bNeedClean = False
-        if not os.path.exists(CFG_CUSTOMEMU_FILE):
+        if not os.path.exists(RETROPIE_CUSTEMU_FILE):
             #create emulators.cfg if doesn't exists
-            touch_file(CFG_CUSTOMEMU_FILE)
+            touch_file(RETROPIE_CUSTEMU_FILE)
             logging.info("Created emulators.cfg")
         sCleanName = re.sub('[^a-zA-Z0-9-_]+','', self.m_sGameName ).replace(" ", "")
         sGameSystemName = "%s_%s" % (self.m_sSystem, sCleanName)
 
-        with open(CFG_CUSTOMEMU_FILE, 'r') as oFile:
+        with open(RETROPIE_CUSTEMU_FILE, 'r') as oFile:
             for line in oFile:
                 lValues = line.strip().split(' ')
                 if lValues[0] == sGameSystemName:
@@ -111,8 +110,8 @@ class emulator(launcher):
                         p_bNeedClean = True
         # clean emulators.cfg if have an invalid binary
         if p_bNeedClean:
-            logging.info("cleaning line %s from %s" % (sGameSystemName, CFG_CUSTOMEMU_FILE))
-            remove_line(CFG_CUSTOMEMU_FILE, sGameSystemName)
+            logging.info("cleaning line %s from %s" % (sGameSystemName, RETROPIE_CUSTEMU_FILE))
+            remove_line(RETROPIE_CUSTEMU_FILE, sGameSystemName)
             return False
         return True
 
