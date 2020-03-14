@@ -10,7 +10,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -25,15 +25,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, re, logging, commands
-from distutils.version import LooseVersion
-from launcher_module.core import CRT_ROOT_PATH, RETROPIE_EMULATORS_PATH, RETROPIE_CFG_PATH
+import os, logging, commands
+from launcher_module.core_paths import CRT_RA_MAIN_CFG_PATH
 from launcher_module.emulator import emulator
 from launcher_module.utils import ra_version_fixes
-
-RETROARCH_CONFIGS_PATH = os.path.join(CRT_ROOT_PATH, "Retroarch/configs")
-RETROARCH_DB_FILE = os.path.join(CRT_ROOT_PATH, "bin/ScreenUtilityFiles/config_files/retroarchdb.txt")
-RETROARCH_BINARY_FILE = os.path.join(RETROPIE_EMULATORS_PATH, "retroarch/bin/retroarch")
 
 class libretro(emulator):
     m_sSystemCfg = ""
@@ -41,13 +36,15 @@ class libretro(emulator):
 
     @staticmethod
     def get_system_list():
-        return ["sg-1000", "fds", "pcengine", "coleco", "atari7800",
+        return ["sg-1000", "fds", "pcengine", "coleco", "atari7800", "amiga",
                 "vectrex", "pcenginecd", "zxspectrum", "amstradcpc", "neogeocd"]
 
     # system configure vars
     def configure(self):
         if self.m_sSystem == "zxspectrum":
             self.m_sSystemFreq = "zxspectrum50"
+        elif self.m_sSystem == "amiga":
+            self.m_sSystemFreq = "amiga50"
         else:
             self.m_sSystemFreq = self.m_sSystem
         self.m_sSystemCfg = self.m_sSystemFreq + ".cfg"
@@ -57,7 +54,7 @@ class libretro(emulator):
         self.m_lBinaryMasks = ["lr-"]
         self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
 
-        self.m_sCustomRACFG = os.path.join(RETROARCH_CONFIGS_PATH, self.m_sSystemCfg)
+        self.m_sCustomRACFG = os.path.join(CRT_RA_MAIN_CFG_PATH, self.m_sSystemCfg)
         # if not exists report it
         if not os.path.exists(self.m_sCustomRACFG):
             logging.error("not found cfg: %s" % self.m_sCustomRACFG)
