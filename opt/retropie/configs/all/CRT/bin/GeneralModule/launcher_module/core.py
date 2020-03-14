@@ -10,7 +10,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -39,9 +39,6 @@ __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
 
-TMP_SPEEPER_NAME = "lchtmp"
-TMP_SLEEPER_FILE = os.path.join(TMP_LAUNCHER_PATH, TMP_SPEEPER_NAME)
-LEGACY_SLEEPER_FILE = "/tmp/lchtmp"
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 
 CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1.5 && "
