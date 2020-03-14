@@ -27,12 +27,12 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.utils import ra_version_fixes, get_xy_screen, HideScreen
+from launcher_module.utils import ra_version_fixes, HideScreen
 from launcher_module.screen import CRT
 
 ROM_FILE = os.path.join(CRT_ADDN_PATH, "addon_credits/flappybird.gba")
 RA_GBA_CFG_FILE1 = os.path.join(RETROPIE_CFG_PATH, "gba/retroarch.cfg")
-RA_GBA_CFG_FILE2 = os.path.join(CRT_ROOT_PATH, "Retroarch/configs/credits.cfg")
+RA_GBA_CFG_FILE2 = os.path.join(CRT_RA_MAIN_CFG_PATH, "credits.cfg")
 RA_GBA_CORE_FILE = os.path.join(CRT_ADDN_PATH,
                   "addon_credits/mgba_libretro.so")
 
