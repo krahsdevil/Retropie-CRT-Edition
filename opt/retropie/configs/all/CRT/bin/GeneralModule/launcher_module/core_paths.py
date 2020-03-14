@@ -6,7 +6,7 @@ paths_lib.py.
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -23,7 +23,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 
+TMP_SPEEPER_NAME = "lchtmp"
 TMP_LAUNCHER_PATH = "/dev/shm"
+TMP_SLEEPER_FILE = os.path.join(TMP_LAUNCHER_PATH, TMP_SPEEPER_NAME)
 
 # RETROPIE
 RETROPIE_PATH = "/opt/retropie"
@@ -32,6 +34,7 @@ RETROPIE_EMULATORS_PATH = os.path.join(RETROPIE_PATH, "emulators")
 RETROPIE_MUSIC_PATH = os.path.join(RETROPIE_CFG_PATH, "music")
 RETROPIE_SPLASH_PATH = os.path.join(RETROPIE_PATH, "supplementary/splashscreen")
 RETROPIE_VIDEOMODES_FILE = os.path.join(RETROPIE_CFG_PATH, "all/videomodes.cfg")
+RETROPIE_CUSTEMU_FILE = os.path.join(RETROPIE_CFG_PATH, "all/emulators.cfg")
 RETROPIE_RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
 
 # RETROARCH
@@ -63,6 +66,7 @@ CRT_RA_HASHDB_FILE = os.path.join(CRT_CONFIG_PATH, "retroarchdb.txt")
 CRT_FIXMODES_FILE = os.path.join(CRT_CONFIG_PATH, "modes.cfg")
 CRT_UTILITY_FILE = os.path.join(CRT_CONFIG_PATH, "utility.cfg")
 CRT_NETPLAY_FILE = os.path.join(CRT_CONFIG_PATH, "netplay.cfg")
+CRT_AUTOFREQ_FILE = os.path.join(CRT_CONFIG_PATH, "autofreqdb.cfg")
 
 # CRT CONFIGURATIONS FOR RETROARCH
 CRT_DB_PATH = os.path.join(CRT_ROOT_PATH, "Resolutions")
@@ -73,6 +77,7 @@ CRT_RA_CORES_CFG_PATH = os.path.join(CRT_ROOT_PATH, "Retroarch/cores")
 # CRT RESOURCES
 CRT_ASST_PATH = os.path.join(CRT_RSC_PATH, "assets")
 CRT_ADDN_PATH = os.path.join(CRT_RSC_PATH, "addons")
+CRT_MEDIA_PATH = os.path.join(CRT_RSC_PATH, "media")
 
 CRT_ES_RES_PATH = os.path.join(CRT_ASST_PATH, "screen_emulationstation/CRTResources")
 CRT_LNCH_IMG_MOD_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_modes")
