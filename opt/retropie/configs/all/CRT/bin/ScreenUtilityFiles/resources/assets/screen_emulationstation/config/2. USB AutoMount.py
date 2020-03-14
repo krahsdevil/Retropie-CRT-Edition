@@ -18,11 +18,12 @@ import filecmp
 import subprocess
 from pygame.locals import *
 
-sys.path.append('/opt/retropie/configs/all/CRT/bin/GeneralModule/')
-sys.path.append('/opt/retropie/configs/all/CRT/')
+CRT_PATH = "/opt/retropie/configs/all/CRT"
+RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
+sys.path.append(RESOURCES_PATH)
 
-from selector_module_functions import get_retropie_joy_map
-from selector_module_functions import check_joy_event
+from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
+                                          CRT_LEFT, CRT_RIGHT, CRT_BUTTON
 
 os.system('clear')
 
@@ -65,9 +66,8 @@ pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 pygame.display.init()
 pygame.mouse.set_visible(0)
+PGoJoyHandler = joystick()
 get_config()
-get_retropie_joy_map()
-
 
 # VARIABLES
 state_up = 0
@@ -228,6 +228,7 @@ else:
     MAXoptions = 1
 
 def quit_moudule():
+    PGoJoyHandler.quit()
     pygame.display.quit()
     pygame.quit()
     sys.exit()
@@ -252,11 +253,9 @@ y = 0
 
 
 while True:
-    pygame.event.clear()
-    event = pygame.event.wait()
-    action = check_joy_event(event)
+    event = PGoJoyHandler.event_wait()
     #button
-    if action == 'KEYBOARD' or action == 'JOYBUTTONB' or action == 'JOYBUTTONA':
+    if event & CRT_BUTTON:
         if y < 1:
             load.play()
             fullscreen.blit(option1_ENA, option1_ENAPos)
@@ -290,7 +289,7 @@ while True:
             quit_moudule()
 
     #down
-    elif action == 'DOWNKEYBOARD' or action == 'JOYHATDOWN' or action == 'AXISDOWN':
+    elif event & CRT_DOWN:
         if y < MAXoptions:
             y = y + 1
             cursor.play()
@@ -301,7 +300,7 @@ while True:
             pygame.display.flip()
 
     #up
-    elif action == 'UPKEYBOARD' or action == 'JOYHATUP' or action == 'AXISUP':
+    elif event & CRT_UP:
         if y > 0:
             y = y - 1
             cursor.play()
