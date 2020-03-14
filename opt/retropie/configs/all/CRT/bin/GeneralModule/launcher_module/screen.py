@@ -6,7 +6,7 @@ screen_lib.py.
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -21,16 +21,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, subprocess
+import os, logging, commands, subprocess
 from math import ceil, floor
 
-from launcher_module.core_paths import CRT_ROOT_PATH, CRT_BIN_PATH
+from launcher_module.core_paths import CRT_MEDIA_PATH, CRT_UTILITY_FILE, CRT_FIXMODES_FILE
 from launcher_module.file_helpers import ini_get, ini_getlist
 
-
-CRT_UTILITY_FILE = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/config_files/utility.cfg")
-CFG_COMPMODES_FILE = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/config_files/modes.cfg")
-DEFAULT_SCREEN_BIN = os.path.join(CRT_ROOT_PATH, "bin/ScreenUtilityFiles/resources/media/info_splash_screen/default.sh")
+DEFAULT_SCREEN_BIN = os.path.join(CRT_MEDIA_PATH, "info_splash_screen/default.sh")
 
 DEFAULT_RES = ["1920", "224", "60.000000", "-4", "-27", "3", "48", "192", "240", "5", "15734", "screen_lib", "H"]
 
@@ -74,16 +71,13 @@ class CRT(object):
         self.m_sSystem = p_sSystem
 
     @staticmethod
-    def get_xy_screen():
-        process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
-        output = process.stdout.read() # use commands?
-        for line in output.splitlines():
-            if 'x' in line and 'mode' in line:
-                ResMode = line
-                ResMode = ResMode.replace('"','').replace('x',' ').split(' ')
-                x_screen = int(ResMode[1])
-                y_screen = int(ResMode[2])
-                return (x_screen, y_screen)
+    def get_screen_resolution():
+        commandline = "cat /sys/class/graphics/fb0/virtual_size"
+        output = commands.getoutput(commandline)
+        VirtRes = output.replace(',',' ').split(' ')
+        RES_X = int(VirtRes[0])
+        RES_Y = int(VirtRes[1])
+        return (RES_X, RES_Y)
 
     def screen_calculated(self, p_sTimingCfgPath):
         # clean first timing values
@@ -155,10 +149,10 @@ class CRT(object):
         self.force_geometry()
 
     def get_fix_tv(self, p_sFindMask):
-        sSelected = ini_get(CFG_COMPMODES_FILE, "mode_default")
+        sSelected = ini_get(CRT_FIXMODES_FILE, "mode_default")
         if not sSelected or sSelected.lower() == "default":
             return False
-        return ini_getlist(CFG_COMPMODES_FILE, p_sFindMask % sSelected)
+        return ini_getlist(CRT_FIXMODES_FILE, p_sFindMask % sSelected)
 
     def get_fix_user(self):
         self.timing_add("H_Pos", ini_get(CRT_UTILITY_FILE, "test60_offsetX"))
@@ -313,7 +307,7 @@ class CRT(object):
                     logging.info("%s timing found at: %s" % (self.m_sSystem, self.p_sTimingPath))
                     return lValues[1:] # ignore first value
         logging.error("%s timing not found using default for: %s" % (self.m_sSystem, self.p_sTimingPath))
-        os.system(DEFAULT_SCREEN_BIN) # show to user default resolution used
+        subprocess.Popen(DEFAULT_SCREEN_BIN) # show to user default resolution used
         return DEFAULT_RES
 
     def _calculated_adjustement(self):
