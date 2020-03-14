@@ -10,7 +10,7 @@ based on original idea of BGM script version 1.03 by Livewire.
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -60,7 +60,7 @@ class BGM(object):
                         "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
                         "love", "love-0.10.2", "openblok", "openfodder", "srb2",
                         "yquake2", "amiberry", "zesarux", "dxx-rebirth",
-                        "zesarux"]
+                        "zesarux", "daphne.bin"]
 
     m_dCRTLaunchProcess = ["crt_launcher.py", "emulator_launcher.py",
                            "emulator_launcher_legacy.py"]
