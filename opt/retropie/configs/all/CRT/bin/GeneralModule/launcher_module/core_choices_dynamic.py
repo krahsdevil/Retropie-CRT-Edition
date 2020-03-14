@@ -10,7 +10,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -46,11 +46,9 @@ import os, sys
 import logging
 import pygame
 
-from .core_paths import CRT_ROOT_PATH
+from .core_paths import CRT_MEDIA_PATH
 from .screen import CRT
 from .core_controls import joystick, CRT_UP, CRT_DOWN, CRT_BUTTON
-
-SKINSELECTOR_PATH = os.path.join(CRT_ROOT_PATH, "bin/ScreenUtilityFiles/resources/media")
 
 # BASE COLORS
 BG_COLOR = (128, 120, 211)
@@ -103,7 +101,7 @@ class choices(object):
 
     def __init__(self, p_dChoices = DEFAULT_CFG):
         self.dCFG = p_dChoices.copy()
-        self.m_sSkinPath = os.path.join(SKINSELECTOR_PATH, self.dCFG['style'])
+        self.m_sSkinPath = os.path.join(CRT_MEDIA_PATH, self.dCFG['style'])
         pygame.mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
         self._init_screen()
@@ -125,7 +123,7 @@ class choices(object):
         self.c = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['cursor']))
 
         # screen
-        self.m_lResolutionXY = CRT.get_xy_screen()
+        self.m_lResolutionXY = CRT.get_screen_resolution()
         self.m_lScreenCenter = map(lambda x: x/2, self.m_lResolutionXY)
         self.m_oScreen = pygame.display.set_mode(self.m_lResolutionXY, pygame.FULLSCREEN)
 
