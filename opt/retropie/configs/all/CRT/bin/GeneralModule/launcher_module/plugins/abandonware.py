@@ -10,7 +10,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -25,20 +25,18 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, re, logging
-import subprocess
-from launcher_module.core import CRT_DB_SYSTEMS_FILE, TMP_SLEEPER_FILE, CRT_RUNCOMMAND_FORMAT
+import os, logging
 from launcher_module.core_paths import *
-from launcher_module.core_choices_dynamic import choices
+from launcher_module.utils import show_info, menu_options
 from launcher_module.emulator import emulator
-from launcher_module.screen import CRT
-from launcher_module.file_helpers import remove_file, ini_get, modify_line, \
+from launcher_module.file_helpers import ini_get, modify_line, \
                                          touch_file, add_line
 
 SCUMMVMCFG_FILE = os.path.join(RETROPIE_CFG_PATH, "scummvm/scummvm.ini")
 
 class abandonware(emulator):
-    m_sSleeper = CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
+    m_lOptARC = [("ENABLE / VERTICAL STRETCH", "FIT"),
+                 ("DISABLE / PIXELPERFECT", "PIXEL")]
 
     @staticmethod
     def get_system_list():
@@ -55,14 +53,7 @@ class abandonware(emulator):
             self.m_lBinaryMasks = ["dosbox"]
             self.m_lProcesses = ["dosbox", "retroarch"]
         super(abandonware, self).configure()
-        self.show_info("Better with keyboard and mouse")
-
-    def show_info(self, m_sMessage, m_sTitle = None):
-        ch = choices()
-        if m_sTitle:
-            ch.set_title(m_sTitle)
-        ch.load_choices([(m_sMessage, "OK")])
-        ch.show()
+        show_info("Better with keyboard and mouse")
 
     def _scummvm_create_cfg(self):
         """ create base ini file if not exist """
@@ -99,20 +90,12 @@ class abandonware(emulator):
         if p_sScummARC == 1:
             sAspect = "FIT"
         elif p_sScummARC == 2:
-            sAspect = self._selector_pixel_ferfect()
+            sAspect = menu_options(self.m_lOptARC)
 
         if sAspect == "PIXEL":
             self._scummvm_change_ini(SCUMMVMCFG_FILE, p_sARValue, "false")
         elif sAspect == "FIT":
             self._scummvm_change_ini(SCUMMVMCFG_FILE, p_sARValue, "true")
-
-    def _selector_pixel_ferfect(self):
-        ch = choices()
-        ch.set_title("SCUMMVM ARC")
-        ch.load_choices([("ENABLE / VERTICAL STRETCH", "FIT"),
-                         ("DISABLE / PIXELPERFECT", "PIXEL")])
-        result = ch.run()
-        return result
 
     def _scummvm_change_ini(self, p_sFile, p_sKey, p_sValue,
                                  p_sSection = "[scummvm]"):
@@ -131,11 +114,5 @@ class abandonware(emulator):
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         if "+Start " in self.m_sGameName:
-            self.show_info("Launching %s Configurator!" % self.m_sSystem.upper())
-            commandline = "%s bash \"%s\" > /dev/null 2>&1" % \
-                          (self.m_sSleeper, self.m_sFilePath)
-            self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
-            logging.info("Subprocess running: %s", commandline)
-            self.runcommand_wait()
-        else:
-            super(abandonware, self).runcommand_start()
+            show_info("Launching %s Configurator!" % self.m_sSystem.upper())
+        super(abandonware, self).runcommand_start()

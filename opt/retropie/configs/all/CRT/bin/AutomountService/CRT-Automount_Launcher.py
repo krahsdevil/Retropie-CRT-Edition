@@ -9,7 +9,7 @@ Module to check and load/unload USB Automount service for Retropie by -krahs-
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -31,7 +31,7 @@ CRT_PATH = "/opt/retropie/configs/all/CRT"
 RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
-from launcher_module.core_choices_dynamic import choices
+from launcher_module.utils import show_info, menu_options
 from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.file_helpers import *
 
@@ -57,18 +57,18 @@ class automount(object):
     m_bUSBMounted = False
     m_sMountedPath = ""
 
-    m_sTitle = ""
-    m_lChoices = [] #Choices for selector
+    m_sTitAuto = "" # title for selector
+    m_lOptAuto = [] # options for selector
 
     def __init__(self):
         self.__temp()
         self._check_service_run() # Check service and usb mount status
-        self._prepare_choices()
+        self._prepare_options()
         logging.info("INFO: Launching USB Automount Selector")
     
     def run(self):
-        self._show_info('PLEASE WAIT...')
-        sChoice = self._automount_opt()
+        show_info('PLEASE WAIT...')
+        sChoice = menu_options(self.m_lOptAuto, self.m_sTitAuto)
         self._automount_act(sChoice)
         sys.exit(0)
     
@@ -101,17 +101,17 @@ class automount(object):
             else:
                 self.m_bUSBMounted = False
                 
-    def _prepare_choices(self):
+    def _prepare_options(self):
         """ This function will prepare the menu options """
         if self.m_bServiceRun:
-            self.m_sTitle = "USB AUTOMOUNT"
-            self.m_lChoices.append(("STOP AUTOMOUNT!", "stop"))
+            self.m_sTitAuto = "USB AUTOMOUNT"
+            self.m_lOptAuto.append(("STOP AUTOMOUNT!", "stop"))
             if self.m_bUSBMounted:
-                self.m_lChoices.append(("EJECT MY USB", "eject"))
+                self.m_lOptAuto.append(("EJECT MY USB", "eject"))
         else:
-            self.m_sTitle = "WARNING: SERVICE STOPPED!"
-            self.m_lChoices.append(("START AUTOMOUNT!", "start"))
-        self.m_lChoices.append(("CANCEL", "cancel"))
+            self.m_sTitAuto = "WARNING: SERVICE STOPPED!"
+            self.m_lOptAuto.append(("START AUTOMOUNT!", "start"))
+        self.m_lOptAuto.append(("CANCEL", "cancel"))
 
     def _automount_act(self, p_sOption):
         if p_sOption == "start":
@@ -122,16 +122,9 @@ class automount(object):
         elif p_sOption == "eject":
             self.eject_usb()
 
-    def _automount_opt(self):
-        ch = choices()
-        ch.set_title(self.m_sTitle)
-        ch.load_choices(self.m_lChoices)
-        result = ch.run()
-        return result
-
     def _install_service(self):
         if self._check_service_files:
-            self._show_info('STARTING, EMULATIONSTATION MAY REBOOT...')
+            show_info('STARTING, EMULATIONSTATION MAY REBOOT...')
             os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1'%(SERVICE_FILE, SERVICE_FILE_NAME))
             os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo systemctl enable %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
@@ -139,7 +132,7 @@ class automount(object):
 
     def _remove_service(self):
         if self._check_service_files and self.m_bUSBMounted:
-            self._show_info('STOPPING AUTOMOUNT SERVICE...')
+            show_info('STOPPING AUTOMOUNT SERVICE...')
             os.system('sudo systemctl disable %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo systemctl stop %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1'%SERVICE_FILE_NAME)
@@ -150,7 +143,7 @@ class automount(object):
             self._restart_ES()
 
     def eject_usb(self):
-        self._show_info('EJECTING, EMULATIONSTATION WILL RESTART NOW')
+        show_info('EJECTING, EMULATIONSTATION WILL RESTART NOW')
         os.system('sudo umount %s > /dev/null 2>&1' % self.m_sMountedPath[0])
         while not os.path.exists(TRG_UMNT_FILE):
             pass
@@ -159,19 +152,14 @@ class automount(object):
         """ Restart ES if it's running """
         sOutput = commands.getoutput('ps -A')
         if 'emulationstatio' in sOutput:
-            self._show_info('EMULATIONSTATION WILL RESTART NOW')
+            show_info('EMULATIONSTATION WILL RESTART NOW')
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
             os.system(commandline)
             os.system('clear')
             time.sleep(1.5)
-       
-    def _show_info(self, p_sMessage, p_iTime = 2000):
-        ch = choices()
-        ch.load_choices([(p_sMessage, "OK")])
-        ch.show(p_iTime)
-        
+
     # clean system
     def __clean(self):
         if os.path.exists(TRG_MNT_FILE):

@@ -24,11 +24,10 @@ import sys, os, time
 import filecmp
 
 from launcher_module.core_paths import *
-from launcher_module.core_choices_dynamic import choices
-from launcher_module.file_helpers import modify_line, ini_get, touch_file
-from launcher_module.file_helpers import get_xml_value_esconfig
-from launcher_module.file_helpers import set_xml_value_esconfig
-from launcher_module.utils import check_process
+from launcher_module.file_helpers import modify_line, ini_get, touch_file, \
+                                         get_xml_value_esconfig, \
+                                         set_xml_value_esconfig
+from launcher_module.utils import check_process, show_info
 
 CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
 ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
@@ -160,7 +159,7 @@ class frontend_rotation():
                         self._replace_launching_image(sFile2, p_sFileTail)
 
     def _frontend_rotation(self):
-        if not self.iCurSide: self._show_info ("WAIT, PREPARING ROTATION...")
+        if not self.iCurSide: show_info("WAIT, PREPARING ROTATION...")
         # remove first all trigger files
         self.__clean()
         p_sFileTail = "_" + str(self.RES_Y) + "p"
@@ -194,19 +193,12 @@ class frontend_rotation():
         os.system('sudo cp %s %s >> /dev/null 2>&1' % (p_sIntro, INTRO_VID_DEF_FILE))
         self._fix_aspect_ratio_images(p_sFileTail)
 
-    def _show_info(self, p_sMessage, p_iTime = 2000, p_sTitle = None):
-        ch = choices()
-        if p_sTitle:
-            ch.set_title(p_sTitle)
-        ch.load_choices([(p_sMessage, "OK")])
-        ch.show(p_iTime)
-
     def _restart_es(self):
         if check_process("emulationstatio"):
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            if not self.iCurSide: self._show_info("EMULATIONSTATION WILL RESTART NOW")
+            if not self.iCurSide: show_info("EMULATIONSTATION WILL RESTART NOW")
             os.system(commandline)
             time.sleep(2)
             sys.exit(1)

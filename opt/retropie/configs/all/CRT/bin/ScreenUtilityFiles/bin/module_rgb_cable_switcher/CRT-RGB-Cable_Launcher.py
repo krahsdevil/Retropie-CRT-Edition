@@ -35,10 +35,10 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from controls_mapping import CTRLSMgmt
-from launcher_module.core_choices_dynamic import choices
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
-from launcher_module.utils import check_process, wait_process
+from launcher_module.utils import check_process, wait_process, \
+                                  show_info, menu_options
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_CableSelector.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
@@ -106,7 +106,7 @@ class CableSelector(object):
         self.m_oControls = CTRLSMgmt()
 
     def run(self):
-        self._show_info('PLEASE WAIT...')
+        show_info('PLEASE WAIT...')
         self._check_if_first_boot()
         self._loop()
 
@@ -119,31 +119,13 @@ class CableSelector(object):
         p_sOption = ""
         self._generate_cable_list()
         while True:
-            p_sOption = self._selector()
+            p_sOption = menu_options(self.m_lChoices, self.m_sTitle)
             if p_sOption != 'EXIT':
                 self._cable_config(p_sOption, True)
             break
         self._ctrls_configuration(p_sOption)
         self._upload_boot_cfg()
         self._restart()
-
-
-    def _selector(self):
-        ch = choices()
-        ch.set_title(self.m_sTitle)
-        ch.load_choices(self.m_lChoices)
-        result = ch.run()
-        return result
-
-    def _show_info(self, p_sMessage, p_iTime = 2000, p_sTitle = None):
-        ch = choices()
-        if p_sTitle:
-            ch.set_title(p_sTitle)
-        if type(p_sMessage) is str:
-                ch.load_choices([(p_sMessage, "OK")])
-        else:
-            ch.load_choices(p_sMessage)
-        ch.show(p_iTime)
 
     def _generate_cable_list(self):
         self.m_sTitle = ""
@@ -404,7 +386,7 @@ class CableSelector(object):
     def _check_crtdaemon(self):
         if self._check_service(SERVICE_FILE_NAME, 'load'):
             if not self._check_service(SERVICE_FILE_NAME, 'run'):
-                #self._show_info('INITIALIZING CRT DAEMON...')
+                #show_info('INITIALIZING CRT DAEMON...')
                 os.system('sudo systemctl start %s > /dev/null 2>&1' \
                           % SERVICE_FILE_NAME)
             if not self._check_service(SERVICE_FILE_NAME, 'run'):
@@ -427,7 +409,7 @@ class CableSelector(object):
 
     def _install_crtdaemon(self):
         if self._check_crtdaemon_files:
-            self._show_info('REINSTALLING CRT DAEMON...')
+            show_info('REINSTALLING CRT DAEMON...')
             os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' \
                       % (SERVICE_FILE, SERVICE_FILE_NAME))
             os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1' \
@@ -439,7 +421,7 @@ class CableSelector(object):
 
     def _remove_crtdaemon(self):
         if self._check_crtdaemon_files:
-            self._show_info('CLEANING CRT DAEMON...')
+            show_info('CLEANING CRT DAEMON...')
             os.system('sudo systemctl disable %s > /dev/null 2>&1' \
                       % SERVICE_FILE_NAME)
             os.system('sudo systemctl stop %s > /dev/null 2>&1' \
@@ -474,8 +456,8 @@ class CableSelector(object):
                          'no reboot needed')
             # check if ES must reboot
             if self.m_bRebootES and check_process("emulationstatio"):
-                self._show_info('CLEANING KEYBOARD CONFIG', 2000)
-                self._show_info('EMULATIONSTATION WILL RESTART NOW')
+                show_info('CLEANING KEYBOARD CONFIG', 2000)
+                show_info('EMULATIONSTATION WILL RESTART NOW')
                 commandline = "touch /tmp/es-restart "
                 commandline += "&& pkill -f \"/opt/retropie"
                 commandline += "/supplementary/.*/emulationstation([^.]|$)\""
@@ -483,7 +465,7 @@ class CableSelector(object):
                 time.sleep(1)
         else:
             commandline = 'sudo reboot now'
-            self._show_info(self.m_lInfoReboot)
+            show_info(self.m_lInfoReboot)
             os.system(commandline)
         sys.exit(0)
 

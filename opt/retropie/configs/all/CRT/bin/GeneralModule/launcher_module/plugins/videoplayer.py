@@ -10,7 +10,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, re, sys, logging, commands, glob, subprocess
-from launcher_module.core_choices_dynamic import choices
+from launcher_module.utils import menu_options
 from launcher_module.core import launcher
 from launcher_module.core_paths import *
 
@@ -42,6 +42,10 @@ class videoplayer(launcher):
     m_lVideoLST = []
 
     m_sPlayAll = "False"
+
+    m_sTitVideo = "VIDEO PLAYER"
+    m_lOptVideo = [("Just this video...", "False"),
+                   ("Play ALL from this!", "True")]
 
     """ OMX Player command string """
     m_sOMXPart01 = 'omxplayer -b --align center --layer 10000 '
@@ -67,7 +71,7 @@ class videoplayer(launcher):
         #if more than one video and selected is not the last
         if self._find_videos() and \
            (self.m_nVideoNUM != self.m_nVideoPOS+1):
-            self.m_sPlayAll = self.video_options()
+            self.m_sPlayAll = menu_options(self.m_lOptVideo, self.m_sTitVideo)
 
     def runcommand_start(self):
         """ launch_videoplayer!"""
@@ -143,11 +147,3 @@ class videoplayer(launcher):
         if self.m_nVideoNUM >= 1:
             return True
         return False
-
-    def video_options(self):
-        ch = choices()
-        ch.set_title("VIDEO PLAYER")
-        ch.load_choices([("Just this video...", "False"),
-                         ("Play ALL from this!", "True")])
-        result = ch.run()
-        return result

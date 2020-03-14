@@ -30,7 +30,6 @@ sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
 from launcher_module.es_rotation import frontend_rotation
-from launcher_module.core_choices_dynamic import choices
 from launcher_module.file_helpers import modify_line, ini_get
 from launcher_module.utils import get_screen_resolution, something_is_bad
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
@@ -146,13 +145,6 @@ DEFAULT_CONFIG += "240p_theme_vertical V270P-CRT-BASE\n"
 DEFAULT_CONFIG += "270p_theme_vertical V270P-CRT-BASE\n"
 DEFAULT_CONFIG += "240p_theme_horizontal 240P-CRT-BUBBLEGUM\n"
 DEFAULT_CONFIG += "270p_theme_horizontal 270P-CRT-SNES-MINI\n\""
-
-def show_info(p_sMessage, p_iTime = 2000, p_sTitle = None):
-    ch = choices()
-    if p_sTitle:
-        ch.set_title(p_sTitle)
-    ch.load_choices([(p_sMessage, "OK")])
-    ch.show(p_iTime)
 
 def get_screen_size_adjust():
     global iMARGIN_TOP

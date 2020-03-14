@@ -28,12 +28,11 @@ RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
 sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.core_choices_dynamic import choices
 from launcher_module.file_helpers import modify_line, set_xml_value_esconfig, \
                                          get_xml_value_esconfig, ini_get, \
                                          ini_getlist
 from launcher_module.screen import CRT
-from launcher_module.utils import ra_version_fixes, get_screen_resolution
+from launcher_module.utils import ra_version_fixes, get_screen_resolution, show_info
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
 
@@ -146,13 +145,6 @@ DEFAULT_MODES += "MODE3_game_mask 0 0 0 0 0 0 0 -110 0 -4 0\n"
 DEFAULT_MODES += "MODE3_game_mask_raw 0 0 10 -17 0 0 0 0 -4 0 0 0 0 0 0 0 0\n"
 DEFAULT_MODES += "MODE3_system50 0 0 -6 -10 6 0 0 3 -4 4 0 0 0 0 0 0 0\n"
 DEFAULT_MODES += "MODE3_system60 0 0 10 -17 0 0 0 0 -4 0 0 0 0 0 0 0 0\n\n\""
-
-def show_info(p_sMessage, p_iTime = 2000, p_sTitle = None):
-    ch = choices()
-    if p_sTitle:
-        ch.set_title(p_sTitle)
-    ch.load_choices([(p_sMessage, "OK")])
-    ch.show(p_iTime)
 
 def get_screen_size_adjust():
     global iRES_X

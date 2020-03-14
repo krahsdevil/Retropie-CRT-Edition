@@ -27,6 +27,7 @@ from launcher_module.core_paths import CRT_ROOT_PATH, RETROPIE_EMULATORS_PATH, \
                                        RA_BIN_FILE, CRT_RA_HASHDB_FILE
 from launcher_module.file_helpers import md5_file, ini_get, touch_file, \
                                          add_line, modify_line
+from launcher_module.core_choices_dynamic import choices
 from distutils.version import LooseVersion
 
 #
@@ -59,6 +60,15 @@ def something_is_bad(infos,infos2):
     problem = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/resources/media/info_splash_screen/problem.sh \"%s\" \"%s\"" % (infos, infos2)
     os.system(problem)
 
+def get_screen_resolution():
+    """ main function to get screen resolution """
+    commandline = "cat /sys/class/graphics/fb0/virtual_size"
+    output = commands.getoutput(commandline)
+    VirtRes = output.replace(',',' ').split(' ')
+    RES_X = int(VirtRes[0])
+    RES_Y = int(VirtRes[1])
+    return (RES_X, RES_Y)
+    
 def get_xy_screen():
     process = subprocess.Popen("fbset", stdout=subprocess.PIPE)
     output = process.stdout.read()
@@ -70,18 +80,31 @@ def get_xy_screen():
             y_screen = int(ResMode[2])
             return (x_screen, y_screen)
             
-def get_screen_resolution():
-    commandline = "cat /sys/class/graphics/fb0/virtual_size"
-    output = commands.getoutput(commandline)
-    VirtRes = output.replace(',',' ').split(' ')
-    RES_X = int(VirtRes[0])
-    RES_Y = int(VirtRes[1])
-    return (RES_X, RES_Y)
-  
 def compact_rom_name(p_sRomName):
     sPreCleanedGame = re.sub('[^a-zA-Z0-9-_]+','', p_sRomName )
     sCleanedGame = re.sub(' ','', sPreCleanedGame)
     return sCleanedGame
+
+def show_info(p_sMessage, p_sTitle = None, p_iTime = 2000):
+    ch = choices()
+    if p_sTitle:
+        ch.set_title(p_sTitle)
+    if type(p_sMessage) is str:
+            ch.load_choices([(p_sMessage, "OK")])
+    else:
+        ch.load_choices(p_sMessage)
+    ch.show(p_iTime)
+    
+def menu_options(p_sMessage, p_sTitle = None):
+    ch = choices()
+    if p_sTitle:
+        ch.set_title(p_sTitle)
+    if type(p_sMessage) is str:
+            ch.load_choices([(p_sMessage, "OK")])
+    else:
+        ch.load_choices(p_sMessage)
+    result = ch.run()
+    return result
 
 def check_process(p_sProcess, p_iTimes = 1):
     """ 

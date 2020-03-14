@@ -10,7 +10,7 @@ launcher library for retropie, based on original idea - Ironic
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
@@ -29,9 +29,8 @@ import os, logging, shutil, math, commands
 from distutils.version import LooseVersion
 from launcher_module.core_paths import RETROPIE_CFG_PATH, TMP_LAUNCHER_PATH, \
                                        CRT_RA_MAIN_CFG_PATH, CRT_DB_PATH
-from launcher_module.core_choices_dynamic import choices
 from launcher_module.emulator import emulator
-from launcher_module.utils import ra_version_fixes
+from launcher_module.utils import ra_version_fixes, show_info, menu_options
 from launcher_module.file_helpers import add_line, modify_line
 from launcher_module.screen import CRT
 
@@ -64,6 +63,10 @@ class arcade(emulator):
     cfg_vres = 0
     cfg_scaleint = "false"
     cfg_ghres = 0 #Real Horizontal Resolution of the game
+    
+    m_sTitEnc = "Arcade Encapsulator"
+    m_lOptEnc = [("Play CROPPED", "CROPPED"),
+                 ("Play FORCED", "FORCED")]
 
     def start(self):
         self.runcommand_start()
@@ -296,7 +299,7 @@ class arcade(emulator):
                              "encapsulation: {%s}" % select)
             else:
                 if not self.m_bRndCoreCheck:
-                    select = self.encapsulator_selector()
+                    select = menu_options(self.m_lOptEnc, self.m_sTitEnc)
                 else:
                     select = "CROPPED"
                     logging.info("WARNING: AUTO SELECTION for encapsulation: " + \
@@ -313,17 +316,3 @@ class arcade(emulator):
             
             self.cfg_encap = select # save selection for second check
 
-    def encapsulator_selector(self):
-        ch = choices()
-        ch.set_title("Arcade Encapsulator")
-        ch.load_choices([("Play CROPPED", "CROPPED"),
-                         ("Play FORCED", "FORCED")])
-        result = ch.run()
-        return result
-        
-    def encapsulator_show_info(self, m_sMessage, m_sTitle = None):
-        ch = choices()
-        if m_sTitle:
-            ch.set_title(m_sTitle)
-        ch.load_choices([(m_sMessage, "OK")])
-        ch.show(3000)
