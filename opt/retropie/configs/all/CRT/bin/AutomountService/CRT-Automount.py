@@ -9,7 +9,7 @@ USB Automount service code for Retropie by -krahs-
 
 https://github.com/krahsdevil/crt-for-retropie/
 
-Copyright (C)  2018/2019 -krahs- - https://github.com/krahsdevil/
+Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
 Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
