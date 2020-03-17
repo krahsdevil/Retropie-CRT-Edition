@@ -37,8 +37,7 @@ JOYCONFIG_PATH = os.path.join(RETROPIE_CFG_PATH, "all/retroarch/autoconfig")
 
 class laserdisc(emulator):
     m_sV_Res = ""
-    m_lDaphneInfo = [("BETTER WITH KEYBOARD", "OK"),
-                     (" OR ANALOG JOYSTICK", "OK")]
+    m_lDaphneInfo = [("BETTER WITH KEYBOARD", "OK")]
 
     @staticmethod
     def get_system_list():
