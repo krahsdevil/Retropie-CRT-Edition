@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo python /opt/retropie/configs/all/CRT/bin/GeneralModule/ES_Systems_Check.py
+sudo python /opt/retropie/configs/all/CRT/bin/GeneralModule/systems_check.py
