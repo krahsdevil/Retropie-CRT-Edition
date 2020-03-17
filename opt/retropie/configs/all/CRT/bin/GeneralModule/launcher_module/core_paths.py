@@ -54,6 +54,7 @@ ES_CFG_FILE = os.path.join(ES_CFG_PATH, "es_settings.cfg")
 # CRT MAIN LAUNCHING SOFTWARE
 CRT_ROOT_PATH = os.path.join(RETROPIE_CFG_PATH, "all/CRT")
 CRT_BIN_PATH = os.path.join(CRT_ROOT_PATH, "bin")
+CRT_LAUNCHER_FILE = os.path.join(CRT_BIN_PATH, "GeneralModule/emulator_launcher.py")
 
 # CRT MAIN EXTRA SOFTWARE
 CRT_APPS_PATH = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles")
@@ -67,6 +68,7 @@ CRT_FIXMODES_FILE = os.path.join(CRT_CONFIG_PATH, "modes.cfg")
 CRT_UTILITY_FILE = os.path.join(CRT_CONFIG_PATH, "utility.cfg")
 CRT_NETPLAY_FILE = os.path.join(CRT_CONFIG_PATH, "netplay.cfg")
 CRT_AUTOFREQ_FILE = os.path.join(CRT_CONFIG_PATH, "autofreqdb.cfg")
+CRT_ES_SYSTEMDB_FILE = os.path.join(CRT_BIN_PATH, "GeneralModule/systems_check_db.py")
 
 # CRT CONFIGURATIONS FOR RETROARCH
 CRT_DB_PATH = os.path.join(CRT_ROOT_PATH, "Resolutions")
