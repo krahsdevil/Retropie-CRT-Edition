@@ -81,7 +81,7 @@ CRT_ASST_PATH = os.path.join(CRT_RSC_PATH, "assets")
 CRT_ADDN_PATH = os.path.join(CRT_RSC_PATH, "addons")
 CRT_MEDIA_PATH = os.path.join(CRT_RSC_PATH, "media")
 
-CRT_ES_RES_PATH = os.path.join(CRT_ASST_PATH, "screen_emulationstation/CRTResources")
+CRT_ES_RES_PATH = os.path.join(CRT_ASST_PATH, "screen_emulationstation/crt_modes_change")
 CRT_LNCH_IMG_MOD_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_modes")
 CRT_LNCH_IMG_ROT_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_rotate")
 CRT_ICONS_SET_PATH = os.path.join(CRT_ES_RES_PATH, "crt_icons")
