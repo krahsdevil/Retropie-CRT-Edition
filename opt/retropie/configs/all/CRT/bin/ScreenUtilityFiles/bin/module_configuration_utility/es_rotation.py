@@ -23,6 +23,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys, os, time
 import filecmp
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
+
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line, ini_get, touch_file, \
                                          get_xml_value_esconfig, \
