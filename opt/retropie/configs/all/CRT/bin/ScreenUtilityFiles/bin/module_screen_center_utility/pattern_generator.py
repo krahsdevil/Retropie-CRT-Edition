@@ -30,9 +30,10 @@ import subprocess, commands
 import logging
 import pygame
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
-RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
-sys.path.append(RESOURCES_PATH)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
@@ -43,7 +44,7 @@ from pattern_datas import *
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 
-TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
+TEST_MEDIA_PATH = os.path.join(CRT_ASST_PATH, "screen_center_utility")
 FONT_FILE = os.path.join(CRT_FONTS_PATH, "PetMe64.ttf")
 CURSOR_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_cursor_01.ogg")
 CLICK_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_click_01.ogg")

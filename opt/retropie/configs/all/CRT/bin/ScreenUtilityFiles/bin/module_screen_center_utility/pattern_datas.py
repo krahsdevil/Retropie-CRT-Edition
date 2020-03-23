@@ -23,12 +23,17 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, pygame
+import os, sys, pygame
 import logging
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
-TEST_MEDIA_PATH = os.path.join(CRT_PATH,"bin/ScreenUtilityFiles/resources/assets/screen_center_utility")
+from launcher_module.core_paths import *
+
+TEST_MEDIA_PATH = os.path.join(CRT_ASST_PATH, "screen_center_utility")
 IMG_TEST_PATTERN_FILE = "" #Assign Pattern to draw
 IMG_TEST_FREQ_FILE = "" #Assign Frequency icon to draw
 

@@ -22,9 +22,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os, sys, subprocess
 import pygame
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
-RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
-sys.path.append(RESOURCES_PATH)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
 from launcher_module.utils import ra_version_fixes, HideScreen

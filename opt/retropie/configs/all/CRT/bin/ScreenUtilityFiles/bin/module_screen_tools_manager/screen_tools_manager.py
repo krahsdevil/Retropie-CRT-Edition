@@ -23,9 +23,10 @@ import pygame, time
 import sys, os, commands, subprocess, threading
 import filecmp
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
-RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
-sys.path.append(RESOURCES_PATH)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line, set_xml_value_esconfig, \

@@ -24,12 +24,13 @@ import pygame
 import sys, os, commands, subprocess
 import filecmp, time, threading
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
-RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
-sys.path.append(RESOURCES_PATH)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.es_rotation import frontend_rotation
+from es_rotation import frontend_rotation
 from launcher_module.file_helpers import modify_line, ini_get
 from launcher_module.utils import get_screen_resolution, something_is_bad
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
@@ -55,7 +56,7 @@ ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
 ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
 ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
 
-BGM_PATH = os.path.join(CRT_BIN_PATH, "BackGroundMusic")
+BGM_PATH = os.path.join(CRT_BIN_PATH, "BGMService")
 BGM_SERVICE_NAME = "BackGroundMusic.service"
 BGM_SERVICE_CORE_NAME = "BGM.py"
 BGM_SERVICE_FILE_SRC = os.path.join(BGM_PATH, BGM_SERVICE_NAME)

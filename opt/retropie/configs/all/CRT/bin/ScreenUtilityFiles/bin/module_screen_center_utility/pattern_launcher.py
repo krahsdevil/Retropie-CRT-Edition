@@ -31,9 +31,10 @@ import logging
 
 sys.dont_write_bytecode = True
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
-RESOURCES_PATH = os.path.join(CRT_PATH,"bin/GeneralModule")
-sys.path.append(RESOURCES_PATH)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.screen import CRT
