@@ -31,9 +31,9 @@ from launcher_module.core import launcher
 from launcher_module.core_paths import *
 
 CRTASSETS_VIDEO_PATH = os.path.join(CRT_ASST_PATH, "screen_videoplayer")
-FONT_FILE = os.path.join(CRTASSETS_VIDEO_PATH, "Ubuntu_MOD_WIDE.ttf")
 JOY2KEY_NAME = "joy2key.py"
 JOY2KEY_FILE = os.path.join(CRTASSETS_VIDEO_PATH, JOY2KEY_NAME)
+FONT_FILE = os.path.join(CRT_FONTS_PATH, "UbuntuWIDE.ttf")
 
 class videoplayer(launcher):
     m_nVideoPOS = 0
