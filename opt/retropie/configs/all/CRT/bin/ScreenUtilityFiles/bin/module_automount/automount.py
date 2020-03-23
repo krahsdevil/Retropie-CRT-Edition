@@ -27,18 +27,19 @@ import os, sys, traceback
 import commands, time
 import logging
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
-RESOURCES_PATH = os.path.join(CRT_PATH, "bin/GeneralModule")
-sys.path.append(RESOURCES_PATH)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
 from launcher_module.utils import show_info, menu_options
-from launcher_module.core_paths import TMP_LAUNCHER_PATH
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_BIN_PATH
 from launcher_module.file_helpers import *
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_USBAutoMount.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
-USBAUTO_PATH = os.path.join(CRT_PATH, "bin/AutomountService")
+USBAUTO_PATH = os.path.join(CRT_BIN_PATH, "AutomountService")
 SERVICE_FILE_NAME = "CRT-Automount.service"
 SERVICE_FILE = os.path.join(USBAUTO_PATH, SERVICE_FILE_NAME)
 SCRIPT_FILE_NAME = "CRT-Automount.py"
@@ -131,7 +132,7 @@ class automount(object):
             os.system('sudo systemctl start %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
 
     def _remove_service(self):
-        if self._check_service_files and self.m_bUSBMounted:
+        if self._check_service_files and self.m_bServiceRun:
             show_info('STOPPING AUTOMOUNT SERVICE...')
             os.system('sudo systemctl disable %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo systemctl stop %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
@@ -140,7 +141,8 @@ class automount(object):
             os.system('sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1')
             os.system('sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1')
             self.__clean() # clean trigger files
-            self._restart_ES()
+            if self.m_bUSBMounted:
+                self._restart_ES()
 
     def eject_usb(self):
         show_info('EJECTING, EMULATIONSTATION WILL RESTART NOW')

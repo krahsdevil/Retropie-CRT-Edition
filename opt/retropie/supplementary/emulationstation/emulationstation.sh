@@ -4,7 +4,7 @@ esdir="$(dirname $0)"
 
 ROTATION_CFG_PATH="/opt/retropie/configs/all"
 ROTATION_CFG_PATH+="/CRT/bin/ScreenUtilityFiles/resources"
-ROTATION_CFG_PATH+="/assets/screen_emulationstation/CRTResources/configs"
+ROTATION_CFG_PATH+="/assets/screen_emulationstation/crt_modes_change/configs"
 CABLE_SELECTOR_FILE="/opt/retropie/configs/all"
 CABLE_SELECTOR_FILE+="/CRT/bin/ScreenUtilityFiles/bin"
 CABLE_SELECTOR_FILE+="/module_rgb_cable_switcher/CRT-RGB-Cable_Launcher.py"
@@ -56,4 +56,3 @@ while true; do
     break
 done
 exit $ret
-
