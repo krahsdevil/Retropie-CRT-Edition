@@ -51,10 +51,6 @@ RA_MD_CFG_FILE2 = os.path.join(CRT_ROOT_PATH, "Retroarch/configs/megadrive.cfg")
 RA_MD_CORE_FILE = os.path.join(CRT_ADDN_PATH,
                   "addon_240p_suite/genesis_plus_gx_libretro.so")
 
-CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
-ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
-ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
-
 # screen resolution
 iRES_X = 0
 iRES_Y = 0
@@ -319,7 +315,7 @@ def quit_manager():
             commandline += "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            show_info("EMULATIONSTATION WILL RESTART NOW")
+            show_info("RESTARTING EMULATIONSTATION")
             iExitCode = 1
         os.system(commandline)
         time.sleep(1)
