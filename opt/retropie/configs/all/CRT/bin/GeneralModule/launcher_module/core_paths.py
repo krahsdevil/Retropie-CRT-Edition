@@ -85,6 +85,11 @@ CRT_ES_RES_PATH = os.path.join(CRT_ASST_PATH, "screen_emulationstation/crt_modes
 CRT_LNCH_IMG_MOD_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_modes")
 CRT_LNCH_IMG_ROT_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_rotate")
 CRT_ICONS_SET_PATH = os.path.join(CRT_ES_RES_PATH, "crt_icons")
+CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
+
+ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
+ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
+ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
 
 CRT_FONTS_PATH = os.path.join(CRT_ASST_PATH, "screen_fonts")
 CRT_SOUNDS_PATH = os.path.join(CRT_ASST_PATH, "screen_sounds")
