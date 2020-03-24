@@ -73,7 +73,7 @@ class BGM(object):
                                 # increase this value to delay the script from
                                 # starting.
 
-    m_iMaxVolume = 0.75
+    m_iMaxVolume = 0.60
     m_iVolume    = 0            # Store this for later use to handle fading out.
     m_iFadeHop = 0.02
     m_iFadeSpeed = 0.05
