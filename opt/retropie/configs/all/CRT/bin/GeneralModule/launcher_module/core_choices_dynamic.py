@@ -46,7 +46,8 @@ import os, sys
 import logging
 import pygame
 
-from .core_paths import CRT_MEDIA_PATH
+from .core_paths import CRT_MEDIA_PATH, CRT_ES_RES_PATH, ROTMODES_TATE1_FILE, \
+                        ROTMODES_TATE3_FILE
 from .screen import CRT
 from .core_controls import joystick, CRT_UP, CRT_DOWN, CRT_BUTTON
 
@@ -98,8 +99,10 @@ class choices(object):
     m_oFont = None
     m_oTitle = None
     m_oTable = None
+    m_iRotate = 0
 
     def __init__(self, p_dChoices = DEFAULT_CFG):
+        self._check_current_es_side()
         self.dCFG = p_dChoices.copy()
         self.m_sSkinPath = os.path.join(CRT_MEDIA_PATH, self.dCFG['style'])
         pygame.mixer.pre_init(44100, -16, 1, 512)
@@ -121,6 +124,7 @@ class choices(object):
         self.be = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['border_corner']))
         self.b = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['border']))
         self.c = pygame.image.load(os.path.join(self.m_sSkinPath, self.dCFG['cursor']))
+        self.c = pygame.transform.rotate(self.c, self.m_iRotate)
 
         # screen
         self.m_lResolutionXY = CRT.get_screen_resolution()
@@ -169,9 +173,6 @@ class choices(object):
         self.m_oTable.width += self.dCFG['border_height'] * 4
         self.m_oTable.height += self.dCFG['border_height'] * 2
         self.m_oTable.img = pygame.Surface(self.m_oTable.get_size())
-        rect = self.m_oTable.img.get_rect()
-        rect.center = self.m_lScreenCenter
-        self.m_oTable.position = rect
         self.m_oTable.fill(self.dCFG['bgcolor'], self.dCFG['bgtype'])
 
     def _table_border(self):
@@ -217,7 +218,6 @@ class choices(object):
         # title
         if self.m_oTitle:
             rect = self.m_oTitle.get_rect()
-            #rect.center = self.m_lScreenCenter
             rect.x = (self.m_oTable.width - self.m_oTitle.get_width()) / 2
             rect.y = line
             self.m_oTable.img.blit(self.m_oTitle, rect)
@@ -229,6 +229,12 @@ class choices(object):
             rect.top = line
             self.m_oTable.img.blit(opt['img'], rect)
             line += self.dCFG['font_line']
+            
+        # center the whole image
+        self.m_oTable.img = pygame.transform.rotate(self.m_oTable.img, self.m_iRotate)
+        rect = self.m_oTable.img.get_rect()
+        rect.center = self.m_lScreenCenter
+        self.m_oTable.position = rect
 
     def text_render(self, p_sText, p_lTextColor, p_lShadowColor = None, p_iShadowDrop = 1, p_bUseBiggerFont = True):
         img = self.m_oFontText.render(p_sText, False, p_lTextColor)
@@ -314,12 +320,45 @@ class choices(object):
     def _draw_screen(self, p_iSelect):
         self.m_oScreen.fill(C_BLACK)
         self.m_oScreen.blit(self.m_oTable.img, self.m_oTable.position)
-        y = self.m_oTable.position.y + self.dCFG['border_height'] + (p_iSelect * self.dCFG['font_line'])
-        if self.m_oTitle:
-            y += self.m_iTitleSize
-        if self.m_bShowCursor:
-            self.m_oScreen.blit(self.c, (self.m_oTable.position.x,y))
+
+        if self.m_iRotate == 90:
+            POS_X = self.m_oTable.position.x + self.dCFG['border_height']
+            POS_X = POS_X + (p_iSelect * self.dCFG['font_line'])
+            POS_Y = self.m_oTable.position.y + self.m_oTable.position.height
+            if self.m_oTitle:
+                POS_X += self.m_iTitleSize
+            if self.m_bShowCursor:
+                rect = self.c.get_rect()
+                rect.bottomleft = (POS_X, POS_Y)
+                self.m_oScreen.blit(self.c, rect)
+        elif self.m_iRotate == -90:
+            POS_X = self.m_oTable.position.x + self.m_oTable.position.width
+            POS_X = POS_X - self.dCFG['border_height'] - (p_iSelect * self.dCFG['font_line'])
+            POS_Y = self.m_oTable.position.y
+            if self.m_oTitle:
+                POS_X -= self.m_iTitleSize
+            if self.m_bShowCursor:
+                rect = self.c.get_rect()
+                rect.topright = (POS_X, POS_Y)
+                self.m_oScreen.blit(self.c, rect)
+        elif self.m_iRotate == 0:
+            POS_X = self.m_oTable.position.x
+            POS_Y = self.m_oTable.position.y + self.dCFG['border_height']
+            POS_Y = POS_Y + (p_iSelect * self.dCFG['font_line'])
+            if self.m_oTitle:
+                POS_Y += self.m_iTitleSize
+            if self.m_bShowCursor:
+                self.m_oScreen.blit(self.c, (POS_X, POS_Y))
+
         pygame.display.flip()
+
+    def _check_current_es_side(self):
+        """ Check current side of EmulatioStation """
+        self.m_iRotate = 0
+        if os.path.exists(ROTMODES_TATE1_FILE):
+            self.m_iRotate = -90
+        elif os.path.exists(ROTMODES_TATE3_FILE):
+            self.m_iRotate = 90
         
     def _clean_on_finish(self):
         if self.m_oJoyHandler: self.m_oJoyHandler.quit()
