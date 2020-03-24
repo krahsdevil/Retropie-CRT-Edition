@@ -24,4 +24,4 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os, sys, traceback
 
-os.system('python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_automount_tate/automount_tate.py')
+os.system('python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_automount/automount.py')
