@@ -51,11 +51,6 @@ ES_LAUNCHER_SRC_FILE = os.path.join(CRT_ES_RES_PATH,
 ES_LAUNCHER_BCK_FILE = os.path.join(RETROPIE_PATH,
                        "supplementary/emulationstation/backup.emulationstation.sh")
 
-CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
-ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
-ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
-ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
-
 BGM_PATH = os.path.join(CRT_BIN_PATH, "BGMService")
 BGM_SERVICE_NAME = "BackGroundMusic.service"
 BGM_SERVICE_CORE_NAME = "BGM.py"
