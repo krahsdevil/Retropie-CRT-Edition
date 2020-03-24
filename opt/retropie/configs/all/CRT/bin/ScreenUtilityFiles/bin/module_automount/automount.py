@@ -125,7 +125,8 @@ class automount(object):
 
     def _install_service(self):
         if self._check_service_files:
-            show_info('STARTING, EMULATIONSTATION MAY REBOOT...')
+            show_info('STARTING SERVICE...')
+            show_info('EMULATIONSTATION MAY REBOOT...')
             os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1'%(SERVICE_FILE, SERVICE_FILE_NAME))
             os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo systemctl enable %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
@@ -133,7 +134,7 @@ class automount(object):
 
     def _remove_service(self):
         if self._check_service_files and self.m_bServiceRun:
-            show_info('STOPPING AUTOMOUNT SERVICE...')
+            show_info('STOPPING SERVICE...')
             os.system('sudo systemctl disable %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo systemctl stop %s > /dev/null 2>&1'%SERVICE_FILE_NAME)
             os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1'%SERVICE_FILE_NAME)
@@ -145,7 +146,8 @@ class automount(object):
                 self._restart_ES()
 
     def eject_usb(self):
-        show_info('EJECTING, EMULATIONSTATION WILL RESTART NOW')
+        show_info('EJECTING USB STORAGE...')
+        show_info('RESTARTING EMULATIONSTATION')
         os.system('sudo umount %s > /dev/null 2>&1' % self.m_sMountedPath[0])
         while not os.path.exists(TRG_UMNT_FILE):
             pass
@@ -154,7 +156,7 @@ class automount(object):
         """ Restart ES if it's running """
         sOutput = commands.getoutput('ps -A')
         if 'emulationstatio' in sOutput:
-            show_info('EMULATIONSTATION WILL RESTART NOW')
+            show_info('RESTARTING EMULATIONSTATION')
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
