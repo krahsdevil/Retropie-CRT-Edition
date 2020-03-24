@@ -34,11 +34,6 @@ from launcher_module.file_helpers import modify_line, ini_get, touch_file, \
                                          set_xml_value_esconfig
 from launcher_module.utils import check_process, show_info
 
-CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
-ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
-ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
-ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
-
 ESSYSTEMS_TEMP_FILE = os.path.join(ES_CFG_PATH, "es_systems.cfg")
 ESSYSTEMS_VERT_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "vertical_es_systems.cfg")
 ESTHEMES_DIS_PATH = os.path.join(ES_PATH, "disabled.themes")
@@ -164,7 +159,7 @@ class frontend_rotation():
                         self._replace_launching_image(sFile2, p_sFileTail)
 
     def _frontend_rotation(self):
-        if not self.iCurSide: show_info("WAIT, PREPARING ROTATION...")
+        show_info("WAIT, PREPARING ROTATION...")
         # remove first all trigger files
         self.__clean()
         p_sFileTail = "_" + str(self.RES_Y) + "p"
@@ -203,7 +198,7 @@ class frontend_rotation():
             commandline = "touch /tmp/es-restart "
             commandline += "&& pkill -f \"/opt/retropie"
             commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            if not self.iCurSide: show_info("EMULATIONSTATION WILL RESTART NOW")
+            show_info("RESTARTING EMULATIONSTATION")
             os.system(commandline)
             time.sleep(2)
             sys.exit(1)
