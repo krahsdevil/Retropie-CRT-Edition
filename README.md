@@ -15,8 +15,8 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 
 **_'On the fly' resolutions system change_** based on the work of **Sir-Ironic** ['RPi-Hdmi_Timings' GITHUB](https://github.com/Sir-Ironic/RPi-Hdmi_Timings)
 
-**DISCLAIMER:**
 ```
+DISCLAIMER:
 USE THIS SOFTWARE UNDER YOUR RESPONSABILITY, WE ARE NOT RESPONSIBLE FOR ANY HARDWARE DAMAGE OR LOSS OF INFORMATION.
 IF POSSIBLE WE ALLWAYS RECOMMEND USING MANUFACTURER SPECIFIC SOFTWARE FOR ANY GPIO TO RGB ADAPTER FOR RASPBERRY PI.
 ```
