@@ -15,10 +15,10 @@ Maybe some professional monitors like SONY PVM, BVM or DTV could face some resol
 
 **_'On the fly' resolutions system change_** based on the work of **Sir-Ironic** ['RPi-Hdmi_Timings' GITHUB](https://github.com/Sir-Ironic/RPi-Hdmi_Timings)
 
+_Please take a look to our [Wiki](https://github.com/krahsdevil/crt-for-retropie/wiki) (in progress)._
+_You can also follow at  [EOL Forums](https://www.elotrolado.net/hilo_retropie-crt-edition-raspberry-pi-2b-3b-3b-tv-15khz-vga666-pi2scart-rgb-pi_2328132)_
+
 ***
 **DISCLAIMER:** _Use this software under your responsability, we are not responsible for any hardware damage or loss of information.
 If possible we always recommend using manufacturer specific software for any GPIO to RGB adapter for Raspberry Pi._
 ***
-
-_Please take a look to our [Wiki](https://github.com/krahsdevil/crt-for-retropie/wiki) (in progress)._
-_You can also follow at  [EOL Forums](https://www.elotrolado.net/hilo_retropie-crt-edition-raspberry-pi-2b-3b-3b-tv-15khz-vga666-pi2scart-rgb-pi_2328132)_
