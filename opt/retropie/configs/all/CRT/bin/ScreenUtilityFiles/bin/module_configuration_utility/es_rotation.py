@@ -227,7 +227,10 @@ if __name__ == '__main__':
                    ("ROTATE 180", "180"),
                    ("CANCEL", "CANCEL")]
     sChoice = menu_options(lOptRot, sTitRot)
-    sChoice = int(sChoice)
+    try:
+        sChoice = int(sChoice)
+    except:
+        sys.exit(0)
     if sChoice == 180 and sCurSide == 90:
         sChoice = -90
     elif sChoice == 180 and sCurSide == -90:
