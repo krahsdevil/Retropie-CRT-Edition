@@ -28,6 +28,8 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
+from module_screen_center_utility.pattern_launcher import center
+from module_configuration_utility.sys_resolution import resolution_change
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line, set_xml_value_esconfig, \
                                          get_xml_value_esconfig, ini_get, \
@@ -70,12 +72,6 @@ bESReload = False
 # theme changing for resolution change
 sSystem50 = "system50"
 sSystem60 = "system60"
-sThemeCur = ""
-sThemeH240 = ""
-sThemeH270 = ""
-sThemeINI = ""
-sTailSideV = "_theme_vertical"
-sTailSideH = "_theme_horizontal"
 
 # modes[0][x] Mode name; modes[x][0] Mode description
 lModeAll = []
@@ -232,94 +228,22 @@ def draw_arrow_right():
     PGoScreen.blit((PGoFont.render('>>', 1, (YELLOW))), (iMARGIN_RIGHT + 2,
                    (30 + iMARGIN_TOP+iLineAdj) + iCurOption * iIntLine))
 
-def fix_icons_image():
-    for file in os.listdir(CRTICONS_PATH):
-        IconImg = CRTICONS_PATH + "/" + file
-        IconImgMode = CRT_ICONS_SET_PATH + "/" + file[:-4] + "_" + opt[0][2] + ".png"
-        if not os.path.isdir(IconImg):
-            os.system('cp "%s" "%s" >> /dev/null 2>&1' % (IconImgMode, IconImg))
-
-def replace_launching_image(p_sImage):
-    p_lMask = (".png", ".jpg")
-    if not p_sImage[-4:] in p_lMask:
-        return
-    image_cur = RETROPIE_CFG_PATH + "/" + p_sImage
-    sImageSetA = CRT_LNCH_IMG_MOD_PATH + "/" + p_sImage[:-4] + "_240p.png"
-    sImageSetB = CRT_LNCH_IMG_MOD_PATH + "/" + p_sImage[:-4] + "_270p.png"
-    # if 240p is the chosen resolution, images are changed
-    if "240" in opt[0][2]:
-        sImageSetA = sImageSetA[:-9] + "_270p.png"
-        sImageSetB = sImageSetB[:-9] + "_240p.png"
-    try:
-        if filecmp.cmp(image_cur, sImageSetA):
-            os.system('cp "%s" "%s"' % (sImageSetB, image_cur))
-    except:
-        pass
-
-def fix_launching_image():
-    for Level1 in os.listdir(RETROPIE_CFG_PATH):
-        LEVEL1 = os.path.join(RETROPIE_CFG_PATH, Level1)
-        if os.path.isdir(LEVEL1):
-            for Level2 in os.listdir(LEVEL1):
-                LEVEL2 = os.path.join(LEVEL1, Level2)
-                sFile2 = os.path.join(Level1, Level2)
-                if os.path.isdir(LEVEL2):
-                    for Level3 in os.listdir(LEVEL2):
-                        LEVEL3 = os.path.join(LEVEL2, Level3)
-                        sFile3 = os.path.join(Level1, Level2, Level3)
-                        if os.path.isdir(LEVEL3):
-                            for Level4 in os.listdir(LEVEL3):
-                                LEVEL4 = os.path.join(LEVEL3, Level4)
-                                sFile4 = os.path.join(Level1, Level2, Level3, Level4)
-                                if os.path.isfile(LEVEL4):
-                                    replace_launching_image(sFile4)
-                        else:
-                            replace_launching_image(sFile3)
-                else:
-                    replace_launching_image(sFile2)
-
-def fix_aspect_ratio_images():
-    show_info("WAIT, PREPARING RESOLUTION CHANGE")
-    fix_launching_image()
-    fix_icons_image() 
-
 def save_configuration():
-    # save resolution change parameters
-    if bChangeRes == True:
-        # replace with rigth aspect ratio images
-        fix_aspect_ratio_images()
-        modify_line(CRT_UTILITY_FILE, sThemeINI,
-                    "%s %s" % (sThemeINI, sThemeCur))
-        if opt[0][2] == "240p":
-            modify_line(CRT_UTILITY_FILE, "default",
-                        "default %s" % sSystem60)
-            set_xml_value_esconfig("ThemeSet", sThemeH240)
-        elif opt[0][2] == "270p":
-            modify_line(CRT_UTILITY_FILE, "default",
-                        "default %s" % sSystem50)
-            set_xml_value_esconfig("ThemeSet", sThemeH270)
-    # save mode change parameters
-    if bChangeMode == True:
+    if bChangeMode:
         modify_line(CRT_FIXMODES_FILE, "mode_default",
                     "mode_default %s" % lModeSel[0])
 def quit_manager():
-    iExitCode = 0
     clean()
     save_configuration()
-    if bESReload:
-        commandline = "/usr/bin/python %s force" % PATTERN_LAUNCHER_FILE
-        output = commands.getoutput('ps -A')
-        # Restart ES if it is running
-        if 'emulationstatio' in output:
-            commandline += " && "
-            commandline += "touch /tmp/es-restart "
-            commandline += "&& pkill -f \"/opt/retropie"
-            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            show_info("RESTARTING EMULATIONSTATION")
-            iExitCode = 1
-        os.system(commandline)
-        time.sleep(1)
-    sys.exit(iExitCode)
+    # save resolution change parameters
+    if bChangeRes:
+        oChangeRes = resolution_change(opt[0][2])
+        oChangeRes.change()
+    elif bChangeMode:
+        show_info("APPLYING MODE")
+        oApplyMode = center()
+        oApplyMode.launch("force")
+    sys.exit(0)
 
 def launch_application(sCommandline, bShell = False):
     global oCRT
@@ -388,31 +312,15 @@ def get_available_modes():
 
 def get_resolution_and_themes():
     global opt
-    global sThemeCur
-    global sThemeH240
-    global sThemeH270
-    global sThemeINI
-
-    iCurSide = 0 # 0 = Horizontal; 1,3 = Vertical
     sCurRes = ""
     sCurResID = "270p"
 
-    sThemeCur = get_xml_value_esconfig("ThemeSet")
     sCurRes = ini_get(CRT_UTILITY_FILE, "default")
-    sThemeH240 = ini_get(CRT_UTILITY_FILE, "240p_theme_horizontal")
-    sThemeH270 = ini_get(CRT_UTILITY_FILE, "270p_theme_horizontal")
-    iCurSide = 1 if os.path.exists(ROTMODES_TATE1_FILE) \
-    else 3 if os.path.exists(ROTMODES_TATE3_FILE) else 0
-
     if sCurRes == sSystem50:
         sCurResID = "270p"
     elif sCurRes == sSystem60:
         sCurResID = "240p"
 
-    # set tail text for theme saving
-    sThemeINI = sCurResID + sTailSideH if iCurSide == 0 else \
-    sCurResID + sTailSideV
- 
     # init current resolution info in options
     opt[0][2] = sCurResID
     opt[0][3] = sCurResID
