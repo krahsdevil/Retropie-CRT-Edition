@@ -36,6 +36,7 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
+from launcher_module.utils import check_process, show_info
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.screen import CRT
 from launcher_module.file_helpers import *
@@ -57,6 +58,7 @@ class center(object):
     m_oCRT = None
     m_oPatternHandle = None
     m_sEnv = ""
+    m_bRestart = True
 
     m_dPatternAdj = {}
 
@@ -65,21 +67,23 @@ class center(object):
         self.__clean()
         self.m_oPatternHandle = generate()
 
-    def launch(self, p_sArgv = "current"): 
+    def launch(self, p_sArgv = "current", p_sRestart = True): 
         logging.info("INFO: arg 1 (test) = %s" %p_sArgv)
         self.m_sEnv = p_sArgv
-        self.configure() # rom name work
-        self.prepare() # screen and pattern generator
-        self.run() # launch, wait and cleanup
+        self.m_bRestart = p_sRestart
+        if self.m_sEnv == "force":
+            logging.info("INFO: Force mode, only apply sys resolution")
+            self._force_system_res()
+        else:
+            self.configure() # rom name work
+            self.prepare() # screen and pattern generator
+            self.run() # launch, wait and cleanup
 
     # called at start, called by __init__()
     def configure(self):
         """Get from utility.cfg system resolution"""
         if self.m_sEnv == "current":
             self.m_sEnv = ini_get(CRT_UTILITY_FILE, "default")
-        elif self.m_sEnv == "force":
-            logging.info("INFO: Force mode, only apply sys resolution")
-            self._force_system_res()
 
     def prepare(self):
         self.screen_prepare()
@@ -108,7 +112,7 @@ class center(object):
         p_oSaveBoot.save()
         self.m_oCRT = CRT()
         self.cleanup()
-        sys.exit()
+        self._restart_es()
 
     def screen_prepare(self):
         self.m_oCRT = CRT(self.m_sEnv + "_timings")
@@ -127,13 +131,24 @@ class center(object):
             self.__clean()
             sys.exit(1)
 
+    def _restart_es(self):
+        commandline = None
+        if self.m_bRestart:
+            if check_process("emulationstatio"):
+                commandline = "touch /tmp/es-restart "
+                commandline += "&& pkill -f \"/opt/retropie"
+                commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+                show_info("RESTARTING EMULATIONSTATION")
+                os.system(commandline)
+                time.sleep(2)
+                sys.exit(1)
+
     # cleanup code
     def cleanup(self):
         self.m_oCRT.screen_restore()
         logging.info("ES mode recover")
         os.system('clear')
         self.__clean()
-        #sys.exit()
 
     # clean system
     def __clean(self):
@@ -145,30 +160,31 @@ class center(object):
         logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
         format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
 
-try:
-    if not sys.argv[1] in tests:
-        print ('ERROR: some of these arguments expected:\n %s' % tests)
-        raise Exception('incorrect argument')
-    if sys.argv[1] == "system":
-        Arg.append("system60")
-        Arg.append("system50")
-    else:
-        Arg.append(sys.argv[1])
-    for item in Arg:
-        oLaunch = center()
-        oLaunch.launch(item)
-        oLaunch = None
-        CLEAN_LOG_ONSTART = False
-    
-except Exception as e:
-    ErrMsg = ""
-    if "list index out of range" in e:
-        ErrMsg += 'ERROR: at least one argument expected \n'
-    elif 'incorrect argument' in e:
-        ErrMsg += 'ERROR: some of these arguments expected: %s \n' % tests
-    else:
-        ErrMsg += str(e) + '\n'
-        ErrMsg += traceback.format_exc()
-    with open(EXCEPTION_LOG, 'a') as f:
-        f.write(str(ErrMsg))
-sys.exit()
+if __name__ == '__main__':
+    try:
+        if not sys.argv[1] in tests:
+            print ('ERROR: some of these arguments expected:\n %s' % tests)
+            raise Exception('incorrect argument')
+        if sys.argv[1] == "system":
+            Arg.append("system60")
+            Arg.append("system50")
+        else:
+            Arg.append(sys.argv[1])
+        for item in Arg:
+            oLaunch = center()
+            oLaunch.launch(item)
+            oLaunch = None
+            CLEAN_LOG_ONSTART = False
+        
+    except Exception as e:
+        ErrMsg = ""
+        if "list index out of range" in e:
+            ErrMsg += 'ERROR: at least one argument expected \n'
+        elif 'incorrect argument' in e:
+            ErrMsg += 'ERROR: some of these arguments expected: %s \n' % tests
+        else:
+            ErrMsg += str(e) + '\n'
+            ErrMsg += traceback.format_exc()
+        with open(EXCEPTION_LOG, 'a') as f:
+            f.write(str(ErrMsg))
+    sys.exit()
