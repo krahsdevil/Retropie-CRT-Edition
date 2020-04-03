@@ -24,4 +24,4 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os, sys, traceback
 
-os.system('python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_screen_rotate_utility_tate/screen_rotate_tate.py')
+os.system('python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_configuration_utility/es_rotation.py')
