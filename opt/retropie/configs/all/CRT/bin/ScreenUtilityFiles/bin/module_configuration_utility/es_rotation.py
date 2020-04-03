@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Configuration Utility
+EmulationStation rotation module
 
 https://github.com/krahsdevil/crt-for-retropie/
 
@@ -32,7 +32,7 @@ from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line, ini_get, touch_file, \
                                          get_xml_value_esconfig, \
                                          set_xml_value_esconfig
-from launcher_module.utils import check_process, show_info
+from launcher_module.utils import check_process, show_info, menu_options
 
 ESSYSTEMS_TEMP_FILE = os.path.join(ES_CFG_PATH, "es_systems.cfg")
 ESSYSTEMS_VERT_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "vertical_es_systems.cfg")
@@ -209,3 +209,29 @@ class frontend_rotation():
         os.system('rm %s >> /dev/null 2>&1' % ROTMODES_TATE1_FILE)
         os.system('rm %s >> /dev/null 2>&1' % ROTMODES_TATE3_FILE)
         os.system('rm %s >> /dev/null 2>&1' % ROTMODES_YOKO_FILE)
+
+if __name__ == '__main__':
+    sCurSide = 0
+    sTitRot = "ROTATE SCREEN"
+    lOptRot = [("ROTATE 90", "90"),
+               ("ROTATE -90", "-90"),
+               ("CANCEL", "CANCEL")]
+
+    if os.path.exists(ROTMODES_TATE1_FILE):
+        sCurSide = 90
+    elif os.path.exists(ROTMODES_TATE3_FILE):
+        sCurSide = -90
+
+    if sCurSide in (90, -90):
+        lOptRot = [("HORIZONTAL", "0"),
+                   ("ROTATE 180", "180"),
+                   ("CANCEL", "CANCEL")]
+    sChoice = menu_options(lOptRot, sTitRot)
+    sChoice = int(sChoice)
+    if sChoice == 180 and sCurSide == 90:
+        sChoice = -90
+    elif sChoice == 180 and sCurSide == -90:
+        sChoice = 90
+
+    frontend_rotation(sChoice, True)
+    sys.exit(0)
