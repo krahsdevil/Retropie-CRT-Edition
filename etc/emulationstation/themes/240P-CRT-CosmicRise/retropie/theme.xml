@@ -1,0 +1,21 @@
+<theme>
+	<formatVersion>4</formatVersion>
+	<include>./../theme.xml</include>
+
+	<view name="system">
+		<image name="logo">
+			<path>./_inc/system.png</path>
+		</image>
+	</view>
+	<view name="detailed, video, basic">
+		<image name="systemboxart" extra="true">
+		   <path>./_inc/system2.png</path>
+		</image>
+      <text name="md_lbl_rating">
+         <pos>1.440625 0.75416727</pos>      
+      </text>
+      <rating name="md_rating">
+         <pos>1.33125 0.833334</pos>
+      </rating>
+	</view>							    
+</theme>

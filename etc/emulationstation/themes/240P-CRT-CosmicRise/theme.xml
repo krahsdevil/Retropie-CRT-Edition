@@ -1,0 +1,232 @@
+<!--
+theme name:     GPi SuperSweet (Made for Retroflag GPI Case, 320x240)
+creator:		Dwayne Hurst (aka Hursty)
+version         1.0
+-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<theme>
+   <formatVersion>4</formatVersion>
+
+<feature supported="carousel">
+   <view name="system">
+      <carousel name="systemcarousel">
+        <type>horizontal</type>
+        <pos>-0.06875 -0.0416667</pos>
+        <size>1.14 1</size>
+        <logoScale>1</logoScale>
+         <zIndex>41</zIndex>          
+        <logoSize>0.73333392 0.74166726</logoSize>
+        <color>00000000</color>
+        <maxLogoCount>5</maxLogoCount>
+      </carousel>
+      <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>
+         <zIndex>40</zIndex>                 
+         <path>./_inc/images/maintop.png</path>
+      </image>              
+      <text name="systemInfo">
+         <zIndex>44</zIndex>       
+         <pos>0 0.87916737</pos>
+         <backgroundColor>00000000</backgroundColor>
+         <color>c34fd9</color>
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+	     <fontSize>0.06</fontSize>
+         <zIndex>44</zIndex>	     
+      </text>            
+   </view>
+</feature>
+
+   <view name="detailed,video">
+      <helpsystem name="help">
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+         <fontSize>0.015</fontSize>      
+         <pos>1.015 0.98</pos>      
+         <textColor>ff0000</textColor>
+         <iconColor>ff0000</iconColor>
+      </helpsystem>
+   </view> 
+   <view name="basic">
+      <helpsystem name="help">
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+         <fontSize>0.015</fontSize>      
+         <pos>1.015 0.98</pos>      
+         <textColor>ff0000</textColor>
+         <iconColor>ff0000</iconColor>
+      </helpsystem>
+   </view>    
+   
+   <view name="system">
+      <helpsystem name="help">
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+         <fontSize>0.015</fontSize>     
+         <pos>1.015 0.98</pos>      
+         <textColor>ff0000</textColor>
+         <iconColor>ff0000</iconColor>
+      </helpsystem>
+   </view>   
+
+   <view name="detailed,video">
+      <textlist name="gamelist">      
+         <selectorColor>1c1c1c00</selectorColor>                     
+         <pos>0.43125 0.23333352</pos>
+         <size>0.515625 0.28333356</size>
+         <selectedColor>c34fd9</selectedColor>
+         <primaryColor>10749a</primaryColor>
+         <secondaryColor>10749a</secondaryColor>
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+         <fontSize>0.06</fontSize>
+         <forceUppercase>1</forceUppercase>
+         <scrollSound></scrollSound>
+         <lineSpacing>0.90</lineSpacing>          
+         <alignment>right</alignment>
+         <zIndex>42</zIndex>                          
+      </textlist>
+   </view>
+   
+   <view name="basic">
+      <textlist name="gamelist">      
+         <selectorColor>1c1c1c00</selectorColor>                     
+         <pos>0.446875 0.07083339</pos>
+         <size>0.496875 0.84583401</size>
+         <selectedColor>c34fd9</selectedColor>
+         <primaryColor>10749a</primaryColor>
+         <secondaryColor>10749a</secondaryColor>
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+         <fontSize>0.06</fontSize>
+         <forceUppercase>1</forceUppercase>
+         <scrollSound></scrollSound>
+         <alignment>right</alignment>
+         <lineSpacing>1.02</lineSpacing>         
+         <zIndex>42</zIndex>                          
+      </textlist>
+   </view>   
+   
+   <view name="basic">
+      <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>        
+         <path>./_inc/images/systembasic.png</path>
+      </image>                
+   </view> 
+     
+
+   <view name="detailed,video">
+      <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>       
+         <path>./_inc/images/systemvideo.png</path>
+      </image>    
+      <text name="md_lbl_rating, md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_lastplayed, md_lbl_playcount, md_rating, md_developer, md_publisher, md_genre, md_playcount, md_lastplayed">
+         <pos>1 1</pos>
+      </text>
+      <text name="md_lbl_rating,md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_lastplayed, md_lbl_playcount,md_lbl_players,md_developer, md_publisher, md_genre, md_playcount, md_lastplayed,md_description,md_players,md_releasedate">
+         <color>c34fd9</color>
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+         <fontSize>0.06</fontSize>
+      </text>
+      <text name="md_lbl_rating">
+         <color>10749a</color>
+         <pos>0.440625 0.75416727</pos>
+         <size>0.1875 0.08</size>
+         <zIndex>44</zIndex>         
+      </text>
+      <rating name="md_rating">
+         <zIndex>44</zIndex>   
+         <pos>0.33125 0.833334</pos>
+         <size>1 0.06250005</size>
+         <filledPath>./_inc/images/star_filled.png</filledPath>
+         <unfilledPath>./_inc/images/star_empty.png</unfilledPath>
+      </rating>
+      <text name="md_lbl_players">
+         <pos>0.4875 0.07916673</pos>
+         <size>0.2 0.035</size>
+         <color>10749a</color>
+         <zIndex>42</zIndex>                  
+      </text>
+      <text name="md_players">
+         <pos>0.690625 0.07916673</pos>
+         <size>0.2 0.035</size>
+         <zIndex>42</zIndex>         
+      </text>
+      <text name="md_lbl_releasedate">
+         <pos>0.4875 0.12916677</pos>
+         <size>0.2125 0.035</size>
+         <color>10749a</color>
+         <zIndex>42</zIndex>                  
+      </text>
+      <datetime name="md_releasedate">
+         <pos>0.690625 0.12916677</pos>
+         <size>0.2125 0.035</size>
+         <zIndex>42</zIndex>         
+      </datetime>
+      <text name="md_lbl_genre">
+         <pos>1.6 0.7</pos>
+         <size>0.2 0.035</size>
+         <color>05e300</color>
+         <zIndex>42</zIndex>                   
+      </text>
+      <text name="md_genre">
+         <pos>1.67 0.7</pos>
+         <size>0.2 0.035</size>
+         <zIndex>42</zIndex>         
+      </text>         
+      <text name="md_lbl_developer">
+         <pos>1.38 0.485</pos>
+         <size>1.12 0.035</size>
+         <color>05e300</color>
+         <zIndex>42</zIndex>                   
+      </text>
+      <text name="md_developer">
+         <pos>1.38 0.515</pos>
+         <size>0.12 0.035</size>
+         <zIndex>42</zIndex>                  
+      </text>
+      <text name="md_description">
+         <fontSize>0.02</fontSize>      
+         <color>ffffff</color>      
+         <pos>1.58 0.815</pos>
+         <size>0.4 0.175</size>
+         <zIndex>42</zIndex>         
+      </text>
+   </view>
+
+   <view name="detailed">
+      <image name="md_image">
+         <pos>0.775 0.74166726</pos>
+         <origin>0.5 0.5</origin>
+         <maxSize>0.346875 0.34583361</maxSize>
+         <zIndex>41</zIndex>         
+      </image>      
+   </view>
+
+   <view name="video">   
+      <video name="md_video">
+         <pos>0.775 0.74166726</pos>
+		 <origin>0.5 0.5</origin>
+         <maxSize>0.346875 0.34583361</maxSize>
+         <delay>1.0</delay>
+         <zIndex>41</zIndex>         
+         <showSnapshotNoVideo>true</showSnapshotNoVideo>
+         <showSnapshotDelay>true</showSnapshotDelay>
+      </video>
+      <image name="md_marquee">
+         <pos>1.78 0.07</pos>
+         <origin>0.5 0.5</origin>
+         <maxSize>0.16 0.11</maxSize>
+         <zIndex>42</zIndex>         
+      </image>             
+   </view>
+  	<view name="detailed, video, basic">
+		<image name="systemboxart" extra="true">
+		   <origin>0 0</origin>
+		   <pos>0.021875 0.05000004</pos>
+		   <maxSize>1 0.89583405</maxSize>
+		</image>
+	</view>			
+
+</theme>

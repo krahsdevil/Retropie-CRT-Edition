@@ -1,0 +1,179 @@
+<!--
+theme name:     Retrroid
+version         1.0
+-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<theme>
+   <formatVersion>4</formatVersion>
+
+<feature supported="carousel">
+   <view name="system">
+      <carousel name="systemcarousel">
+        <type>horizontal</type>
+        <pos>0 -0.01666668</pos>
+        <size>1 1</size>
+        <logoScale>1.1</logoScale>
+        <logoSize>0.315625 0.5000004</logoSize>
+        <color>00000000</color>
+        <maxLogoCount>3</maxLogoCount>  
+      </carousel>
+
+      <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>
+         <path>./_inc/images/main.png</path>
+      </image>
+
+      <text name="systemInfo">
+         <pos>0 0.78333396</pos>
+         <backgroundColor>00000000</backgroundColor>
+         <color>ffffff</color>
+         <fontPath>./_inc/fonts/FELTPEN_.TTF</fontPath>
+		 <fontSize>0.05416671</fontSize>
+      </text>
+   </view>
+</feature>
+
+   <view name="system,basic,detailed,video">
+      <helpsystem name="help">
+         <pos>1.3 0.94</pos>      
+         <textColor>777777</textColor>
+         <iconColor>77777750</iconColor>
+      </helpsystem>
+   </view>
+
+   <view name="detailed,video, basic">
+      <textlist name="gamelist">
+         <pos>0.053125 0.06666672</pos>
+         <size>0.403125 0.85416735</size>
+         <lineSpacing>1.3</lineSpacing> 
+         <selectorColor>1c1c1c00</selectorColor>
+         <selectedColor>C13F18</selectedColor>
+         <primaryColor>ffffff</primaryColor>
+         <secondaryColor>ffffff</secondaryColor>
+         <fontPath>./_inc/fonts/FELTPEN_.TTF</fontPath>
+         <fontSize>0.05416671</fontSize>
+         <forceUppercase>1</forceUppercase>
+         <scrollSound></scrollSound>
+         <alignment>left</alignment>
+      </textlist>
+   </view>
+   
+   <view name="basic">
+      <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>
+         <path>./_inc/images/basic.png</path>
+      </image>
+
+   </view>
+
+   <view name="detailed,video">
+      <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>
+         <path>./_inc/images/video.png</path>
+      </image>
+      <text name="md_lbl_rating, md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_lastplayed, md_lbl_playcount, md_rating, md_developer, md_publisher, md_genre, md_playcount, md_lastplayed">
+         <pos>1 1</pos>
+      </text>
+      <text name="md_lbl_rating,md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_lastplayed, md_lbl_playcount,md_lbl_players,md_developer, md_publisher, md_genre, md_playcount, md_lastplayed,md_description,md_players,md_releasedate">
+         <color>000000</color>
+         <fontPath>./_inc/fonts/FELTPEN_.TTF</fontPath>
+         <fontSize>0.03</fontSize>
+      </text>
+      <text name="md_lbl_rating">
+         <pos>1.05 0.0066</pos>
+         <size>0.1 0.1</size>
+      </text>
+      <rating name="md_rating">
+         <pos>0.7375 0.42916701</pos>
+         <size>1 0.0416667</size>
+         <filledPath>./_inc/images/star_filled.png</filledPath>
+         <unfilledPath>./_inc/images/star_empty.png</unfilledPath>
+      </rating>
+      <text name="md_lbl_players">
+         <pos>1.2 0.115</pos>
+         <size>0.0925 0.087</size>
+      </text>
+      <text name="md_players">
+         <pos>1.278 0.132</pos>
+         <size>0.0925 0.055</size>
+         <color>C13F18</color>
+      </text>
+      <text name="md_lbl_releasedate">
+         <pos>1.2 0.0066</pos>
+         <size>0.0925 0.085</size>
+      </text>
+      <datetime name="md_releasedate">
+         <pos>1.2 0.066</pos>
+         <size>0.0925 0.085</size>
+         <color>C13F18</color>
+      </datetime>
+      <text name="md_lbl_genre">
+         <pos>1.05 0.115</pos>
+         <size>0.0925 0.087</size>
+      </text>
+      <text name="md_genre">
+         <pos>1.05 0.175</pos>
+         <size>0.265 0.055</size>
+         <color>C13F18</color>
+      </text>
+      <text name="md_description">
+         <pos>1.33 0.686</pos>
+         <size>0.625 0.2</size>
+         <color>ffffff</color>
+      </text>
+
+   </view>
+
+   <view name="detailed">
+      <image name="md_image">
+         <origin>0.5 0.5</origin>
+         <pos>0.725 0.71250057</pos>
+         <maxSize>0.403125 0.45416703</maxSize>
+      </image>
+   </view>
+
+   <view name="video">
+   <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>
+         <path>./_inc/images/video.png</path>
+      </image>
+      <video name="md_video">
+         <origin>0.5 0.5</origin>
+         <pos>0.725 0.71250057</pos>
+         <maxSize>0.403125 0.45416703</maxSize>
+         <showSnapshotNoVideo>true</showSnapshotNoVideo>
+         <showSnapshotDelay>true</showSnapshotDelay>
+         <delay>1.0</delay>
+      </video>
+      <image name="md_marquee">
+         <pos>1.6 0.05</pos>
+         <origin>0 0</origin>
+         <maxSize>0.15 0.1</maxSize>
+      </image>       
+   </view>
+
+  	<view name="detailed, video">
+		<image name="systemboxart" extra="true">
+         <origin>0.5 0.5</origin>
+         <pos>0.7875 0.25833354</pos>
+         <maxSize>1 0.40000032</maxSize>
+		</image>
+	</view>
+
+  	<view name="basic">
+		<image name="systemboxart2" extra="true">
+         <origin>0.5 0.5</origin>
+         <pos>0.721875 0.47500038</pos>
+         <maxSize>1 0.62083383</maxSize>
+		</image>
+	</view>
+</theme>
