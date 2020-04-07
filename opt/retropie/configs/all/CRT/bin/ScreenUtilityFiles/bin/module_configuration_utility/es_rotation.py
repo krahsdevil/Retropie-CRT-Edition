@@ -34,6 +34,9 @@ from launcher_module.file_helpers import modify_line, ini_get, touch_file, \
                                          set_xml_value_esconfig
 from launcher_module.utils import check_process, show_info, menu_options
 
+CRTICONS_PATH = os.path.join(CRT_ROOT_PATH, "config/icons")
+CRTICONS_VERTICAL_PATH = os.path.join(CRT_ES_VERT_MENU, "icons")
+
 ESSYSTEMS_TEMP_FILE = os.path.join(ES_CFG_PATH, "es_systems.cfg")
 ESSYSTEMS_VERT_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "vertical_es_systems.cfg")
 ESTHEMES_DIS_PATH = os.path.join(ES_PATH, "disabled.themes")
@@ -196,6 +199,29 @@ class frontend_rotation():
         modify_line(CRT_UTILITY_FILE, 'frontend_rotation', 'frontend_rotation %s' % self.iToMode)
         os.system('sudo cp %s %s >> /dev/null 2>&1' % (p_sIntro, INTRO_VID_DEF_FILE))
         self._fix_aspect_ratio_images(p_sFileTail)
+        self._fix_icons_image()
+
+    def _fix_icons_image(self):
+        if self.RES_Y == 270:
+            p_sFileTail = "_" + str(self.RES_Y) + "p"
+            if self.iToMode != 0: p_sFileTail += "v"
+            for file in os.listdir(CRTICONS_VERTICAL_PATH):
+                self._replace_icon(file, CRTICONS_VERTICAL_PATH, 
+                                   CRT_ICONS_SET_PATH, p_sFileTail)
+            
+    def _replace_icon(self, p_sImage, p_sSrcPath, p_sSetPath, p_sTail):
+        p_lMask = (".png", ".jpg")
+        if not p_sImage[-4:] in p_lMask:
+            return
+        image_cur = p_sSrcPath + "/" + p_sImage
+        sImageSetA = p_sSetPath + "/" + p_sImage[:-4] + p_sTail
+        sImageSetA += p_sImage[-4:]
+        os.system("echo \"%s\" y \"%s\" >> /tmp/text.txt" % (image_cur, sImageSetA))
+        try:
+            if not filecmp.cmp(image_cur, sImageSetA):
+                os.system('cp "%s" "%s"' % (sImageSetA, image_cur))
+        except:
+            pass
 
     def _restart_es(self):
         if check_process("emulationstatio"):
