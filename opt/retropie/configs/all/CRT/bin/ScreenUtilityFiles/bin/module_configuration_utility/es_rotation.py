@@ -125,12 +125,12 @@ class frontend_rotation():
         # by default vertical theme
         if self.iToMode != 0 and not p_sTheme:
             if self.RES_Y == 270: p_sTheme = "V270P-CRT-BASE"
-            elif self.RES_Y == 240: p_sTheme = "V270P-CRT-BASE"
+            elif self.RES_Y == 240: p_sTheme = "V240P-CRT-Uniflyered"
             else: p_sTheme = "V270P-CRT-BASE"
         # by default horizontal theme        
         elif self.iToMode == 0 and not p_sTheme:
             if self.RES_Y == 270: p_sTheme = "270P-CRT-SNES-MINI"
-            elif self.RES_Y == 240: p_sTheme = "240P-CRT-BUBBLEGUM"
+            elif self.RES_Y == 240: p_sTheme = "240P-CRT-UniFlyered"
             else: p_sTheme = "270P-CRT-BASE"
         # no change if current configuration is the same
         if p_sTheme != get_xml_value_esconfig("ThemeSet"):
