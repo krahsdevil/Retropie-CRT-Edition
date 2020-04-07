@@ -36,6 +36,7 @@ from launcher_module.file_helpers import modify_line, ini_get, \
 from launcher_module.utils import check_process, show_info, menu_options, HideScreen
 
 CRTICONS_PATH = os.path.join(CRT_ROOT_PATH, "config/icons")
+CRTICONS_VERTICAL_PATH = os.path.join(CRT_ES_VERT_MENU, "icons")
 
 INTRO_VID_DEF_FILE = os.path.join(RETROPIE_SPLASH_PATH, "CRT-Retropie-Load.mp4")
 INTRO_VID0_FILE = os.path.join(CRT_ES_RES_PATH, "splash_screen/CRT-Retropie-Load_H.mp4")
@@ -184,6 +185,8 @@ class resolution_change():
     def _fix_icons_image(self):
         for file in os.listdir(CRTICONS_PATH):
             self._replace_launching_image(file, CRTICONS_PATH, CRT_ICONS_SET_PATH)
+        for file in os.listdir(CRTICONS_VERTICAL_PATH):
+            self._replace_launching_image(file, CRTICONS_VERTICAL_PATH, CRT_ICONS_SET_PATH)
 
     def _change_resolution(self):
         self._fix_aspect_ratio_images()
