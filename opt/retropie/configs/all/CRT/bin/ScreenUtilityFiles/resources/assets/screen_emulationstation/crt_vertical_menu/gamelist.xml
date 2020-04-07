@@ -1,13 +1,18 @@
 <?xml version="1.0"?>
 <gameList>
 	<game>
+		<path>./1. Rotate Screen.py</path>
+		<name>1. Rotate Screen</name>
+		<image>./icons/1. Rotate Screen.png</image>
+	</game>
+	<game>
 		<path>./2. USB AutoMount.py</path>
 		<name>2. USB AutoMount</name>
 		<image>./icons/2. USB AutoMount.png</image>
 	</game>
 	<game>
-		<path>./1. Rotate Screen.py</path>
-		<name>1. Rotate Screen</name>
-		<image>./icons/1. Rotate Screen.png</image>
+		<path>./3. RGB Cable Selector.py</path>
+		<name>3. RGB Cable Selector</name>
+		<image>./icons/3. RGB Cable Selector.png</image>
 	</game>
 </gameList>

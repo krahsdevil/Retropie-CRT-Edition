@@ -12,6 +12,16 @@
 		   <path>./_inc/system2.png</path>
 		</image>
 	</view>
+	<view name="detailed">
+      <image name="md_image">
+         <size>0.454166667 0.459375</size>
+      </image>
+	</view>
+	<view name="video">
+      <video name="md_video">
+         <size>0.454166667 0.459375</size>
+      </video>
+	</view>
 	<view name="basic">
 		<image name="systemboxart2" extra="true">
 		   <path>./_inc/system3.png</path>
