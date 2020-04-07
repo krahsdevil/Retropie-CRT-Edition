@@ -115,7 +115,7 @@ opt = [["1.GAMES ROTATION" ,
       ["<EXIT" , 
        "Save and Exit"]]
 
-DEFAULT_CONFIG = "\"default system50\n"
+DEFAULT_CONFIG = "\"default system60\n"
 DEFAULT_CONFIG += "system60_timings 320 1 10 30 40 240 1 6 5 12 0 0 0 60 0 6400000 1\n"
 DEFAULT_CONFIG += "system60_offsetX 0\n"
 DEFAULT_CONFIG += "system60_offsetY 0\n"
@@ -139,7 +139,7 @@ DEFAULT_CONFIG += "integer_scale 0\n"
 DEFAULT_CONFIG += "scummvm_arc 0\n"
 DEFAULT_CONFIG += "240p_theme_vertical V270P-CRT-BASE\n"
 DEFAULT_CONFIG += "270p_theme_vertical V270P-CRT-BASE\n"
-DEFAULT_CONFIG += "240p_theme_horizontal 240P-CRT-BUBBLEGUM\n"
+DEFAULT_CONFIG += "240p_theme_horizontal 240P-CRT-UniFlyered\n"
 DEFAULT_CONFIG += "270p_theme_horizontal 270P-CRT-SNES-MINI\n\""
 
 def get_screen_size_adjust():
