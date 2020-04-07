@@ -1,0 +1,168 @@
+<!--
+theme name:        Eudora
+version:        1.0
+author:            AmadhiX
+license:        creative _incs CC-BY-NC-SA
+based on:        "carbon" by eric hettervik
+                "simple" by nils bonenberger
+-->
+
+<theme>
+    <formatVersion>4</formatVersion>
+	<feature supported="carousel">
+		<view name="system">
+		<carousel name="systemcarousel">
+			<type>horizontal</type>
+			<pos>-0.5 -0.134375</pos>
+			<size>2 1</size>
+			<logoScale>1.1</logoScale>
+			<zIndex>39</zIndex>
+			<logoSize>1 0.59375</logoSize>
+			<color>00000000</color>
+			<maxLogoCount>3</maxLogoCount>
+			<logoAlignment>bottom</logoAlignment>        
+		</carousel>
+
+		<image name="background" extra="true">
+			<origin>0 0</origin>
+			<pos>0 0</pos>
+			<size>1 1</size>
+			<zIndex>40</zIndex> 
+			<path>./_inc/images/mainbackground.png</path>
+		</image>
+		  
+		<text name="systemInfo">
+			<pos>0 0.8875</pos>
+			<zIndex>44</zIndex>   
+			<backgroundColor>00000000</backgroundColor>
+			<color>ffffff</color>
+			<fontPath>./_inc/fonts/editundo.ttf</fontPath>
+			<fontSize>0.04375</fontSize>
+		</text>
+		</view>
+	</feature>
+
+   <view name="system,basic,detailed,video">
+      <helpsystem name="help">
+         <pos>1.3 0.94</pos>      
+         <textColor>777777</textColor>
+         <iconColor>77777750</iconColor>
+      </helpsystem>
+   </view>
+
+   <view name="basic">
+        <text name="logoText">
+            <pos>1 1</pos>
+        </text>
+      <image name="background" extra="true">
+         <origin>0 0</origin>
+         <pos>0 0</pos>
+         <size>1 1</size>
+         <path>./_inc/images/basic.png</path>
+      </image>
+   </view>
+
+
+   <view name="video,detailed">
+        <text name="logoText">
+            <pos>1 1</pos>
+        </text>
+		<image name="background" extra="true">
+			<origin>0 0</origin>
+			<pos>0 0</pos>
+			<size>1 1</size>
+			<path>./_inc/images/video.png</path>
+		</image>
+   </view> 
+
+    <view name="basic">
+        <textlist name="gamelist">
+            <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+            <pos>0.433333333 0.059375</pos>
+            <size>0.491666667 0.88125</size>
+            <fontSize>0.04375</fontSize>
+            <lineSpacing>1</lineSpacing>
+            <horizontalMargin>0</horizontalMargin>
+            <alignment>left</alignment>
+            <forceUppercase>1</forceUppercase>
+			<selectorColor>1c1c1c00</selectorColor>
+			<selectedColor>16b7f3</selectedColor>
+			<primaryColor>ffffff</primaryColor>
+			<secondaryColor>ffffff</secondaryColor>
+        </textlist>
+    </view>
+
+    <view name="detailed, video">
+        <textlist name="gamelist">
+            <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+            <pos>0.075 0.578125</pos>
+            <size>0.85 0.3625</size>
+            <fontSize>0.04375</fontSize>
+            <lineSpacing>1</lineSpacing>
+            <horizontalMargin>0</horizontalMargin>
+            <alignment>left</alignment>
+            <forceUppercase>1</forceUppercase>
+			<selectorColor>1c1c1c00</selectorColor>
+			<selectedColor>16b7f3</selectedColor>
+			<primaryColor>ffffff</primaryColor>
+			<secondaryColor>ffffff</secondaryColor>
+        </textlist>
+    </view>
+
+   <view name="detailed,video">     
+      <text name="md_lbl_rating, md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_lastplayed, md_lbl_playcount, md_lbl_players, md_rating, md_developer, md_publisher, md_genre, md_playcount, md_lastplayed">
+         <pos>1 1</pos>
+      </text>
+      <text name="md_lbl_rating,md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_lastplayed, md_lbl_playcount,md_lbl_players,md_developer, md_publisher, md_genre, md_playcount, md_lastplayed,md_description,md_players,md_releasedate">
+         <color>fff000</color>
+         <fontPath>./_inc/fonts/editundo.ttf</fontPath>
+         <fontSize>0.045</fontSize>
+      </text>
+      <rating name="md_rating">
+         <pos>1.595 0.9</pos>
+         <size>0.09 0.09</size>
+         <filledPath>./_inc/images/star_filled.png</filledPath>
+         <unfilledPath>./_inc/images/star_empty.png</unfilledPath>
+      </rating>
+   </view>
+
+   <view name="detailed">
+      <image name="md_image">
+         <origin>0.5 0.5</origin>
+         <pos>0.683333333 0.3</pos>
+         <size>0.454166667 0.459375</size>
+      </image>
+   </view>
+
+   <view name="video">
+      <video name="md_video">
+         <origin>0.5 0.5</origin>
+         <pos>0.683333333 0.3</pos>
+         <size>0.454166667 0.459375</size>
+         <delay>1.00</delay>
+         <showSnapshotNoVideo>true</showSnapshotNoVideo>
+         <showSnapshotDelay>true</showSnapshotDelay>
+      </video>
+      <image name="md_marquee">
+         <pos>1.6 0.05</pos>
+         <origin>0 0</origin>
+         <maxSize>0.15 0.1</maxSize>
+      </image>      
+   </view>
+
+	<view name="detailed, video">
+		<image name="systemboxart" extra="true">
+			 <origin>0.5 0.5</origin>
+			 <pos>0.245833333 0.234375</pos>
+			 <maxSize>0.341666667 0.346875</maxSize>
+		</image>
+	</view>
+
+	<view name="basic">
+		<image name="systemboxart2" extra="true">
+			 <origin>0.5 0.5</origin>
+			 <pos>0.245833333 0.234375</pos>
+			 <maxSize>0.341666667 0.346875</maxSize>
+		</image>
+	</view>
+</theme>
