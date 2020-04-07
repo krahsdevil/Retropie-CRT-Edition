@@ -37,8 +37,8 @@ from launcher_module.utils import check_process, show_info, menu_options
 ESSYSTEMS_TEMP_FILE = os.path.join(ES_CFG_PATH, "es_systems.cfg")
 ESSYSTEMS_VERT_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "vertical_es_systems.cfg")
 ESTHEMES_DIS_PATH = os.path.join(ES_PATH, "disabled.themes")
-VTHEME270_DST_PATH = os.path.join(ES_CFG_PATH, "themes/V270P-CRT-BASE")
-VTHEME270_SRC_PATH = os.path.join(CRT_ES_RES_PATH, "themes/V270P-CRT-BASE")
+
+THEME_LIST = ("themes/V270P-CRT-BASE", "themes/V240P-CRT-Uniflyered")
 
 INTRO_VID_DEF_FILE = os.path.join(RETROPIE_SPLASH_PATH, "CRT-Retropie-Load.mp4")
 INTRO_VID0_FILE = os.path.join(CRT_ES_RES_PATH, "splash_screen/CRT-Retropie-Load_H.mp4")
@@ -172,13 +172,17 @@ class frontend_rotation():
             touch_file(ROTMODES_YOKO_FILE)
             os.system('sudo rm %s >> /dev/null 2>&1' % ESSYSTEMS_TEMP_FILE)
             os.system('sudo mv %s %s >> /dev/null 2>&1' % (ESTHEMES_DIS_PATH, ES_THEMES_PRI_PATH))
-            os.system('sudo rm -R %s >> /dev/null 2>&1' % VTHEME270_DST_PATH)
+            for theme in THEME_LIST:
+                VTHEME270_DST_PATH = os.path.join(ES_CFG_PATH, theme)
+                os.system('sudo rm -R %s >> /dev/null 2>&1' % VTHEME270_DST_PATH)
         else:
             if not os.path.exists(ES_THEMES_SEC_PATH):
                 os.system('mkdir %s >> /dev/null 2>&1' % ES_THEMES_SEC_PATH)
             os.system('cp %s %s >> /dev/null 2>&1' % (ESSYSTEMS_VERT_FILE, ESSYSTEMS_TEMP_FILE))
             os.system('sudo mv %s %s >> /dev/null 2>&1' % (ES_THEMES_PRI_PATH, ESTHEMES_DIS_PATH))
-            os.system('cp -R %s %s >> /dev/null 2>&1' % (VTHEME270_SRC_PATH, ES_THEMES_SEC_PATH))
+            for theme in THEME_LIST:
+                VTHEME270_SRC_PATH = os.path.join(CRT_ES_RES_PATH, theme)
+                os.system('cp -R %s %s >> /dev/null 2>&1' % (VTHEME270_SRC_PATH, ES_THEMES_SEC_PATH))
             
             if self.iToMode == 90:
                 p_sFileTail += "_1"
