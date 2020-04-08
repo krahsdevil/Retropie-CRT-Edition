@@ -143,20 +143,18 @@ class resolution_change():
             modify_line(CRT_UTILITY_FILE, "default",
                         "default %s" % self.sSystem50)
 
-    def _replace_launching_image(self, p_sImage, p_sSrcPath, p_sSetPath):
+    def _replace_image(self, p_sImage, p_sSrcPath, p_sSetPath):
         p_lMask = (".png", ".jpg")
         if not p_sImage[-4:] in p_lMask:
             return
+        p_sFileTail = "_" + str(self.iToRes) + "p"
+        p_sFileTail += p_sImage[-4:]
+        
         image_cur = p_sSrcPath + "/" + p_sImage
-        sImageSetA = p_sSetPath + "/" + p_sImage[:-4] + "_240p.png"
-        sImageSetB = p_sSetPath + "/" + p_sImage[:-4] + "_270p.png"
-        # if 240p is the chosen resolution, images are changed
-        if self.iToRes == 240:
-            sImageSetA = sImageSetA[:-9] + "_270p.png"
-            sImageSetB = sImageSetB[:-9] + "_240p.png"
+        sImageSetA = p_sSetPath + "/" + p_sImage[:-4] + p_sFileTail
         try:
-            if filecmp.cmp(image_cur, sImageSetA):
-                os.system('cp "%s" "%s"' % (sImageSetB, image_cur))
+            if not filecmp.cmp(image_cur, sImageSetA):
+                os.system('cp "%s" "%s"' % (sImageSetA, image_cur))
         except:
             pass
 
@@ -176,17 +174,17 @@ class resolution_change():
                                     LEVEL4 = os.path.join(LEVEL3, Level4)
                                     sFile4 = os.path.join(Level1, Level2, Level3, Level4)
                                     if os.path.isfile(LEVEL4):
-                                        self._replace_launching_image(sFile4, RETROPIE_CFG_PATH,  CRT_LNCH_IMG_MOD_PATH)
+                                        self._replace_image(sFile4, RETROPIE_CFG_PATH,  CRT_LNCH_IMG_MOD_PATH)
                             else:
-                                self._replace_launching_image(sFile3, RETROPIE_CFG_PATH, CRT_LNCH_IMG_MOD_PATH)
+                                self._replace_image(sFile3, RETROPIE_CFG_PATH, CRT_LNCH_IMG_MOD_PATH)
                     else:
-                        self._replace_launching_image(sFile2, RETROPIE_CFG_PATH, CRT_LNCH_IMG_MOD_PATH)
+                        self._replace_image(sFile2, RETROPIE_CFG_PATH, CRT_LNCH_IMG_MOD_PATH)
 
     def _fix_icons_image(self):
         for file in os.listdir(CRTICONS_PATH):
-            self._replace_launching_image(file, CRTICONS_PATH, CRT_ICONS_SET_PATH)
+            self._replace_image(file, CRTICONS_PATH, CRT_ICONS_SET_PATH)
         for file in os.listdir(CRTICONS_VERTICAL_PATH):
-            self._replace_launching_image(file, CRTICONS_VERTICAL_PATH, CRT_ICONS_SET_PATH)
+            self._replace_image(file, CRTICONS_VERTICAL_PATH, CRT_ICONS_SET_PATH)
 
     def _change_resolution(self):
         self._fix_aspect_ratio_images()
