@@ -47,7 +47,7 @@
 
    <view name="basic">
       <textlist name="gamelist">
-         <pos>0.546875 0.07500006</pos>
+         <pos>0.55 0.07500006</pos>
          <size>0.378125 0.82500066</size>
          <selectorColor>1c1c1c00</selectorColor>
          <selectedColor>16b7f3</selectedColor>
@@ -124,7 +124,7 @@
    <view name="detailed">
       <image name="md_image">
          <origin>0.5 0.5</origin>
-         <pos>0.70625 0.29583357</pos>
+         <pos>0.6625 0.29583357</pos>
          <maxSize>0.44375 0.43750035</maxSize>
       </image>
    </view>
@@ -132,7 +132,7 @@
    <view name="video">
       <video name="md_video">
          <origin>0.5 0.5</origin>
-         <pos>0.70625 0.29583357</pos>
+         <pos>0.6625 0.29583357</pos>
          <maxSize>0.44375 0.43750035</maxSize>
          <delay>1.00</delay>
          <showSnapshotNoVideo>true</showSnapshotNoVideo>
@@ -156,7 +156,7 @@
 	<view name="basic">
 		<image name="systemboxart2" extra="true">
 			 <origin>0.5 0.5</origin>
-			 <pos>0.296875 0.49166706</pos>
+			 <pos>0.284375 0.49166706</pos>
 			 <maxSize>1 0.833334</maxSize>
 		</image>
 	</view>
