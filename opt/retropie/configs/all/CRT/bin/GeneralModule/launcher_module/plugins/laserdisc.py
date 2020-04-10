@@ -47,7 +47,6 @@ class laserdisc(emulator):
     def configure(self):
         if self.m_sSystem == "daphne":
             self.m_lBinaryMasks = ["daphne"]
-            self.m_lProcesses = ["daphne"]
             self.m_lBinaryUntouchable = ["daphne"]
             FixDaphneControls(self.m_sSystem).fix()
         p_sSelectFreq = FrequencySelector(self.m_sFileName).get_frequency()

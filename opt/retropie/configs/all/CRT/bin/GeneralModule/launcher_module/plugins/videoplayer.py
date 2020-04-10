@@ -61,7 +61,7 @@ class videoplayer(launcher):
         if not os.path.isfile(JOY2KEY_FILE):
             logging.info("closing videoplayer: can't find file: %s" % \
                          JOY2KEY_FILE)
-            self.panic("can't find joy2key", "try again!")
+            self.panic("Sorry, can't find joy2key", "Please, try again!")
 
     def configure(self):
         if self.m_sSystem == "videoplayer":

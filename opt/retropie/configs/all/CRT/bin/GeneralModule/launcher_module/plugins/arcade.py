@@ -59,11 +59,8 @@ class arcade(arcade):
 
         if self.m_sSystem == "mame-advmame":
             self.m_lBinaryMasks = ["advmame"]
-            self.m_lProcesses = ["advmame"]
         elif self.m_sSystem == "arcade":
             self.m_lBinaryMasks = ["lr-", "advmame"]
             # if BinaryMask doesn't match will try to close all these process
-            self.m_lProcesses = ["retroarch", "advmame", "mame", "fba2x"]
         else:
             self.m_lBinaryMasks = ["lr-"]
-            self.m_lProcesses = ["retroarch"]

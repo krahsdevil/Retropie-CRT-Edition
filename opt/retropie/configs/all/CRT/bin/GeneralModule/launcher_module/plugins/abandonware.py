@@ -45,13 +45,11 @@ class abandonware(emulator):
     def configure(self):
         if self.m_sSystem == "scummvm":
             self.m_lBinaryMasks = ["scummvm"]
-            self.m_lProcesses = ["scummvm", "retroarch"]
             self._scummvm_change_gfxmode()
             if not "+Start " in self.m_sGameName:
                 self._scummvm_change_aspect()
         elif self.m_sSystem == "pc":
             self.m_lBinaryMasks = ["dosbox"]
-            self.m_lProcesses = ["dosbox", "retroarch"]
         super(abandonware, self).configure()
         show_info("Better with keyboard and mouse")
 

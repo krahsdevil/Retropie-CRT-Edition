@@ -52,7 +52,6 @@ class libretro(emulator):
     # final configure binary/process values and prepare emulatorcfg
     def post_configure(self):
         self.m_lBinaryMasks = ["lr-"]
-        self.m_lProcesses = ["retroarch"] # default emulator process is retroarch
 
         self.m_sCustomRACFG = os.path.join(CRT_RA_MAIN_CFG_PATH, self.m_sSystemCfg)
         # if not exists report it

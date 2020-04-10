@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys, traceback
 from launcher_module.core_paths import TMP_LAUNCHER_PATH
-from launcher_module.utils import something_is_bad, plugin_list, plugin_load
+from launcher_module.utils import something_is_bad, plugin_list, plugin_load, show_info
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODULES_PATH = os.path.join(BASE_DIR, "launcher_module/plugins")
@@ -45,10 +45,12 @@ if __name__ == '__main__':
                 bSystemFound = True
                 launcher(sys.argv[1], sys.argv[2], sys.argv[3])
         if not bSystemFound:
-            something_is_bad("ERROR - System not supported!", sSystem)
+            #something_is_bad("ERROR - System not supported!", sSystem)
+            show_info("SYSTEM [%s] NOT SUPPORTED!" % sSystem, "", 7000)
     # TODO: kill emulator ?
     except (IndexError):
-        something_is_bad("ERROR - No game to launch or no emulator!", "")
+        show_info("NO GAME TO LAUNCH OR NO EMULATOR!", "", 7000)
+        #something_is_bad("ERROR - No game to launch or no emulator!", "")
     except Exception as e:
         with open(EXCEPTION_LOG, 'a') as f:
             f.write(str(e))

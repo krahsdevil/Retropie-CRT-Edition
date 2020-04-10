@@ -65,12 +65,12 @@ class emulator(launcher):
         try:
             self.emulatorcfg_add_systems()
             if self.emulatorcfg_default_check() == False:
-                 self.panic("selected invalid emulator", "try again!")
+                 self.panic("No valid emulator selected", "Please, try again!")
             self.emulatorcfg_per_game()
             
         except IOError as e:
-            infos = "File error at emulators.cfg [%s]" % self.m_sSystem
-            infos2 = "Please, install at least one emulator or core"
+            infos = "Emulators.cfg [%s] not found" % self.m_sSystem
+            infos2 = "Please, install one emulator or core"
             self.panic(infos, infos2)
         except Exception as e:
             infos = "Error in emulators.cfg [%s]" % self.m_sSystem
@@ -164,11 +164,10 @@ class emulator(launcher):
             if len(self.m_lBinaries):
                 logging.info("VALID - emulators: %s" % str(self.m_lBinaries))
             else:
-                self.panic("NOT FOUND any emulators mask [%s]" % str(self.m_lBinaryMasks))
+                self.panic("NOT FOUND emulators masks [%s]" % str(self.m_lBinaryMasks))
 
     def _emulatorcfg_die(self):
         self.runcommand_kill()
-
 
     def emulatorcfg_check_or_die(self):
         """
@@ -181,13 +180,13 @@ class emulator(launcher):
         """
         if not self.emulatorcfg_default_check():
             self._emulatorcfg_die()
-            self.panic("selected invalid default emulator", "try again!")
+            self.panic("No valid emulator selected", "Please, try again!")
         if not self.emulatorcfg_per_game():
             self._emulatorcfg_die()
-            self.panic("selected invalid emulator for this game", "try again!")
+            self.panic("No valid emulator for this game", "Please, try again!")
         if self.clean_videomodes():
             self._emulatorcfg_die()
-            self.panic("do not touch emulator resolution", "try again!")
+            self.panic("Don't change emulator resolution", "Please, try again!")
 
     def is_valid_binary(self, p_sCore):
         """

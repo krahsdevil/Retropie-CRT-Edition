@@ -27,11 +27,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os, sys
-import subprocess, commands
+import subprocess, commands, time
 import logging
 
 from .screen import CRT
-from .utils import something_is_bad, HideScreen
+from .utils import HideScreen, check_process, show_info
 from .core_paths import *
 from .file_helpers import *
 
@@ -54,8 +54,28 @@ class launcher(object):
     m_lBinaryMasks = []
     m_lBinaryUntouchable = []
     m_lBinaries = []
-    m_lProcesses = []
-
+    m_lProcesses = ["retroarch", "mupen64plus", "uae4all2", "uae4arm", "capricerpi",
+                    "linapple", "hatari", "stella", "atari800", "xroar",
+                    "vice", "daphne", "reicast", "pifba", "osmose", "gpsp",
+                    "jzintv", "basiliskll", "mame", "advmame", "dgen",
+                    "openmsx", "ags", "gngeo", "dosbox", "ppsspp",
+                    "simcoupe", "scummvm", "snes9x", "pisnes", "frotz",
+                    "fbzx", "fuse", "gemrb", "cgenesis", "zdoom", "eduke32",
+                    "lincity", "love", "kodi", "alephone", "micropolis",
+                    "openbor", "openttd", "opentyrian", "cannonball",
+                    "tyrquake", "ioquake3", "residualvm", "xrick", "sdlpop",
+                    "uqm", "stratagus", "wolf4sdl", "solarus", "drastic",
+                    "coolcv", "PPSSPPSDL", "moonlight", "Xorg", "smw",
+                    "omxplayer.bin", "wolf4sdl-3dr-v14", "wolf4sdl-gt-v14",
+                    "wolf4sdl-spear", "wolf4sdl-sw-v14", "xvic",
+                    "xvic cart", "xplus4", "xpet", "x128", "x64sc", "x64",
+                    "prince", "fba2x", "steamlink", "pcsx-rearmed",
+                    "limelight", "sdltrs", "ti99sm", "dosbox-sdl2",
+                    "minivmac", "quasi88", "xm7", "yabause", "abuse",
+                    "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
+                    "love", "love-0.10.2", "openblok", "openfodder", "srb2",
+                    "yquake2", "amiberry", "zesarux", "dxx-rebirth",
+                    "zesarux", "daphne.bin"]
     m_oBlackScreen = None
     m_oRunProcess = None
     m_oCRT = None
@@ -107,7 +127,7 @@ class launcher(object):
 
     def wait(self):
         self.m_oRunProcess.wait()
-        logging.info("process end")
+        logging.info("INFO: process end")
 
     # generate command string
     # just called if need rebuild the CMD
@@ -166,43 +186,55 @@ class launcher(object):
 
 
     # wait_runcommand: wait for user launcher menu
-    #   @full_checks: off, just check current process.
+    #   @only_runcommand: off, just check current process.
     #   return: True, if user wants close emulation directly.
-    def runcommand_wait(self, full_checks = True):
+    def runcommand_wait(self, only_runcommand = True):
+        timer = 0 # security timer
         if not self.m_lProcesses:
             self.panic("processes not available")
-
-        logging.info("wait runcommand ends and start: %s (full_checks: %s)" % (str(self.m_lProcesses), str(full_checks)) )
+        if only_runcommand:
+            logging.info("INFO: waiting runcommand ends and start")
+        else:
+            logging.info("INFO: waiting one emulator process on this list: %s " % \
+                        str(self.m_lProcesses))
         # TODO: better use a symple socket daemon
         while True:
-            if full_checks:
+            if only_runcommand:
                 if os.path.exists(TMP_SLEEPER_FILE):
-                    logging.info("detected trigger file %s, wait finished..." % TMP_SLEEPER_FILE)
+                    logging.info("INFO: detected trigger file %s, wait finished..." % TMP_SLEEPER_FILE)
                     return False
                 # try to detect if user exits from runcommand
                 poll = self.m_oRunProcess.poll()
                 if poll != None:
-                    logging.info("runcommand closed by user (poll = %s)" % poll)
+                    logging.info("INFO: runcommand closed by user (poll = %s)" % poll)
                     RuncommandClosed = True
                     return True
-            output = commands.getoutput('ps -A')
-            for proc in self.m_lProcesses:
-                if proc in output:
-                    logging.info("detected %s in active process, wait finished...", proc)
-                    return False
+            if check_process(self.m_lProcesses):
+                logging.info("INFO: detected emulator active process, wait finished...")
+                return False
+            elif not only_runcommand:
+                time.sleep(0.01)
+                timer += 0.01
+                if timer > 1.5:
+                    logging.info("INFO: Process not found, exiting by security timer.")
+                    return None
 
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         commandline = "%s 0 _SYS_ %s \"%s\"" % (RETROPIE_RUNCOMMAND_FILE, self.m_sSystem, self.m_sFilePath)
         self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
-        logging.info("Subprocess running: %s", commandline)
+        logging.info("INFO: Subprocess running: %s", commandline)
         self.runcommand_wait()
 
     def runcommand_kill(self):
         self.runcommand_wait(False)
-        logging.error("closing %s processes" % str(self.m_lProcesses))
+        logging.error("INFO: trying to close emulator process")
         for proc in self.m_lProcesses:
-            os.system('killall %s > /dev/null 2>&1' % proc)
+            if check_process(proc):
+                logging.info("INFO: killing process: %s", proc)
+                os.system('killall %s > /dev/null 2>&1' % proc)
+                while True:
+                    if not check_process(proc): break
 
     def screen_prepare(self):
         pass
@@ -211,33 +243,34 @@ class launcher(object):
         self.m_oCRT = CRT(self.m_sSystemFreq)
         self.m_oCRT.screen_calculated(CRT_DB_SYSTEMS_FILE)
         self.m_oBlackScreen.fill()
-        logging.info("clean: %s", TMP_SLEEPER_FILE)
+        logging.info("INFO: clean: %s", TMP_SLEEPER_FILE)
         remove_file(TMP_SLEEPER_FILE)
 
-    def panic(self, p_sErrorLine1, p_sErrorLine2 = "-", p_bForceQuit = True):
+    def panic(self, p_sErrorLine1, p_sErrorLine2 = None, p_bForceQuit = True):
         """ stop the program and show error to the user """
+        sTitPanic = "SYSTEM LAUNCHING ERROR"
+        lOptPanic = [(str(p_sErrorLine1).upper(), "OK")]
+        if p_sErrorLine2:
+            lOptPanic.append((str(p_sErrorLine2).upper(), "OK"))
         logging.error("PANIC: %s" % p_sErrorLine1)
         CRT().screen_restore()
-        something_is_bad(p_sErrorLine1, p_sErrorLine2)
+        show_info(lOptPanic, sTitPanic, 7000)
         if p_bForceQuit:
             logging.error("EXIT: crt_launcher forced")
             self.__clean()
             sys.exit(1)
 
     # cleanup code
-
     def cleanup(self):
         self.m_oCRT.screen_restore()
         self.m_oBlackScreen.fill()
-        logging.info("ES mode recover")
+        logging.info("INFO: ES mode recover")
         os.system('clear')
         self.__clean()
         sys.exit()
 
     # clean system
     def __clean(self):
-        #if self.m_oRunProcess:
-        #    self.runcommand_kill()
         self.clean_videomodes()
         remove_file(TMP_SLEEPER_FILE)
 
