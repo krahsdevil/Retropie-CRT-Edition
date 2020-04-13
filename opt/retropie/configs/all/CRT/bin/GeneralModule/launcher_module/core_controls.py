@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, time, threading
+import os, logging, time, threading, commands
 import pygame
 
 from .core_paths import RETROPIE_CFG_PATH
@@ -65,7 +65,7 @@ HAT_CFG = {
     (0,-1)  : CRT_DOWN,
 }
 
-ABS_DIF        = 0.2
+ABS_DIF = 0.7
 ABS_CTRL_STATE = False
 
 class joystick(object):
@@ -77,9 +77,18 @@ class joystick(object):
     m_iNumJoys = 0
     m_iAxisTriggered = False
     m_bUnload = False
+    
+    m_oClock = None
+    m_oScreen = None
 
     def __init__(self):
+        self._pygame_init()
         self.joy_daemon_watcher()
+
+    def _pygame_init(self):
+        RES_X, RES_Y = self._get_screen_resolution()
+        self.m_oScreen = pygame.display.set_mode((RES_X, RES_Y))
+        self.m_oClock = pygame.time.Clock()
 
     def joy_daemon_watcher(self):
         oJoyWatcher = threading.Thread(target = self.joystick_detection)
@@ -95,7 +104,7 @@ class joystick(object):
         Launched internally as daemon
         """
         p_iTime = 0.5
-        p_iJoyNum = 4
+        p_iJoyNum = 2
         while not self.m_bUnload:
             p_iCount = 0
             p_lJoyRem = []
@@ -146,7 +155,7 @@ class joystick(object):
         logging.info("INFO: unloaded joystick daemon")
 
     def quit(self):
-        pygame.joystick.quit()
+        pygame.quit()
         self.m_lJoys = []
         self.m_bUnload = True
 
@@ -236,28 +245,30 @@ class joystick(object):
         #logging.info("jb-ign: %i %i" % (p_iDevice, p_iButton))
         return CRT_NONE
 
-    def check_axis(self, p_iDevice, p_fValue, p_iButton):
-        global ABS_CTRL_STATE
-        if abs(p_fValue) > ABS_DIF:
-            if not ABS_CTRL_STATE:
-                ABS_CTRL_STATE = True
-                return p_iButton
-        else:
-            ABS_CTRL_STATE = False
-        return CRT_NONE
-        
     def get_axis(self, p_iDevice, p_iAxis, p_fValue):
+        global ABS_CTRL_STATE
+        fValue = round(float(p_fValue), 1)
+        #logging.info("jb-ign: %i %i %s" % (p_iDevice, p_iAxis, str(fValue)))
+
+        if abs(fValue) < ABS_DIF:
+            ABS_CTRL_STATE = False
+            return None
+        elif ABS_CTRL_STATE:
+            return None
+            
         if self.m_lJoys[p_iDevice]['x']['axis'] == p_iAxis:
-            if p_fValue > 0:
-                return self.check_axis(p_iDevice, p_fValue, CRT_RIGHT)
+            ABS_CTRL_STATE = True
+            if fValue > self.m_lJoys[p_iDevice]['x']['value']:
+                return CRT_RIGHT
             else:
-                return self.check_axis(p_iDevice, p_fValue, CRT_LEFT)
+                return CRT_LEFT
         if self.m_lJoys[p_iDevice]['y']['axis'] == p_iAxis:
-            if p_fValue > 0:
-                return self.check_axis(p_iDevice, p_fValue, CRT_DOWN)
+            ABS_CTRL_STATE = True
+            if fValue > self.m_lJoys[p_iDevice]['y']['value']:
+                return CRT_DOWN
             else:
-                return self.check_axis(p_iDevice, p_fValue, CRT_UP)
-        return CRT_NONE
+                return CRT_UP
+        return None
 
     def get_hat(self, p_lValue):
         try:
@@ -265,15 +276,25 @@ class joystick(object):
         except:
             return CRT_NONE
 
+    def _get_screen_resolution(self):
+        """ main function to get screen resolution """
+        commandline = "cat /sys/class/graphics/fb0/virtual_size"
+        output = commands.getoutput(commandline)
+        VirtRes = output.replace(',',' ').split(' ')
+        RES_X = int(VirtRes[0])
+        RES_Y = int(VirtRes[1])
+        return (RES_X, RES_Y)
+
     def event_wait(self):
         while True:
-            event = pygame.event.wait()
-            pygame.event.clear()
-            if event.type == pygame.KEYDOWN:
-                return self.get_key(event.key)
-            elif event.type == pygame.JOYBUTTONDOWN:
-                return self.get_button(event.joy, event.button)
-            elif event.type == pygame.JOYHATMOTION:
-                return self.get_hat(event.value)
-            elif event.type == pygame.JOYAXISMOTION and event.axis < 2:
-                return self.get_axis(event.joy, event.axis, event.value)
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    return self.get_key(event.key)
+                elif event.type == pygame.JOYBUTTONDOWN:
+                    return self.get_button(event.joy, event.button)
+                elif event.type == pygame.JOYHATMOTION:
+                    return self.get_hat(event.value)
+                elif event.type == pygame.JOYAXISMOTION:
+                    input = self.get_axis(event.joy, event.axis, event.value)
+                    if input: return input
+            self.m_oClock.tick(20)
