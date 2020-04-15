@@ -157,10 +157,20 @@ class FixDaphneControls(object):
                                            self.m_sJoyName + '.cfg')
             if os.path.exists(self.m_sCfgFile) and \
                os.path.exists(self.DAPHNE_CFG_FILE):
+                    logging.info("INFO: Found configuration file for " \
+                                 "joystick 0: \"%s\"" % self.m_sCfgFile)
+                    logging.info("INFO: Found daphne configuration file: " \
+                                 "\"%s\"" % self.DAPHNE_CFG_FILE)
                     self._get_joy_cfg()
                     self._fix_daphne_cfg()
                     self.__clean()
                     return True
+            if not os.path.exists(self.m_sCfgFile):
+                logging.info("WARNING: NOT found configuration file for " \
+                             "joystick 0: \"%s\"" % self.m_sCfgFile)
+            else:
+                logging.info("WARNING: NOT found daphne configuration file: " \
+                             "\"%s\"" % self.DAPHNE_CFG_FILE)
         return False
 
     def _get_joy_cfg(self):
@@ -192,8 +202,10 @@ class FixDaphneControls(object):
             pygame.joystick.Joystick(0).init()
             self.m_sJoyName = pygame.joystick.Joystick(0).get_name()
             bCheck = True
+            logging.info("INFO: Found joystick 0 \"%s\"" % self.m_sJoyName)
         except:
             bCheck = False
+            logging.info("WARNING: NOT found joystick 0")
         self.__clean()
         return bCheck
 
