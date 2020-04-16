@@ -31,7 +31,7 @@ from launcher_module.emulator import emulator
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import ini_get, add_line, touch_file, \
                                          ini_getlist, modify_line
-from launcher_module.utils import show_info
+from launcher_module.utils import show_info, menu_options
 
 JOYCONFIG_PATH = os.path.join(RETROPIE_CFG_PATH, "all/retroarch/autoconfig")
 
@@ -53,7 +53,7 @@ class laserdisc(emulator):
         self.m_sSystemFreq = self.m_sSystem
         if p_sSelectFreq == "50":
             self.m_sSystemFreq = self.m_sSystem + "50"
-        show_info(self.m_lDaphneInfo)
+        #show_info(self.m_lDaphneInfo)
         
     def create_daphne_config(self):
         """ custom commands for resolution """
@@ -138,21 +138,22 @@ class FixDaphneControls(object):
                     ["KEY_DOWN", "0", "clear"],
                     ["KEY_LEFT", "0", "clear"],
                     ["KEY_RIGHT", "0", "clear"],
-                    ["KEY_BUTTON1", "1", "input_b_btn"],
-                    ["KEY_BUTTON2", "2", "input_a_btn"],
-                    ["KEY_BUTTON3", "3", "input_x_btn"],
-                    ["KEY_SKILL1", "0", "input_y_btn"],
-                    ["KEY_SKILL2", "0", "input_l_btn"],
-                    ["KEY_SKILL3", "0", "input_r_btn"],
-                    ["KEY_START1", "9", "input_start_btn"],
-                    ["KEY_COIN1", "10", "input_select_btn"])
+                    ["KEY_BUTTON1", "0", "input_b_btn", "BUTTON B"],
+                    ["KEY_BUTTON2", "0", "input_a_btn", "BUTTON A"],
+                    ["KEY_BUTTON3", "0", "input_y_btn", "BUTTON Y"],
+                    ["KEY_SKILL1", "0", "clear"],
+                    ["KEY_SKILL2", "0", "clear"],
+                    ["KEY_SKILL3", "0", "clear"],
+                    ["KEY_START1", "0", "input_start_btn", "BUTTON START"],
+                    ["KEY_COIN1", "0", "input_select_btn", "BUTTON SELECT"],
+                    ["KEY_QUIT", "0", "input_x_btn", "BUTTON X"])
     
     def __init__(self, p_sSystem = "daphne"):
         self.DAPHNE_CFG_FILE = os.path.join(RETROPIE_CFG_PATH, p_sSystem,
                                             "dapinput.ini")
 
     def fix(self):
-        if self._initialize_pygame():
+        if self._initialize_pygame() and self._remap_option_menu():
             self.m_sCfgFile = os.path.join(JOYCONFIG_PATH, 
                                            self.m_sJoyName + '.cfg')
             if os.path.exists(self.m_sCfgFile) and \
@@ -164,13 +165,16 @@ class FixDaphneControls(object):
                     self._get_joy_cfg()
                     self._fix_daphne_cfg()
                     self.__clean()
+                    self._show_remap()
                     return True
             if not os.path.exists(self.m_sCfgFile):
                 logging.info("WARNING: NOT found configuration file for " \
                              "joystick 0: \"%s\"" % self.m_sCfgFile)
+                show_info("ES CONFIG FOR JOYSTICK NOT FOUND", "WARNING")
             else:
                 logging.info("WARNING: NOT found daphne configuration file: " \
                              "\"%s\"" % self.DAPHNE_CFG_FILE)
+                show_info("DAPHNE CONFIG FILE NOT FOUND", "WARNING")
         return False
 
     def _get_joy_cfg(self):
@@ -194,6 +198,25 @@ class FixDaphneControls(object):
                 sNewLine = control[0] + " = "
                 sNewLine += " ".join(lValues)
                 modify_line(self.DAPHNE_CFG_FILE, control[0], sNewLine)
+
+    def _remap_option_menu(self):
+        m_sTitRemap = "JOYSTICK CONFIG"
+        m_lOptRemap = [("REMAP JOYSTICK", "REMAP"),
+                     ("CANCEL", "CANCEL")]
+        select = menu_options(m_lOptRemap, m_sTitRemap)
+        if select == "REMAP": return True
+        return False
+
+    def _show_remap(self):
+        m_lInfoRemap = []
+        for remap in self.m_lDaphneBTN:
+            if int(remap[1]) != 0:
+                try:
+                    option = remap[0] + " -> " + remap[3]
+                    m_lInfoRemap.append((option, "OK"))
+                except:
+                    pass
+        show_info(m_lInfoRemap, self.m_sJoyName + " [js0]", 6000)
     
     def _initialize_pygame(self):
         bCheck = False
