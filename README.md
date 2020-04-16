@@ -3,9 +3,8 @@
 
 ![img](https://github.com/krahsdevil/crt-for-retropie/blob/d398fe53a9e550c6aca72b926ea8c8a312aed028/logo.png?raw=true)
 ***
-| Deprecated  | Legacy | FINAL 1.0 | Retropie 4.5 | RPi 2B/3B/3A+/3B+ | Changelog |
+| Current Version | EVO | FINAL 1.0 | Retropie 4.5 | RPi 2B/3B/3A+/3B+ | [Changelog](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/Changelog) |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| Current Version | EVO | FINAL 1.0 | Retropie 4.5 | RPi 2B/3B/3A+/3B+ | [Changelog](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/Changelog)  |
 
 Adding support to Retropie for custom 15khz resolutions and some cool utilities like USB Automount or easy TATE mode changing.
 
