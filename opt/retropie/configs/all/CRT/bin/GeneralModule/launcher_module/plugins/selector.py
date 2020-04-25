@@ -32,8 +32,7 @@ class selector(libretro):
     @staticmethod
     def get_system_list():
         return ["n64", "nes", "snes", "psx", "msx", "atari2600", "videopac", "zx81",
-                "atarist", "c64", "atari7800", "megadrive", "segacd", "sega32x",
-                "atari800", "mastersystem"]
+                "atarist", "c64", "atari7800", "segacd", "sega32x", "atari800"]
 
     # getting correct frequency for FileName loaded
     def configure(self):
