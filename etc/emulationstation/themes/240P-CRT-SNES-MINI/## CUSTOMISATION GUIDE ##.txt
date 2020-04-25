@@ -1,0 +1,129 @@
+How to change the style/region of the SNES Mini theme.
+------------------------------------------------------
+You have a choice of several theme styles in both Europe or USA region. Dependant on the style this will change the border, logos, icons, and backgrounds.
+
+To change the style open the config.xml file.
+
+Find the following line:
+
+	<include>./style/snes_europe.xml</include>	
+	
+The available styles are:
+
+snes_europe.xml - matches the look of the European SNES or Japanese Super Famicom
+snes_usa.xml - matches the look of the USA SNES
+
+nes_rich_europe.xml - matches the look of the nes-mini theme and uses a different style or colour for each system.  Works best with the nes_mini backgrounds.
+nes_rich_usa.xml - see above.
+
+nes_simple_europe.xml - simpler version of the nes-mini theme.  same colour and style for all sytems.  Works well with any background.
+nes_simple_usa.xml - see above.
+
+
+
+How to change the supported resolution/aspect ratio in the SNES Mini theme.
+--------------------------------------------------------------------------
+The theme supports a variety of resolutions including ntsc and pal resolutions.
+
+To change the resolution open the config.xml file.
+
+Find the following line:
+
+	<include>./layouts/1920x1080.xml</include>
+
+Change 1920x1080 to any of the supported resolutions listed below:
+
+640x480
+800x600
+1024x768
+1280x720
+1280x960
+1366x768
+1440x1080
+1920x1080
+ntsc
+pal
+
+
+
+How to change the layout in the SNES Mini theme.
+-----------------------------------------------
+You are able to choose from several different pre-defined layouts.  Please see the png file that is included titled ## LAYOUT GUIDE ##.png for all of the available options. (Layouts are not supported in 4x3 resolutions and will be ignored).
+
+To change the layout open the config.xml file.
+
+Find the following line:
+
+	<include>./layouts/a.xml</include>
+	
+Change the letter 'a' to the letter corresponding the the layout of your choice (see ## LAYOUT GUIDE ##.png) and save the file.  When you restart Emulation Station the new layout will be active.
+
+
+
+How to change the background in the SNES Mini theme.
+----------------------------------------------------
+The SNES mini theme comes with numerous backgound styles.  For the available options see the jpg files named ## BACKGROUND GUIDE ## (numbered 1-6).
+
+To change the background open the config.xml file.
+
+Find the following line:
+
+	<include>./background/neon_blue_spectrum.xml</include>
+
+Change 'neon_blue_spectrum.xml' to the background of your choice as shown in the ## BACKGROUND GUIDE ## and save the file.  When you restart Emulation Station the new background will be active.	
+
+
+
+How to change the rating symbol of the SNES Mini theme.
+-------------------------------------------------------
+There is a choice of 2 different ratings icons, hearts or beads. (ignored for nes styles)
+
+To change the border style open the config.xml file.
+
+Find the following line:
+
+	<include>./rating/heart.xml</include>	
+
+To change to the bead icon simply change the word 'heart' to 'bead' and save the file.  When you restart Emulation Station the new icon will be active.	
+
+
+
+How to change how the number of players is displayed in the SNES Mini theme.
+----------------------------------------------------------------------------
+You can change how the number of players is displayed in the theme, there are 2 options 'icon' or 'text. (ignored for nes styles)
+Icon is the default but will only display correctly if number of players is defined as a single digit in your gamelist.xml eg 1,2,3, or 4.  If you have players defined as '1-2' or '1-3' or '1-4' then you can either edit your gamelist.xml or try the 'text' option which will display the number of players as text.
+
+To change how number of players is displayed open the config.xml file.
+
+Find the following line:
+
+	<include>./players/icon.xml</include>	
+	
+To change the player display to text simply change the word 'icon' to 'text' and save the file. When you restart Emulation Station the new setting will be active.	
+
+
+How to change the font size used for the gamelist.
+--------------------------------------------------
+You can choose between a big or small font to display the game titles in the gamelist.
+
+To change the font size find the following line:
+
+	<include>./list-font-size/big.xml</include>	
+	
+Replace the word 'big' with 'small' to use a smaller font.
+
+
+
+How to change text alignment for the gamelist.
+----------------------------------------------
+You can choose between left, right, or center alignment for the text in the game list.
+
+To change the alignment find the following line:
+
+	<include>./list-font/left-align.xml</include>
+	
+Replace 'left-align' with either 'right-align' or 'center-align'
+
+
+
+Ruckage 2017

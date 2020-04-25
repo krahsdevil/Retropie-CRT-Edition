@@ -1,0 +1,8 @@
+<theme>
+
+    <formatVersion>3</formatVersion>
+
+	<include>./layouts/crt_base.xml</include>
+	<include>./config.xml</include>
+
+</theme>

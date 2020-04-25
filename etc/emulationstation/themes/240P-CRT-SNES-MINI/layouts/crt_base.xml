@@ -1,0 +1,312 @@
+<!--
+author:			ruckage
+-->
+
+
+<theme>
+    <formatVersion>3</formatVersion>
+
+	<feature supported="carousel">
+
+		<view name="system">
+
+			<carousel name="systemcarousel">
+				<type>horizontal</type>
+				<color>00000000</color>
+				<logoScale>1</logoScale>
+				<pos>0 0.304166667</pos>
+				<size>1 0.5</size>
+				<logoSize>0.3 0.433333333</logoSize>
+				<maxLogoCount>3</maxLogoCount>
+				<zIndex>101</zIndex>
+			</carousel>
+
+			<image name="background" extra="true">
+				<size>0 1</size>
+			</image>
+
+			<text name="systemInfo">
+				<backgroundColor>00000000</backgroundColor>
+				<color>FFFFFF</color>
+				<fontPath>./../art/NESCyrillic_gamelist.ttf</fontPath>
+				<fontSize>0.066666667</fontSize>
+				<pos>0.00 0.216666667</pos>
+				<size>1 0.050</size>
+				<zIndex>102</zIndex>				
+			</text>
+
+			<image name="carousel_bar_background" extra="true">
+				<size>0 0.079166667</size>
+				<pos>0.5 0.2125</pos>
+				<path>./../art/carousel_bar_background.png</path>
+				<origin>0.5 0</origin>
+				<zIndex>100</zIndex>
+				<color>4d4d4d9a</color>
+			</image>
+
+			<image name="carousel_bar_outline" extra="true">
+				<size>0 0.079166667</size>
+				<pos>0.5 0.2125</pos>
+				<path>./../art/carousel_bar_outline.png</path>
+				<origin>0.5 0</origin>
+				<zIndex>101</zIndex>
+				<color>ffffffaa</color>
+			</image>
+
+			<image name="system_help" extra="true">
+				<size>0.6625 0.079166667</size>
+			</image>	
+
+			<helpsystem name="help">
+				<pos>2 2</pos>
+			</helpsystem>	
+		</view>
+
+	</feature>	
+	
+	<view name="basic, detailed, video, system">
+	
+		<image name="bg_color" extra="true">
+			<size>1 0.7407407407407407</size>
+		</image>		
+		
+		<image name="bg_overlay" extra="true">
+			<size>0 0.7407407407407407</size>
+		</image>
+	
+	</view>
+	
+    <view name="basic">
+
+		<textlist name="gamelist">
+			<fontPath>./../art/NESCyrillic_gamelist2.ttf</fontPath>
+			<alignment>center</alignment>
+			<forceUppercase>1</forceUppercase>
+			<scrollSound>./../sounds/se_sys_cursor.wav</scrollSound>
+			<fontSize>0.066666667</fontSize>
+			<horizontalMargin>0.028125</horizontalMargin>
+			<selectorImagePath>./../art/selector_bar_basic.png</selectorImagePath>
+			<size>0.8 0.425</size>
+			<pos>0.1 0.291666667</pos>			
+			<lineSpacing>1.38</lineSpacing>
+			<selectorHeight>0.0875</selectorHeight>
+			<selectorOffsetY>-0.008333333</selectorOffsetY>
+		</textlist>
+
+		<helpsystem name="help">
+			<pos>1 1</pos>
+		</helpsystem>
+		
+		<image name="gamelist_background" extra="true">
+			<path>./../art/gamelist_background_basic.png</path>
+			<size>0.7875 0.633333333</size>
+			<origin>0.5 0.5</origin>		
+			<pos>0.5 0.508333333</pos>
+			<color>4d4d4d9a</color>	
+		</image>
+		
+		<image name="gamelist_outline" extra="true">
+			<path>./../art/gamelist_outline_basic.png</path>
+			<size>0.7875 0.633333333</size>
+			<origin>0.5 0.5</origin>
+			<pos>0.5 0.508333333</pos>
+			<color>ffffffbe</color>
+			<zIndex>200</zIndex>
+		</image>
+
+	</view>
+	
+    <view name="detailed, video">
+
+		<textlist name="gamelist">
+			<fontPath>./../art/NESCyrillic_gamelist2.ttf</fontPath>
+			<alignment>left</alignment>
+			<forceUppercase>1</forceUppercase>
+			<scrollSound>./../sounds/se_sys_cursor.wav</scrollSound>
+			<fontSize>0.066666667</fontSize>
+			<horizontalMargin>0.028125</horizontalMargin>
+			<selectorImagePath>./../art/selector_bar.png</selectorImagePath>
+			<size>0.50625 0.425</size>
+			<pos>0.453125 0.291666667</pos>			
+			<lineSpacing>1.38</lineSpacing>
+			<selectorHeight>0.0875</selectorHeight>
+			<selectorOffsetY>-0.008333333</selectorOffsetY>
+		</textlist>
+		
+		<image name="gamelist_background" extra="true">
+			<path>./../art/gamelist_background.png</path>
+			<size>0.49375 0.633333333</size>
+			<origin>0.5 0.5</origin>		
+			<pos>0.70625 0.508333333</pos>
+			<color>4d4d4d9a</color>	
+		</image>
+		
+		<image name="gamelist_outline" extra="true">
+			<path>./../art/gamelist_outline.png</path>
+			<size>0.49375 0.633333333</size>
+			<origin>0.5 0.5</origin>
+			<pos>0.70625 0.508333333</pos>
+			<color>ffffffbe</color>
+			<zIndex>200</zIndex>
+		</image>
+		
+	</view>
+
+    <view name="detailed, video">
+
+		<helpsystem name="help">
+			<pos>1 1</pos>
+		</helpsystem>
+
+		<sound name="launch">
+			<path>./../sounds/se_sys_click_game.wav</path>
+		</sound>	
+
+		<image name="background" extra="true">
+			<size>0 1</size>
+		</image>
+
+		<image name="gamelist_help" extra="true">
+			<size>0.6625 0.079166667</size>
+		</image>
+			
+		<image name="left_window_border" extra="true">
+			<path>./window_border.png</path>
+			<size>0.40625 0.633333333</size>
+			<pos>0.040625 0.508333333</pos>
+			<origin>0 0.5</origin>
+			<zIndex>1</zIndex>
+		</image>
+
+		<image name="missing_art" extra="true">
+			<pos>0.1944444444444444 0.5</pos>
+			<origin>0.5 0.5</origin>
+			<size>0 0.2518518518518519</size>
+		</image>
+
+		<image name="player_box" extra="true">
+			<size>0.071875 0.0625</size>
+			<pos>0.35625 0.7375</pos>
+			<origin>0 0</origin>
+			<color>000000</color>	
+			<zIndex>200</zIndex>
+		</image>
+
+		<image name="gradient_bar_1" extra="true">
+			<pos>0.240625 0.25</pos>
+			<origin>0.5 0.5</origin>
+			<path>./gradient_bar_top.png</path>
+			<size>0.3625 0.066666667</size>
+			<color>ffffff80</color>
+			<zIndex>150</zIndex>
+		</image>
+		
+		<image name="gradient_bar_2" extra="true">
+			<pos>0.240625 0.745833333</pos>
+			<origin>0.5 0.5</origin>
+			<path>./gradient_bar_bottom.png</path>
+			<size>0.3625 0.029166667</size>
+			<color>ffffff80</color>
+			<zIndex>150</zIndex>
+		</image>
+
+		<text name="publisher_label, rating_label, played_label, players_label" extra="true">
+			<fontPath>./../art/TinyUnicode.ttf</fontPath>
+			<forceUppercase>1</forceUppercase>
+			<fontSize>0.066666667</fontSize>
+			<size>0.125 0.020833333</size>
+			<alignment>center</alignment>
+			<pos>1 1</pos>
+		</text>
+
+		<text name="publisher_label" extra="true">
+			<text>  Published</text>
+			<size>0.18125 0.020833333</size>
+			<pos>0.059375 0.220833333</pos>
+			<alignment>left</alignment>
+		</text>
+		
+		<text name="rating_label" extra="true">
+			<text>Rating</text>
+			<pos>0.065625 0.7375</pos>
+		</text>
+
+		<text name="played_label" extra="true">
+			<text>Played</text>
+			<pos>0.209375 0.7375</pos>
+		</text>	
+
+		<text name="players_label" extra="true">
+			<text>For</text>
+			<size>0.075 0.020833333</size>
+		</text>
+
+      <text name="md_lbl_rating,md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_lastplayed, md_lbl_playcount, md_lbl_players, md_developer, md_publisher, md_genre, md_playcount, md_lastplayed, md_description, md_releasedate">
+			<forceUppercase>1</forceUppercase>
+			<fontPath>./../art/TinyUnicode.ttf</fontPath>
+			<fontSize>0.066666667</fontSize>
+			<alignment>center</alignment>
+			<pos>1 1</pos>
+      </text>
+
+		<text name="md_publisher">
+			<color>FFFFFF</color>
+			<pos>0.0625 0.25</pos>
+			<size>0.3625 0.033333333</size>
+		</text>	
+	
+		<text name="md_players">
+			<alignment>left</alignment>
+			<pos>0.35625 0.7375</pos>
+			<size>0.071875 0.0625</size>
+		</text>
+
+		<rating name="md_rating">
+			<size>0.033333333 0.033333333</size>		
+			<pos>0.065625 0.770833333</pos>
+		</rating>	
+
+		<text name="md_playcount">
+			<color>FFFFFF</color>
+			<fontPath>./../art/NESCyrillic_gamelist.ttf</fontPath>
+			<alignment>center</alignment>
+			<size>0.125 0.029166667</size>
+			<pos>0.209375 0.7625</pos>
+		</text>
+	
+		<datetime name="md_releasedate">
+			<size>0.18125 0.020833333</size>
+			<pos>0.240625 0.220833333</pos>
+		</datetime>
+		
+	</view>
+
+    <view name="detailed">
+	
+		<image name="md_image">
+			<maxSize>0.3625 0.408333333</maxSize>
+			<origin>0.5 0.5</origin>
+			<pos>0.24375 0.508333333</pos>
+		</image>	
+	
+	</view>
+
+
+    <view name="video">
+	
+		<image name="missing_art" extra="true">
+			<pos>2 2</pos>
+		</image>
+	
+		<video name="md_video">
+			<showSnapshotNoVideo>true</showSnapshotNoVideo>
+			<showSnapshotDelay>true</showSnapshotDelay>
+			<delay>2</delay>
+			<maxSize>0.3625 0.408333333</maxSize>
+			<origin>0.5 0.5</origin>
+			<pos>0.24375 0.508333333</pos>
+		</video>
+
+	</view>
+	
+</theme>

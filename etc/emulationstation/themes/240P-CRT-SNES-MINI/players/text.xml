@@ -1,0 +1,28 @@
+<theme>
+
+    <formatVersion>3</formatVersion>
+
+	<view name="basic, detailed, video">
+		
+		<text name="md_players">
+			<pos>0.35625 0.745833333</pos>
+			<fontPath>./../art/PlayerText.ttf</fontPath>		
+			<forceUppercase>1</forceUppercase>
+			<fontSize>0.066666667</fontSize>
+			<color>ffffff</color>
+			<alignment>center</alignment>
+			<zIndex>100</zIndex>
+		</text>
+
+		<text name="players_label" extra="true">
+			<pos>0.353125 0.7375</pos>
+		</text>
+
+		<image name="player_box" extra="true">
+			<color>00000000</color>
+		</image>		
+
+	</view>
+		
+	
+</theme>
