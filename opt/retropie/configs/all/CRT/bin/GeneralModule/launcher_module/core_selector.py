@@ -36,6 +36,7 @@ LABELS60HZ = ["ntsc","1","4","a","j","b","k","c","u","hk","world","usa",
 ALLOWED_FREQS = ["50", "60"]
 
 class FrequencySelector(object):
+    m_sFileName = ""
     m_sSelectFreq = ""
     m_sCompactedName = ""
     m_oFreqDB = None
@@ -47,6 +48,7 @@ class FrequencySelector(object):
             logging.info("WARNING: NO filename passed, setting " % \
                          "60Hz by default")
             return "60"
+        self.m_sFileName = p_sFileName
         self.m_sCompactedName = compact_rom_name(p_sFileName)
         self.m_oFreqDB = dbfreq()
 
