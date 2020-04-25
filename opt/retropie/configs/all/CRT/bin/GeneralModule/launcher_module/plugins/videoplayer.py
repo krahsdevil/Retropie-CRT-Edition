@@ -66,6 +66,7 @@ class videoplayer(launcher):
     def configure(self):
         if self.m_sSystem == "videoplayer":
             self.m_sSystemFreq = "videoplayer50"
+        os.system('sudo killall %s > /dev/null 2>&1' % JOY2KEY_NAME)
 
     def prepare(self):
         #if more than one video and selected is not the last
@@ -112,7 +113,7 @@ class videoplayer(launcher):
 
     def cleanup(self):
         #os.system('echo %s >> /tmp/proces' % returncoded)
-        os.system('sudo killall %s' % JOY2KEY_NAME)
+        os.system('sudo killall %s > /dev/null 2>&1' % JOY2KEY_NAME)
         self.m_oCRT.screen_restore()
         logging.info("ES mode recover")
         os.system('clear')
