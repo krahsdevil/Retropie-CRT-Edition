@@ -175,10 +175,13 @@ class launcher(object):
         for Binary in self.m_lBinaries:
             for line in new_file:
                 lValues = line.strip().split('=')
+                sCMD = lValues[1].strip()
+                if len(lValues) > 2:
+                    sCMD = "=".join(lValues[1:]).strip()
                 lValues = map(lambda s: s.strip(), lValues)
                 if lValues[0] == Binary:
                     self.m_sNextValidBinary = lValues[0]
-                    cmd_cleaned = self.runcommand_clean(lValues[1])
+                    cmd_cleaned = self.runcommand_clean(sCMD)
                     cmd_current = self.runcommand_generate(cmd_cleaned)
                     if cmd_current != line.strip(): # atm just force our cmd
                         logging.info("changed command (%s)" % cmd_current)
