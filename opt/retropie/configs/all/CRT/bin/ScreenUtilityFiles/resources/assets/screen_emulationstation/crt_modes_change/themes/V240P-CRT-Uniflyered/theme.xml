@@ -43,11 +43,19 @@ based on:        "carbon" by eric hettervik
 	</feature>
 
    <view name="system, basic, detailed, video">
-      <helpsystem name="help">
-         <pos>1.3 0.94</pos>      
-         <textColor>777777</textColor>
-         <iconColor>77777750</iconColor>
-      </helpsystem>
+		<helpsystem name="help">
+			<pos>1.3 0.94</pos>      
+			<textColor>777777</textColor>
+			<iconColor>77777750</iconColor>
+		</helpsystem>
+		<image name="background_color" extra="true">
+			<path>./_inc/images/bg_color.png</path>
+			<zIndex>1</zIndex>
+			<origin>0 0</origin>
+			<pos>0 0</pos>
+			<size>1 1</size>
+			<color>838383</color>
+		</image>
    </view>
 
    <view name="basic">
