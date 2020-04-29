@@ -235,7 +235,7 @@ class joystick(object):
         try:
             return KEY_CFG[p_oKey]
         except:
-            return CRT_NONE
+            return None
 
     def get_button(self, p_iDevice, p_iButton):
         if self.m_lJoys[p_iDevice]['ok'] == p_iButton:
@@ -243,7 +243,7 @@ class joystick(object):
         elif self.m_lJoys[p_iDevice]['cancel'] == p_iButton:
             return CRT_CANCEL
         #logging.info("jb-ign: %i %i" % (p_iDevice, p_iButton))
-        return CRT_NONE
+        return None
 
     def get_axis(self, p_iDevice, p_iAxis, p_fValue):
         global ABS_CTRL_STATE
@@ -274,7 +274,7 @@ class joystick(object):
         try:
             return HAT_CFG[p_lValue]
         except:
-            return CRT_NONE
+            return None
 
     def _get_screen_resolution(self):
         """ main function to get screen resolution """
@@ -289,11 +289,14 @@ class joystick(object):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    return self.get_key(event.key)
+                    input = self.get_key(event.key)
+                    if input: return input
                 elif event.type == pygame.JOYBUTTONDOWN:
-                    return self.get_button(event.joy, event.button)
+                    input = self.get_button(event.joy, event.button)
+                    if input: return input
                 elif event.type == pygame.JOYHATMOTION:
-                    return self.get_hat(event.value)
+                    input = self.get_hat(event.value)
+                    if input: return input
                 elif event.type == pygame.JOYAXISMOTION:
                     input = self.get_axis(event.joy, event.axis, event.value)
                     if input: return input
