@@ -72,6 +72,8 @@ class generate(object):
 
     m_iCurSide = 0
 
+    m_iRES_X = 0
+    m_iRES_Y = 0
     m_iMaxOffSetX = 0
     m_iMaxOffSetY = 0
 
@@ -112,6 +114,7 @@ class generate(object):
         self.test_data_init()
 
     def launch(self):
+        self.m_iRES_X, self.m_iRES_Y = get_screen_resolution()
         self._init_pygame()
         self.loop()
         self.save()
@@ -176,7 +179,8 @@ class generate(object):
         pygame.display.flip()
 
     def draw_info_box(self):
-        RES_X, RES_Y = get_screen_resolution()
+        POS_X = 0
+        POS_Y = 0
         table = pygame.Surface((190, 77), pygame.SRCALPHA)
         for opt in self.m_lInfoBox: #First draw rectangles box
             pygame.draw.rect(table, opt["rndcolor"], (opt["posx"],
@@ -187,46 +191,48 @@ class generate(object):
 
         if self.m_sEnv == "system60":
             if self.m_iCurSide == 0:
-                size = table.get_rect()
-                size.center = (RES_X/2, RES_Y - 90)
+                POS_X = self.m_iRES_X/2
+                POS_Y = self.m_iRES_Y - 90
             elif self.m_iCurSide == 1:
                 table = pygame.transform.rotate(table, -90)
-                size = table.get_rect()
-                size.center = (86, RES_Y/2) 
+                POS_X = 86
+                POS_Y = self.m_iRES_Y/2
             elif self.m_iCurSide == 3:
                 table = pygame.transform.rotate(table, 90)
-                size = table.get_rect()
-                size.center = (RES_X - 86, RES_Y/2)
+                POS_X = self.m_iRES_X - 86
+                POS_Y = self.m_iRES_Y/2
         elif self.m_sEnv == "system50":
             if self.m_iCurSide == 0:
-                size = table.get_rect()
-                size.center = (RES_X/2, RES_Y - 90)
+                POS_X = self.m_iRES_X/2
+                POS_Y = self.m_iRES_Y - 90
             elif self.m_iCurSide == 1:
                 table = pygame.transform.rotate(table, -90)
-                size = table.get_rect()
-                size.center = (110, RES_Y/2) 
+                POS_X = 110
+                POS_Y = self.m_iRES_Y/2
             elif self.m_iCurSide == 3:
                 table = pygame.transform.rotate(table, 90)
-                size = table.get_rect()
-                size.center = (RES_X - 110, RES_Y/2)
+                POS_X = self.m_iRES_X - 110
+                POS_Y = self.m_iRES_Y/2
         elif self.m_sEnv == "test60" or self.m_sEnv == "test50":
             if self.m_iCurSide == 0:
                 size = table.get_rect()
                 table = pygame.transform.scale(table, (size.width*5, size.height))
-                size = table.get_rect()
-                size.center = (RES_X/2, RES_Y - 90)
+                POS_X = self.m_iRES_X/2
+                POS_Y = self.m_iRES_Y - 90
             elif self.m_iCurSide == 1:
                 table = pygame.transform.rotate(table, -90)
                 size = table.get_rect()
                 table = pygame.transform.scale(table, (size.width*5, size.height))
-                size = table.get_rect()
-                size.center = (390, RES_Y/2) 
+                POS_X = 390
+                POS_Y = self.m_iRES_Y/2
             elif self.m_iCurSide == 3:
                 table = pygame.transform.rotate(table, 90)
                 size = table.get_rect()
                 table = pygame.transform.scale(table, (size.width*5, size.height))
-                size = table.get_rect()
-                size.center = (RES_X - 390, RES_Y/2)
+                POS_X = self.m_iRES_X - 390
+                POS_Y = self.m_iRES_Y/2
+        size = table.get_rect()
+        size.center = (POS_X, POS_Y)
         self.m_PGoScreen.blit(table, size)
 
     def draw_pattern(self):
@@ -288,51 +294,54 @@ class generate(object):
                                             self.m_lPattern["posy"])
 
     def freq_icon_pos(self):
-        RES_X, RES_Y = get_screen_resolution()
+        POS_X = 0
+        POS_Y = 0
         tmp = self.m_lFreqIcon["rndimg"]
         if self.m_sEnv == "system60":
             if self.m_iCurSide == 0:
-                size = tmp.get_rect()
-                size.center = (287, 37)
+                POS_X = 270
+                POS_Y = 37
             elif self.m_iCurSide == 1:
                 tmp = pygame.transform.rotate(tmp, -90)
-                size = tmp.get_rect()
-                size.center = (RES_X - 60, RES_Y - 60) 
+                POS_X = self.m_iRES_X - 50
+                POS_Y = self.m_iRES_Y - 60
             elif self.m_iCurSide == 3:
                 tmp = pygame.transform.rotate(tmp, 90)
-                size = tmp.get_rect()
-                size.center = (60, 60)
+                POS_X = 43
+                POS_Y = 60
         elif self.m_sEnv == "system50":
             if self.m_iCurSide == 0:
-                size = tmp.get_rect()
-                size.center = (425, 42)
+                POS_X = 446
+                POS_Y = 42
             elif self.m_iCurSide == 1:
                 tmp = pygame.transform.rotate(tmp, -90)
-                size = tmp.get_rect()
-                size.center = (RES_X - 90, RES_Y - 65) 
+                POS_X = self.m_iRES_X - 90
+                POS_Y = self.m_iRES_Y - 65
             elif self.m_iCurSide == 3:
                 tmp = pygame.transform.rotate(tmp, 90)
-                size = tmp.get_rect()
-                size.center = (90, 65)
+                POS_X = 84
+                POS_Y = 65
         elif self.m_sEnv == "test60" or self.m_sEnv == "test50":
             if self.m_iCurSide == 0:
                 size = tmp.get_rect()
                 tmp = pygame.transform.scale(tmp, (size.width*5, size.height))
-                size = tmp.get_rect()
-                size.center = (1600, 30)
+                POS_X = 1600
+                POS_Y = 30
             elif self.m_iCurSide == 1:
                 tmp = pygame.transform.rotate(tmp, -90)
                 size = tmp.get_rect()
                 tmp = pygame.transform.scale(tmp, (size.width*5, size.height))
-                size = tmp.get_rect()
-                size.center = (RES_X - 240, RES_Y - 67)
+                POS_X = self.m_iRES_X - 150
+                POS_Y = self.m_iRES_Y - 67
             elif self.m_iCurSide == 3:
                 tmp = pygame.transform.rotate(tmp, 90)
                 size = tmp.get_rect()
                 tmp = pygame.transform.scale(tmp, (size.width*5, size.height))
-                size = tmp.get_rect()
-                size.center = (220, 50)
-        
+                POS_X = 120
+                POS_Y = 50
+
+        size = tmp.get_rect()
+        size.center = (POS_X, POS_Y)
         self.m_lFreqIcon["rndimg"] = tmp
         self.m_lFreqIcon["rndpos"] = size
         self.m_lFreqIcon["rndpos"].center = (size.center)
