@@ -32,6 +32,7 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
+from launcher_module.utils import get_side
 
 TEST_MEDIA_PATH = os.path.join(CRT_ASST_PATH, "screen_center_utility")
 IMG_TEST_PATTERN_FILE = "" #Assign Pattern to draw
@@ -95,7 +96,7 @@ class datas(object):
     m_iCurrentSub = 0
 
     def __init__(self):
-        self._check_current_es_side()
+        self.m_iCurSide = get_side()
 
     def run(self, p_iPatternAdj, p_dConfigFile, p_sEnv):
         self._clean_datas()
@@ -108,14 +109,6 @@ class datas(object):
         self.prepare_datas()
         self.prepare_pattern()
         self.prepare_frequency_icon()
-
-    def _check_current_es_side(self):
-        """ Check current side of EmulatioStation """
-        self.m_iCurSide = 0
-        if os.path.exists(ROTMODES_TATE1_FILE):
-            self.m_iCurSide = 1
-        elif os.path.exists(ROTMODES_TATE3_FILE):
-            self.m_iCurSide = 3
 
     def side(self):
         return self.m_iCurSide

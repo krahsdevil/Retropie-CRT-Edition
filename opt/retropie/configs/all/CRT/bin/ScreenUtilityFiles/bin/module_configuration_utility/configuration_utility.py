@@ -32,7 +32,8 @@ sys.path.append(MODULES_PATH)
 from launcher_module.core_paths import *
 from es_rotation import frontend_rotation
 from launcher_module.file_helpers import modify_line, ini_get
-from launcher_module.utils import get_screen_resolution, something_is_bad
+from launcher_module.utils import get_screen_resolution, something_is_bad, \
+                                  get_side
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_BUTTON
 
@@ -366,17 +367,17 @@ def get_config():
     opt[7][2] = int(ini_get(CRT_UTILITY_FILE, "scummvm_arc"))
 
     # get current emulationstation side
-    if os.path.exists(ROTMODES_TATE1_FILE):
+    iCurSide = get_side()
+    opt[1][2] = 0
+    opt[1][3] = 0
+    if iCurSide == 1:
         opt[1][2] = 90
         opt[1][3] = 90
         opt[0][2] = 0
-    elif os.path.exists(ROTMODES_TATE3_FILE):
+    elif iCurSide == 3:
         opt[1][2] = -90
         opt[1][3] = -90
         opt[0][2] = 0
-    else:
-        opt[1][2] = 0
-        opt[1][3] = 0
 
 def check_rotation_mode(p_iOption = None):
     global bRotateES

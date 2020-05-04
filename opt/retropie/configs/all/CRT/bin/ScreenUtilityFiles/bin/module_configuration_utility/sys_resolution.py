@@ -33,7 +33,8 @@ from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line, ini_get, \
                                          get_xml_value_esconfig, \
                                          set_xml_value_esconfig
-from launcher_module.utils import check_process, show_info, menu_options, HideScreen
+from launcher_module.utils import check_process, show_info, menu_options, \
+                                  HideScreen, get_side
 
 CRTICONS_PATH = os.path.join(CRT_ROOT_PATH, "config/icons")
 CRTICONS_VERTICAL_PATH = os.path.join(CRT_ES_VERT_MENU, "icons")
@@ -62,7 +63,7 @@ class resolution_change():
 
     def _pre_configure(self):
         self._check_current_base_res()
-        self._check_current_es_side()
+        self.iCurSide = get_side()
 
     def change(self):
         show_info("WAIT, PREPARING RESOLUTION CHANGE")
@@ -86,14 +87,6 @@ class resolution_change():
         p_sRes = ini_get(CRT_UTILITY_FILE, "default")
         if p_sRes == self.sSystem50: self.RES_Y = 270
         elif p_sRes == self.sSystem60: self.RES_Y = 240
-
-    def _check_current_es_side(self):
-        """ Check current side of EmulatioStation """
-        self.iCurSide = 0
-        if os.path.exists(ROTMODES_TATE1_FILE):
-            self.iCurSide = 1
-        elif os.path.exists(ROTMODES_TATE3_FILE):
-            self.iCurSide = 3
 
     def _save_current_theme(self):
         # identify element theme to find in CRT config

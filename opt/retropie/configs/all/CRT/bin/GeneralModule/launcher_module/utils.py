@@ -24,7 +24,8 @@ import time, imp, re, logging
 import pygame
 
 from launcher_module.core_paths import CRT_ROOT_PATH, RETROPIE_EMULATORS_PATH, \
-                                       RA_BIN_FILE, CRT_RA_HASHDB_FILE
+                                       RA_BIN_FILE, CRT_RA_HASHDB_FILE, \
+                                       ROTMODES_TATE1_FILE, ROTMODES_TATE3_FILE
 from launcher_module.file_helpers import md5_file, ini_get, touch_file, \
                                          add_line, modify_line
 from launcher_module.core_choices_dynamic import choices
@@ -135,6 +136,15 @@ def check_process(p_sProcess, p_iTimes = 1):
     # p_iTimes >= 1 process was found
     p_bCheck = True if p_bCheck >= p_iTimes else False 
     return p_bCheck
+
+def get_side():
+    """ Check current side of EmulatioStation """
+    iCurSide = 0
+    if os.path.exists(ROTMODES_TATE1_FILE):
+        iCurSide = 1
+    elif os.path.exists(ROTMODES_TATE3_FILE):
+        iCurSide = 3
+    return iCurSide
     
 def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
     """

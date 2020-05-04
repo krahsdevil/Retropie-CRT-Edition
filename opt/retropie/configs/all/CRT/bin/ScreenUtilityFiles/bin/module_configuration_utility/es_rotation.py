@@ -32,7 +32,8 @@ from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line, ini_get, touch_file, \
                                          get_xml_value_esconfig, \
                                          set_xml_value_esconfig
-from launcher_module.utils import check_process, show_info, menu_options
+from launcher_module.utils import check_process, show_info, menu_options, \
+                                  get_side
 
 CRTICONS_PATH = os.path.join(CRT_ROOT_PATH, "config/icons")
 CRTICONS_VERTICAL_PATH = os.path.join(CRT_ES_VERT_MENU, "icons")
@@ -69,7 +70,7 @@ class frontend_rotation():
     def _pre_configure(self):
         self._check_themes()
         self._check_current_base_res()
-        self._check_current_es_side()
+        self.iCurSide = get_side()
 
     def _run(self):
         self._prepare_theme_configuration()
@@ -97,14 +98,6 @@ class frontend_rotation():
         p_sRes = ini_get(CRT_UTILITY_FILE, "default")
         if p_sRes == self.sSystem50: self.RES_Y = 270
         elif p_sRes == self.sSystem60: self.RES_Y = 240
-
-    def _check_current_es_side(self):
-        """ Check current side of EmulatioStation """
-        self.iCurSide = 0
-        if os.path.exists(ROTMODES_TATE1_FILE):
-            self.iCurSide = 1
-        elif os.path.exists(ROTMODES_TATE3_FILE):
-            self.iCurSide = 3
 
     def _save_current_theme(self):
         # identify element theme to find in CRT config
@@ -248,18 +241,14 @@ class frontend_rotation():
         os.system('rm %s >> /dev/null 2>&1' % ROTMODES_YOKO_FILE)
 
 if __name__ == '__main__':
-    sCurSide = 0
+    iCurSide = 0
     sTitRot = "ROTATE SCREEN"
     lOptRot = [("ROTATE 90", "90"),
                ("ROTATE -90", "-90"),
                ("CANCEL", "CANCEL")]
 
-    if os.path.exists(ROTMODES_TATE1_FILE):
-        sCurSide = 90
-    elif os.path.exists(ROTMODES_TATE3_FILE):
-        sCurSide = -90
-
-    if sCurSide in (90, -90):
+    iCurSide = get_side()
+    if iCurSide in (1, 3):
         lOptRot = [("HORIZONTAL", "0"),
                    ("ROTATE 180", "180"),
                    ("CANCEL", "CANCEL")]
@@ -268,9 +257,9 @@ if __name__ == '__main__':
         sChoice = int(sChoice)
     except:
         sys.exit(0)
-    if sChoice == 180 and sCurSide == 90:
+    if sChoice == 180 and iCurSide == 1:
         sChoice = -90
-    elif sChoice == 180 and sCurSide == -90:
+    elif sChoice == 180 and iCurSide == 3:
         sChoice = 90
 
     frontend_rotation(sChoice, True)
