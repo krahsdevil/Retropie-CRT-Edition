@@ -15,4 +15,9 @@
 		<name>3. RGB Cable Selector</name>
 		<image>./icons/3. RGB Cable Selector.png</image>
 	</game>
+	<game>
+		<path>./4. Screen Center Utility.py</path>
+		<name>4. Screen Center Utility</name>
+		<image>./icons/4. Screen Center Utility.png</image>
+	</game>
 </gameList>

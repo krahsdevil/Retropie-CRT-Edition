@@ -36,7 +36,7 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from launcher_module.utils import check_process, show_info
+from launcher_module.utils import check_process, show_info, menu_options
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.screen import CRT
 from launcher_module.file_helpers import *
@@ -161,15 +161,36 @@ class center(object):
         format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
 
 if __name__ == '__main__':
+    def get_argument():
+        sTitRot = "SCREEN CENTER UTILITY"
+        lOptRot = [("FRONTEND CENTERING", "FRONTEND"),
+                   ("IN-GAME CENTERING", "INGAME"),
+                   ("CANCEL", "CANCEL")]
+
+        sChoice = menu_options(lOptRot, sTitRot)
+        if sChoice == "FRONTEND":
+            sChoice = "system"
+        elif sChoice == "INGAME":
+            sChoice = "test60"
+        else:
+            sys.exit()
+        return sChoice
+        
     try:
-        if not sys.argv[1] in tests:
+        opt = sys.argv[1]
+    except:
+        opt = get_argument()
+
+    try:
+        if not opt in tests:
             print ('ERROR: some of these arguments expected:\n %s' % tests)
             raise Exception('incorrect argument')
-        if sys.argv[1] == "system":
+
+        if opt == "system":
             Arg.append("system60")
             Arg.append("system50")
         else:
-            Arg.append(sys.argv[1])
+            Arg.append(opt)
         for item in Arg:
             oLaunch = center()
             oLaunch.launch(item)
@@ -187,4 +208,5 @@ if __name__ == '__main__':
             ErrMsg += traceback.format_exc()
         with open(EXCEPTION_LOG, 'a') as f:
             f.write(str(ErrMsg))
+
     sys.exit()

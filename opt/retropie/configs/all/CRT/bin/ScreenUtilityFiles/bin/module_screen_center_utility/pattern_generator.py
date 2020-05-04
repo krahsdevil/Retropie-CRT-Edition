@@ -36,6 +36,7 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
+from launcher_module.utils import get_screen_resolution
 from launcher_module.file_helpers import *
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, CRT_LEFT, \
                                           CRT_RIGHT, CRT_BUTTON
@@ -45,7 +46,7 @@ __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 
 TEST_MEDIA_PATH = os.path.join(CRT_ASST_PATH, "screen_center_utility")
-FONT_FILE = os.path.join(CRT_FONTS_PATH, "PetMe64.ttf")
+FONT_FILE = os.path.join(CRT_FONTS_PATH, "RPGSystem.ttf")
 CURSOR_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_cursor_01.ogg")
 CLICK_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_click_01.ogg")
 
@@ -69,6 +70,8 @@ class generate(object):
 
     m_sEnv = ""
 
+    m_iCurSide = 0
+
     m_iMaxOffSetX = 0
     m_iMaxOffSetY = 0
 
@@ -82,9 +85,7 @@ class generate(object):
     m_PGpPattern = None
     m_PGoFreqIcon = None
     m_PGoFontText = None
-    m_PGoFontTextSize = 0
-    m_PGTextVResizer = 0
-    m_PGTextHResizer = 0
+    m_PGoFontTextSize = 16
 
     m_iCurrent = 0
     m_iCurrentSub = 0
@@ -93,11 +94,12 @@ class generate(object):
     m_lInfoBox = []
     m_lPattern = {"posx": 0, "posy": 0, "width": 0, "height": 0,
                   "rndimg": None, "rndpos": None}
-    m_lFreqIcon = {"posx": 0, "posy": 0, "width": 0, "height": 0,
+    m_lFreqIcon = {"width": 68, "height": 28,
                   "rndimg": None, "rndpos": None}
 
     def __init__(self):
         self.m_oPatternDatas = datas()
+        self.m_iCurSide = self.m_oPatternDatas.side()
         
     def initialize(self, m_sEnv, p_lTimings = {}):
         self.m_sEnv = m_sEnv
@@ -107,7 +109,6 @@ class generate(object):
     def prepare(self):
         self.prepare_cfg()
         self.prepare_screen_timings()
-        self.prepare_test_font()
         self.test_data_init()
 
     def launch(self):
@@ -132,16 +133,6 @@ class generate(object):
         self.m_PGoScreen = pygame.display.set_mode((self.m_dPatternAdj["ScreenHSize"],
                                                     self.m_dPatternAdj["ScreenVSize"]),
                                                     pygame.FULLSCREEN)
-
-    def prepare_test_font(self):
-        """
-        Default size font is 8 but need to be resized on ingame test because
-        of superresolution
-        """
-        self.m_PGoFontTextSize = 8
-        if self.m_sEnv == "test60" or self.m_sEnv == "test50":
-            self.m_PGTextVResizer = 9 #Need to resize font at 1920x240@60hz
-            self.m_PGTextHResizer = 27 #Need to resize font at 1920x240@60hz
 
     def _init_sounds(self):
         try:
@@ -185,12 +176,58 @@ class generate(object):
         pygame.display.flip()
 
     def draw_info_box(self):
+        RES_X, RES_Y = get_screen_resolution()
+        table = pygame.Surface((190, 77), pygame.SRCALPHA)
         for opt in self.m_lInfoBox: #First draw rectangles box
-            pygame.draw.rect(self.m_PGoScreen, opt["rndcolor"], (opt["posx"],
+            pygame.draw.rect(table, opt["rndcolor"], (opt["posx"],
             opt["posy"], opt["width"], opt["height"]), opt["fill"])
 
         for opt in self.m_lInfoText: #Second draw text options
-            self.m_PGoScreen.blit(opt["rndimg"], opt["rndpos"])
+            table.blit(opt["rndimg"], opt["rndpos"])
+
+        if self.m_sEnv == "system60":
+            if self.m_iCurSide == 0:
+                size = table.get_rect()
+                size.center = (RES_X/2, RES_Y - 90)
+            elif self.m_iCurSide == 1:
+                table = pygame.transform.rotate(table, -90)
+                size = table.get_rect()
+                size.center = (86, RES_Y/2) 
+            elif self.m_iCurSide == 3:
+                table = pygame.transform.rotate(table, 90)
+                size = table.get_rect()
+                size.center = (RES_X - 86, RES_Y/2)
+        elif self.m_sEnv == "system50":
+            if self.m_iCurSide == 0:
+                size = table.get_rect()
+                size.center = (RES_X/2, RES_Y - 90)
+            elif self.m_iCurSide == 1:
+                table = pygame.transform.rotate(table, -90)
+                size = table.get_rect()
+                size.center = (110, RES_Y/2) 
+            elif self.m_iCurSide == 3:
+                table = pygame.transform.rotate(table, 90)
+                size = table.get_rect()
+                size.center = (RES_X - 110, RES_Y/2)
+        elif self.m_sEnv == "test60" or self.m_sEnv == "test50":
+            if self.m_iCurSide == 0:
+                size = table.get_rect()
+                table = pygame.transform.scale(table, (size.width*5, size.height))
+                size = table.get_rect()
+                size.center = (RES_X/2, RES_Y - 90)
+            elif self.m_iCurSide == 1:
+                table = pygame.transform.rotate(table, -90)
+                size = table.get_rect()
+                table = pygame.transform.scale(table, (size.width*5, size.height))
+                size = table.get_rect()
+                size.center = (390, RES_Y/2) 
+            elif self.m_iCurSide == 3:
+                table = pygame.transform.rotate(table, 90)
+                size = table.get_rect()
+                table = pygame.transform.scale(table, (size.width*5, size.height))
+                size = table.get_rect()
+                size.center = (RES_X - 390, RES_Y/2)
+        self.m_PGoScreen.blit(table, size)
 
     def draw_pattern(self):
         """ Draw main centering pattern """
@@ -202,23 +239,15 @@ class generate(object):
     def box_info_prepare_render(self):
         """ Render all text and take position """
         for opt in self.m_lInfoText:
-            opt["rndimg"] = self.box_info_text_render(opt["text"], 
-                                                      opt["rndcolor"],
-                                                      self.m_PGTextVResizer,
-                                                      self.m_PGTextHResizer)
+            opt["rndimg"] = self.box_info_text_render(opt["text"], opt["rndcolor"])
             opt["rndpos"] = self.box_info_text_render_pos(opt["rndimg"],
                                                           opt["posx"],
                                                           opt["posy"],
                                                           opt["center"])
 
-    def box_info_text_render(self, p_sText, p_lTextColor,
-                             p_iVResizer = None, p_iHResizer = None):
+    def box_info_text_render(self, p_sText, p_lTextColor):
         """ Function to render text """
         img = self.m_PGoFontText.render(p_sText, True, p_lTextColor)
-        if p_iVResizer or p_iHResizer: #Resize text, needed at 1920 H_Res
-            hsize = int(len(p_sText)*p_iHResizer)
-            vsize = int(p_iVResizer)
-            img = pygame.transform.smoothscale(img,(hsize,vsize))
         return img
 
     def box_info_text_render_pos(self, p_lRendText, p_iposx,
@@ -229,6 +258,8 @@ class generate(object):
             pos.center = (p_iposx, p_iposy)
         elif p_sCenter == "midleft":
             pos.midleft = (p_iposx, p_iposy)
+        elif p_sCenter == "midright":
+            pos.midright = (p_iposx, p_iposy)
         return pos
 
     def pattern_prepare_render(self):
@@ -242,6 +273,8 @@ class generate(object):
         self.m_lPattern["rndimg"] = pygame.transform.smoothscale(self.m_lPattern["rndimg"],
                                     (self.m_lPattern["width"],
                                     self.m_lPattern["height"]))
+        if self.m_iCurSide == 3:
+            self.m_lPattern["rndimg"] = pygame.transform.rotate(self.m_lPattern["rndimg"], 180)
 
     def freq_icon_render(self):
         self.m_lFreqIcon["rndimg"] = pygame.image.load(self.m_PGoFreqIcon)
@@ -255,9 +288,54 @@ class generate(object):
                                             self.m_lPattern["posy"])
 
     def freq_icon_pos(self):
-        self.m_lFreqIcon["rndpos"] = self.m_lFreqIcon["rndimg"].get_rect()
-        self.m_lFreqIcon["rndpos"].center = (self.m_lFreqIcon["posx"],
-                                            self.m_lFreqIcon["posy"])
+        RES_X, RES_Y = get_screen_resolution()
+        tmp = self.m_lFreqIcon["rndimg"]
+        if self.m_sEnv == "system60":
+            if self.m_iCurSide == 0:
+                size = tmp.get_rect()
+                size.center = (287, 37)
+            elif self.m_iCurSide == 1:
+                tmp = pygame.transform.rotate(tmp, -90)
+                size = tmp.get_rect()
+                size.center = (RES_X - 60, RES_Y - 60) 
+            elif self.m_iCurSide == 3:
+                tmp = pygame.transform.rotate(tmp, 90)
+                size = tmp.get_rect()
+                size.center = (60, 60)
+        elif self.m_sEnv == "system50":
+            if self.m_iCurSide == 0:
+                size = tmp.get_rect()
+                size.center = (425, 42)
+            elif self.m_iCurSide == 1:
+                tmp = pygame.transform.rotate(tmp, -90)
+                size = tmp.get_rect()
+                size.center = (RES_X - 90, RES_Y - 65) 
+            elif self.m_iCurSide == 3:
+                tmp = pygame.transform.rotate(tmp, 90)
+                size = tmp.get_rect()
+                size.center = (90, 65)
+        elif self.m_sEnv == "test60" or self.m_sEnv == "test50":
+            if self.m_iCurSide == 0:
+                size = tmp.get_rect()
+                tmp = pygame.transform.scale(tmp, (size.width*5, size.height))
+                size = tmp.get_rect()
+                size.center = (1600, 30)
+            elif self.m_iCurSide == 1:
+                tmp = pygame.transform.rotate(tmp, -90)
+                size = tmp.get_rect()
+                tmp = pygame.transform.scale(tmp, (size.width*5, size.height))
+                size = tmp.get_rect()
+                size.center = (RES_X - 240, RES_Y - 67)
+            elif self.m_iCurSide == 3:
+                tmp = pygame.transform.rotate(tmp, 90)
+                size = tmp.get_rect()
+                tmp = pygame.transform.scale(tmp, (size.width*5, size.height))
+                size = tmp.get_rect()
+                size.center = (220, 50)
+        
+        self.m_lFreqIcon["rndimg"] = tmp
+        self.m_lFreqIcon["rndpos"] = size
+        self.m_lFreqIcon["rndpos"].center = (size.center)
 
     def prepare_cfg(self):
         """ Take config from utility.cfg """
@@ -324,12 +402,10 @@ class generate(object):
         'PatternDatas': Pattern size and coordinates
         'm_PGpPattern': Path to pattern image
         """
-        PatternDatas, IconDatas, self.m_PGpPattern, self.m_PGoFreqIcon = \
+        PatternDatas, self.m_PGpPattern, self.m_PGoFreqIcon = \
         self.m_oPatternDatas.get_pattern_datas()
         for item in PatternDatas:
             self.m_lPattern[item] = PatternDatas[item]
-        for item in IconDatas:
-            self.m_lFreqIcon[item] = IconDatas[item]
 
     def loop(self):
         while True:
@@ -337,13 +413,25 @@ class generate(object):
             self.draw_test()
             event = self.m_PGoJoyHandler.event_wait()
             if event & CRT_UP:
-                self.choice_change(1)
+                if self.m_iCurSide == 0 or self.m_iCurrent == 3:
+                    self.choice_change(1)
+                elif self.m_iCurSide == 1: self.choice_change(4)
+                elif self.m_iCurSide == 3: self.choice_change(3)
             elif event & CRT_DOWN:
-                self.choice_change(2)
+                if self.m_iCurSide == 0 or self.m_iCurrent == 3:
+                    self.choice_change(2)
+                elif self.m_iCurSide == 1: self.choice_change(3)
+                elif self.m_iCurSide == 3: self.choice_change(4)
             elif event & CRT_LEFT:
-                self.choice_change(3)
+                if self.m_iCurSide == 0 or self.m_iCurrent == 3:
+                    self.choice_change(3)
+                elif self.m_iCurSide == 1: self.choice_change(1)
+                elif self.m_iCurSide == 3: self.choice_change(2)
             elif event & CRT_RIGHT:
-                self.choice_change(4)
+                if self.m_iCurSide == 0 or self.m_iCurrent == 3:
+                    self.choice_change(4)
+                elif self.m_iCurSide == 1: self.choice_change(2)
+                elif self.m_iCurSide == 3: self.choice_change(1)
             elif event & CRT_BUTTON:
                 self.m_PGSndLoad.play()
                 if not self.choice_change(0):

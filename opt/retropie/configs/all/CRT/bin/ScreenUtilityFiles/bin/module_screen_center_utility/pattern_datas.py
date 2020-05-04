@@ -41,6 +41,8 @@ IMG_TEST_INGAME_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_crosshatch.png")
 IMG_TEST_SYSTEM_FILE = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_pattern.png")
+IMG_TEST_SYSTEM_FILE_V = os.path.join(TEST_MEDIA_PATH,
+                      "screen_center_utility_su_pattern_v.png")
                       
 IMG_TEST_50HZ_FILE = os.path.join(TEST_MEDIA_PATH, "50hz.png")
 IMG_TEST_60HZ_FILE = os.path.join(TEST_MEDIA_PATH, "60hz.png")
@@ -63,6 +65,8 @@ class datas(object):
     m_dPatternAdj = {}
     m_dConfigFile = {}
     m_sEnv = ""
+
+    m_iCurSide = 0
 
     m_iMaxOffSetX = 0
     m_iMaxOffSetY = 0
@@ -91,7 +95,7 @@ class datas(object):
     m_iCurrentSub = 0
 
     def __init__(self):
-        pass
+        self._check_current_es_side()
 
     def run(self, p_iPatternAdj, p_dConfigFile, p_sEnv):
         self._clean_datas()
@@ -105,13 +109,24 @@ class datas(object):
         self.prepare_pattern()
         self.prepare_frequency_icon()
 
+    def _check_current_es_side(self):
+        """ Check current side of EmulatioStation """
+        self.m_iCurSide = 0
+        if os.path.exists(ROTMODES_TATE1_FILE):
+            self.m_iCurSide = 1
+        elif os.path.exists(ROTMODES_TATE3_FILE):
+            self.m_iCurSide = 3
+
+    def side(self):
+        return self.m_iCurSide
+
     def get_info_datas(self):
         return self.m_lInfo, self.m_lBox
 
     def get_pattern_datas(self):
         self.prepare_pattern()
         #self.prepare_frequency_icon()
-        return self.m_lPattern, self.m_lFreqIcon, IMG_TEST_PATTERN_FILE, \
+        return self.m_lPattern, IMG_TEST_PATTERN_FILE, \
                IMG_TEST_FREQ_FILE
 
     def update(self, p_iMaxOffsetX, p_iMaxOffsetY):
@@ -168,175 +183,55 @@ class datas(object):
                              "rndpos": None, "rndcolor": WHITE}
                             )
 
-        if self.m_sEnv == "system50":
-            """TEXT DESIGN"""
-            #'self.m_lInfo_Var': Index of text lines to complete the library
-            self.m_lInfo_Idx = ["info1", "info2", "info3",
-                                "line1", "line2", "line3"]
+        """TEXT DESIGN"""
+        #'self.m_lInfo_Var': Index of text lines to complete the library
+        self.m_lInfo_Idx = ["info1", "info2", "info3",
+                            "line1", "line2", "line3"]
 
-            #'self.m_lInfo_Var': Libraries for text info,
-            # separated for better comprenhension
-            self.m_lInfo_Var = {"self.m_lInfo_Text", "self.m_lInfo_Pos",
-                                "self.m_lInfo_Rnd"}
+        #'self.m_lInfo_Var': Libraries for text info,
+        self.m_lInfo_Var = {"self.m_lInfo_Text", "self.m_lInfo_Pos",
+                            "self.m_lInfo_Rnd"}
 
-            self.m_lInfo_Pos = ({"label": "info1", "posx": self.m_iTCentX-135,
-                                 "posy": self.m_iTCentY-82, "center": "midleft"},
-                                {"label": "info2", "posx": self.m_iTCentX-31,
-                                 "posy": self.m_iTCentY-82, "center": "midleft"},
-                                {"label": "info3", "posx": self.m_iTCentX+71,
-                                 "posy": self.m_iTCentY-82, "center": "midleft"},
-                                {"label": "line1", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-64, "center": "center"},
-                                {"label": "line2", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-54, "center": "center"},
-                                {"label": "line3", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-43, "center": "center"}
-                                )
+        self.m_lInfo_Pos = ({"label": "info1", "posx": 7,
+                             "posy": 12, "center": "midleft"},
+                            {"label": "info2", "posx": 7,
+                             "posy": 25, "center": "midleft"},
+                            {"label": "info3", "posx": 183,
+                             "posy": 12, "center": "midright"},
+                            {"label": "line1", "posx": 94,
+                             "posy": 41, "center": "center"},
+                            {"label": "line2", "posx": 94,
+                             "posy": 53, "center": "center"},
+                            {"label": "line3", "posx": 94,
+                             "posy": 65, "center": "center"}
+                            )
 
-            """BOX DESIGN"""
-            #'self.m_lBox_Idx': Index of rectangles to complete the library
-            self.m_lBox_Idx = ["rect1", "rect2", "rect3", "rect4", "rect5"]
+        """BOX DESIGN"""
+        #'self.m_lBox_Idx': Index of rectangles to complete the library
+        self.m_lBox_Idx = ["rect1", "rect2", "rect3", "rect4"]
 
-            #'self.m_lBox_Var': Libraries for Box,
-            # separated for better comprenhension
-            self.m_lBox_Var = {"self.m_lBox_Pos", "self.m_lBox_Rnd"}
+        #'self.m_lBox_Var': Libraries for Box
+        self.m_lBox_Var = {"self.m_lBox_Pos", "self.m_lBox_Rnd"}
 
-            self.m_lBox_Pos = ({"label": "rect1", "posx": self.m_iBCentX-148,
-                                "posy": self.m_iBCentY-90},
-                               {"label": "rect2", "posx": self.m_iBCentX-152,
-                                "posy": self.m_iBCentY-93},
-                               {"label": "rect3", "posx": self.m_iBCentX-150,
-                                "posy": self.m_iBCentY-91},
-                               {"label": "rect4", "posx": self.m_iBCentX-150,
-                                "posy": self.m_iBCentY-91},
-                               {"label": "rect5", "posx": self.m_iBCentX-150,
-                                "posy": self.m_iBCentY-91}
-                               )
+        self.m_lBox_Pos = ({"label": "rect1", "posx": 0,
+                            "posy": 0},
+                           {"label": "rect2", "posx": 2,
+                            "posy": 2},
+                           {"label": "rect3", "posx": 2,
+                            "posy": 2},
+                           {"label": "rect4", "posx": 2,
+                            "posy": 2}
+                           )
 
-            self.m_lBox_Rnd = ({"label": "rect1", "width": 304, "height" : 61,
-                                "fill" : 0, "rndcolor": GREY},
-                               {"label": "rect2", "width": 304, "height" : 61,
-                                "fill" : 0, "rndcolor": WHITE},
-                               {"label": "rect3", "width": 300, "height" : 57,
-                                "fill" : 0, "rndcolor": BLUE},
-                               {"label": "rect4", "width": 300, "height" : 57,
-                                "fill" : 1, "rndcolor": WHITE},
-                               {"label": "rect5", "width": 300, "height" : 17,
-                                "fill" : 1, "rndcolor": WHITE}
-                               )
-
-        elif self.m_sEnv == "system60":
-            """TEXT DESIGN"""
-            #'self.m_lInfo_Var': Index of text lines to complete the library
-            self.m_lInfo_Idx = ["info1", "info2", "info3",
-                                "line1", "line2", "line3"]
-
-            #'self.m_lInfo_Var': Libraries for text info,
-            # separated for better comprenhension
-            self.m_lInfo_Var = {"self.m_lInfo_Text", "self.m_lInfo_Pos",
-                                "self.m_lInfo_Rnd"}
-
-            self.m_lInfo_Pos = ({"label": "info1", "posx": self.m_iTCentX-109,
-                                 "posy": self.m_iTCentY-84, "center": "midleft"},
-                                {"label": "info2", "posx": self.m_iTCentX-109,
-                                 "posy": self.m_iTCentY-73, "center": "midleft"},
-                                {"label": "info3", "posx": self.m_iTCentX+39,
-                                 "posy": self.m_iTCentY-84, "center": "midleft"},
-                                {"label": "line1", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-55, "center": "center"},
-                                {"label": "line2", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-45, "center": "center"},
-                                {"label": "line3", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-34, "center": "center"}
-                                )
-
-            """BOX DESIGN"""
-            #'self.m_lBox_Idx': Index of rectangles to complete the library
-            self.m_lBox_Idx = ["rect1", "rect2", "rect3", "rect4", "rect5"]
-
-            #'self.m_lBox_Var': Libraries for Box, separated for better comprenhension
-            self.m_lBox_Var = {"self.m_lBox_Pos", "self.m_lBox_Rnd"}
-
-            self.m_lBox_Pos = ({"label": "rect1", "posx": self.m_iBCentX-113,
-                                "posy": self.m_iBCentY-92},
-                               {"label": "rect2", "posx": self.m_iBCentX-117,
-                                "posy": self.m_iBCentY-95},
-                               {"label": "rect3", "posx": self.m_iBCentX-115,
-                                "posy": self.m_iBCentY-93},
-                               {"label": "rect4", "posx": self.m_iBCentX-115,
-                                "posy": self.m_iBCentY-93},
-                               {"label": "rect5", "posx": self.m_iBCentX-115,
-                                "posy": self.m_iBCentY-93}
-                               )
-
-            self.m_lBox_Rnd = ({"label": "rect1", "width": 234, "height" : 72,
-                                "fill" : 0, "rndcolor": GREY},
-                               {"label": "rect2", "width": 234, "height" : 72,
-                                "fill" : 0, "rndcolor": WHITE},
-                               {"label": "rect3", "width": 230, "height" : 68,
-                                "fill" : 0, "rndcolor": BLUE},
-                               {"label": "rect4", "width": 230, "height" : 68,
-                                "fill" : 1, "rndcolor": WHITE},
-                               {"label": "rect5", "width": 230, "height" : 28,
-                                "fill" : 1, "rndcolor": WHITE}
-                               )
-
-        elif self.m_sEnv == "test60" or self.m_sEnv == "test50":
-            """TEXT DESIGN"""
-            #'self.m_lInfo_Var': Index of text lines to complete the library
-            self.m_lInfo_Idx = ["info1", "info2", "info3",
-                                "line1", "line2", "line3"]
-
-            #'self.m_lInfo_Var': Libraries for text info,
-            # separated for better comprenhension
-            self.m_lInfo_Var = {"self.m_lInfo_Text", "self.m_lInfo_Pos",
-                                "self.m_lInfo_Rnd"}
-
-            self.m_lInfo_Pos = ({"label": "info1", "posx": self.m_iTCentX-475,
-                                 "posy": self.m_iTCentY-80, "center": "midleft"},
-                                {"label": "info2", "posx": self.m_iTCentX-114,
-                                 "posy": self.m_iTCentY-80, "center": "midleft"},
-                                {"label": "info3", "posx": self.m_iTCentX+225,
-                                 "posy": self.m_iTCentY-80, "center": "midleft"},
-                                {"label": "line1", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-60, "center": "center"},
-                                {"label": "line2", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-50, "center": "center"},
-                                {"label": "line3", "posx": self.m_iTCentX,
-                                 "posy": self.m_iTCentY-41, "center": "center"}
-                                )
-
-            """BOX DESIGN"""
-            #'self.m_lBox_Idx': Index of rectangles to complete the library
-            self.m_lBox_Idx = ["rect1", "rect2", "rect3", "rect4", "rect5"]
-
-            #'self.m_lBox_Var': Libraries for Box,
-            # separated for better comprenhension
-            self.m_lBox_Var = {"self.m_lBox_Pos", "self.m_lBox_Rnd"}
-
-            self.m_lBox_Pos = ({"label": "rect1", "posx": self.m_iBCentX-498,
-                                "posy": self.m_iBCentY-89},
-                               {"label": "rect2", "posx": self.m_iBCentX-513,
-                                "posy": self.m_iBCentY-91},
-                               {"label": "rect3", "posx": self.m_iBCentX-500,
-                                "posy": self.m_iBCentY-89},
-                               {"label": "rect4", "posx": self.m_iBCentX-500,
-                                "posy": self.m_iBCentY-89},
-                               {"label": "rect5", "posx": self.m_iBCentX-500,
-                                "posy": self.m_iBCentY-89}
-                               )
-
-            self.m_lBox_Rnd = ({"label": "rect1", "width": 1026, "height" : 61,
-                                "fill" : 0, "rndcolor": GREY},
-                               {"label": "rect2", "width": 1026, "height" : 61,
-                                "fill" : 0, "rndcolor": WHITE},
-                               {"label": "rect3", "width": 1000, "height" : 57,
-                                "fill" : 0, "rndcolor": BLUE},
-                               {"label": "rect4", "width": 1000, "height" : 57,
-                                "fill" : 1, "rndcolor": WHITE},
-                               {"label": "rect5", "width": 1000, "height" : 17,
-                                "fill" : 1, "rndcolor": WHITE}
-                               )
+        self.m_lBox_Rnd = ({"label": "rect1", "width": 190, "height" : 77,
+                            "fill" : 0, "rndcolor": GREY},
+                           {"label": "rect2", "width": 186, "height" : 73,
+                            "fill" : 0, "rndcolor": BLUE},
+                           {"label": "rect3", "width": 186, "height" : 73,
+                            "fill" : 1, "rndcolor": WHITE},
+                           {"label": "rect4", "width": 186, "height" : 31,
+                            "fill" : 1, "rndcolor": WHITE}
+                           )
 
         self._generate_info(self.m_lInfo_Idx, self.m_lInfo_Var, "self.m_lInfo")
         self._generate_info(self.m_lBox_Idx, self.m_lBox_Var, "self.m_lBox")
@@ -361,6 +256,8 @@ class datas(object):
         elif self.m_sEnv == "system50" or self.m_sEnv == "system60":
             #Select pattern for system (EmulationStation)
             IMG_TEST_PATTERN_FILE = IMG_TEST_SYSTEM_FILE
+            if self.m_iCurSide != 0:
+                IMG_TEST_PATTERN_FILE = IMG_TEST_SYSTEM_FILE_V
 
             """Apply overscan if 320x240"""
             if self.m_dPatternAdj["PatternHSize"] == 320 and \
@@ -386,22 +283,10 @@ class datas(object):
         IMG_TEST_FREQ_FILE = IMG_TEST_EMPT_FILE
         if self.m_sEnv == "test60":
             IMG_TEST_FREQ_FILE = IMG_TEST_60HZ_FILE
-            self.m_lFreqIcon["posx"] = 1450
-            self.m_lFreqIcon["posy"] = 35
-            self.m_lFreqIcon["width"] = 400
-            self.m_lFreqIcon["height"] = 26
         elif self.m_sEnv == "system50":
             IMG_TEST_FREQ_FILE = IMG_TEST_270p_FILE
-            self.m_lFreqIcon["posx"] = 400
-            self.m_lFreqIcon["posy"] = 51
-            self.m_lFreqIcon["width"] = 140
-            self.m_lFreqIcon["height"] = 45
         elif self.m_sEnv == "system60":
             IMG_TEST_FREQ_FILE = IMG_TEST_240p_FILE
-            self.m_lFreqIcon["posx"] = 270
-            self.m_lFreqIcon["posy"] = 45
-            self.m_lFreqIcon["width"] = 102
-            self.m_lFreqIcon["height"] = 35
 
     def update_menu_colors(self):
         """Set info text color"""
@@ -469,10 +354,15 @@ class datas(object):
             self._change_box_info_text("line3", "text",
                                        "<Press any button to set>",
                                        "self.m_lInfo")
-        elif self.m_iCurrent == 1:
+        elif self.m_iCurrent == 1 and self.m_iCurSide == 0 or \
+            self.m_iCurrent == 2 and self.m_iCurSide != 0:
             self._change_box_info_text("info3", "text", "Width:%s" %
                                        (self.m_dConfigFile["width"]),
                                         "self.m_lInfo")
+            if self.m_iCurSide != 0:
+                self._change_box_info_text("info3", "text", "Width:%s" %
+                                           (self.m_dConfigFile["height"]),
+                                            "self.m_lInfo")
             self._change_box_info_text("line1", "text",
                                        "PRESS LEFTH/RIGHT", "self.m_lInfo")
             self._change_box_info_text("line2", "text",
@@ -481,31 +371,49 @@ class datas(object):
             self._change_box_info_text("line3", "text",
                                        "<Press any button to set>",
                                        "self.m_lInfo")
-        elif self.m_iCurrent == 2:
-            if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+            if self.m_sEnv == "test50" or self.m_sEnv == "test60" and \
+               self.m_iCurSide != 0:
+                    self._change_box_info_text("info3", "text",
+                                               "Blocked!", "self.m_lInfo")
+                    self._change_box_info_text("line1", "text",
+                                               "FORCED HORIZONTAL SIZE",
+                                               "self.m_lInfo")
+                    self._change_box_info_text("line2", "text",
+                                               "ONLY PIXEL PERFECT!",
+                                               "self.m_lInfo")
+                    self._change_box_info_text("line3", "text",
+                                               "<Press any button to set>",
+                                               "self.m_lInfo")
+        elif self.m_iCurrent == 2 and self.m_iCurSide == 0 or \
+            self.m_iCurrent == 1 and self.m_iCurSide != 0:
+            self._change_box_info_text("info3", "text", "Height:%s" %
+                                      (self.m_dConfigFile["height"]),
+                                       "self.m_lInfo")
+            if self.m_iCurSide != 0:
                 self._change_box_info_text("info3", "text", "Height:%s" %
-                                          (self.m_dConfigFile["height"]),
-                                           "self.m_lInfo")
-                self._change_box_info_text("line1", "text",
-                                           "PRESS UP/DOWN", "self.m_lInfo")
-                self._change_box_info_text("line2", "text",
-                                           "TO CHANGE VERTICAL HEIGHT",
-                                           "self.m_lInfo")
-                self._change_box_info_text("line3", "text",
-                                           "<Press any button to set>",
-                                           "self.m_lInfo")
-            elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
-                self._change_box_info_text("info3", "text",
-                                           "Blocked!", "self.m_lInfo")
-                self._change_box_info_text("line1", "text",
-                                           "FORCED VERTICAL SIZE",
-                                           "self.m_lInfo")
-                self._change_box_info_text("line2", "text",
-                                           "ONLY PIXEL PERFECT!",
-                                           "self.m_lInfo")
-                self._change_box_info_text("line3", "text",
-                                           "<Press any button to continue>",
-                                           "self.m_lInfo")
+                                           (self.m_dConfigFile["width"]),
+                                            "self.m_lInfo")
+            self._change_box_info_text("line1", "text",
+                                       "PRESS UP/DOWN", "self.m_lInfo")
+            self._change_box_info_text("line2", "text",
+                                       "TO CHANGE VERTICAL HEIGHT",
+                                       "self.m_lInfo")
+            self._change_box_info_text("line3", "text",
+                                       "<Press any button to set>",
+                                       "self.m_lInfo")
+            if self.m_sEnv == "test50" or self.m_sEnv == "test60" and \
+               self.m_iCurSide == 0:
+                    self._change_box_info_text("info3", "text",
+                                               "Blocked!", "self.m_lInfo")
+                    self._change_box_info_text("line1", "text",
+                                               "FORCED VERTICAL SIZE",
+                                               "self.m_lInfo")
+                    self._change_box_info_text("line2", "text",
+                                               "ONLY PIXEL PERFECT!",
+                                               "self.m_lInfo")
+                    self._change_box_info_text("line3", "text",
+                                               "<Press any button to set>",
+                                               "self.m_lInfo")
         elif self.m_iCurrent == 3:
             if self.m_iCurrentSub == 0:
                 self._change_box_info_text("line1", "text",
