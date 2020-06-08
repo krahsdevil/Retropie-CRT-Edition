@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, logging
 from launcher_module.core_paths import *
-from launcher_module.utils import show_info, menu_options
+from launcher_module.utils import show_info
 from launcher_module.emulator import emulator
 from launcher_module.file_helpers import ini_get, modify_line, \
                                          touch_file, add_line
@@ -78,21 +78,10 @@ class abandonware(emulator):
         
         # get aspect ratio configuration from CRT config
         sAspect = None
-        p_sScummARC = int(ini_get(CRT_UTILITY_FILE, "scummvm_arc"))
-        if p_sScummARC == 0:
-            """ 
-            If Aspect Ratio Correction is not enabled leave this
-            config as it is, only change if forced required or asked.
-            """
-            pass
-        if p_sScummARC == 1:
-            sAspect = "FIT"
-        elif p_sScummARC == 2:
-            sAspect = menu_options(self.m_lOptARC)
-
-        if sAspect == "PIXEL":
+        p_sScummARC = ini_get(CRT_UTILITY_FILE, "scummvm_arc")
+        if p_sScummARC == "false":
             self._scummvm_change_ini(SCUMMVMCFG_FILE, p_sARValue, "false")
-        elif sAspect == "FIT":
+        if p_sScummARC == "true":
             self._scummvm_change_ini(SCUMMVMCFG_FILE, p_sARValue, "true")
 
     def _scummvm_change_ini(self, p_sFile, p_sKey, p_sValue,
