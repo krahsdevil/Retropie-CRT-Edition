@@ -62,7 +62,7 @@ class FrequencySelector(object):
             elif self.m_sSelectFreq == "60":
                 AutoSelection = "FORCED TO 60Hz / NTSC"
             show_info(AutoSelection)
-        elif self.m_sSelectFreq == "100":
+        elif self.m_sSelectFreq == "auto":
             logging.info("Frequency selector mode auto")
             self.m_sSelectFreq = self.frecuency_auto()
         else:
