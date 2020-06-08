@@ -11,7 +11,6 @@ based on original idea of BGM script version 1.03 by Livewire.
 https://github.com/krahsdevil/crt-for-retropie/
 
 Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
-Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -27,58 +26,46 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys, time, random, commands, subprocess, re
 import logging, traceback
+import rpyc
+from threading import Thread
+from rpyc.utils.server import ThreadedServer
+
 from pygame import mixer
 
-MUSIC_PATH = '/opt/retropie/configs/music'
-TMP_LAUNCHER_PATH = '/dev/shm'
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"BGM.log")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
+
+from launcher_module.core_paths import *
+from launcher_module.file_helpers import ini_get, ini_set
+from launcher_module.utils import check_process, wait_process, set_procname
+
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_Background_Music.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
 
+set_procname(PNAME_BGM)
+
 class BGM(object):
-    m_dEmulatorsName = ["retroarch", "ags", "uae4all2", "uae4arm", "capricerpi",
-                        "linapple", "hatari", "stella", "atari800", "xroar",
-                        "vice", "daphne", "reicast", "pifba", "osmose", "gpsp",
-                        "jzintv", "basiliskll", "mame", "advmame", "dgen",
-                        "openmsx", "mupen64plus", "gngeo", "dosbox", "ppsspp",
-                        "simcoupe", "scummvm", "snes9x", "pisnes", "frotz",
-                        "fbzx", "fuse", "gemrb", "cgenesis", "zdoom", "eduke32",
-                        "lincity", "love", "kodi", "alephone", "micropolis",
-                        "openbor", "openttd", "opentyrian", "cannonball",
-                        "tyrquake", "ioquake3", "residualvm", "xrick", "sdlpop",
-                        "uqm", "stratagus", "wolf4sdl", "solarus", "drastic",
-                        "coolcv", "PPSSPPSDL", "moonlight", "Xorg", "smw",
-                        "omxplayer.bin", "wolf4sdl-3dr-v14", "wolf4sdl-gt-v14",
-                        "wolf4sdl-spear", "wolf4sdl-sw-v14", "xvic",
-                        "xvic cart", "xplus4", "xpet", "x128", "x64sc", "x64",
-                        "prince", "fba2x", "steamlink", "pcsx-rearmed",
-                        "limelight", "sdltrs", "ti99sm", "dosbox-sdl2",
-                        "minivmac", "quasi88", "xm7", "yabause", "abuse",
-                        "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
-                        "love", "love-0.10.2", "openblok", "openfodder", "srb2",
-                        "yquake2", "amiberry", "zesarux", "dxx-rebirth",
-                        "zesarux", "daphne.bin"]
-
-    m_dCRTLaunchProcess = ["crt_launcher.py", "emulator_launcher.py",
-                           "emulator_launcher_legacy.py"]
-
-    m_sCRTProcessFound = ""
-
+    m_lProcesses = PROCESSES
     m_iStartDelay = 0           # Value (in seconds) to delay audio start.  If
                                 # you have a splash screen with audio and the 
                                 # script is playing music over the top of it, 
                                 # increase this value to delay the script from
                                 # starting.
 
-    m_iMaxVolume = 0.50
-    m_iVolume    = 0            # Store this for later use to handle fading out.
-    m_iFadeHop = 0.02
+    m_iVolume    = 0.70         # Music Volume
+    m_iVolStep   = 0            # Store this for later use to handle fading out.
+    m_iFadeHop   = 0.02
     m_iFadeSpeed = 0.05
-    m_iSongPos = 0              # Position in miliseconds of song
+    m_iSongPos   = 0            # Position in miliseconds of song
 
+    m_bStop = False             # Force script to finish
+    
     m_bPauseMusic = True        # If true, this will cause the script to fade 
                                 # the music out and -stop- the song rather 
                                 # than pause it.
@@ -99,25 +86,21 @@ class BGM(object):
         self.__clean()
         logging.info("INFO: Initializating BGM service")
 
-        self.prepare()
-        self.run() # launch, wait and cleanup
-
     def prepare(self):
         random.seed() #Initialize random function
+        self.load_volume()
         self._init_pygame()
         self._check_paths
         self._get_playlist()
 
     def run(self):
-        self.start()
-        self.cleanup()
-
-    def start(self):
+        self.prepare()
         self._loop()
+        self.cleanup()
 
     def _init_pygame(self):
         logging.info("INFO: loading pygame mixer")
-        mixer.pre_init(44100, -16, 2, 1024)
+        mixer.pre_init(44100, -16, 2, 2048)
         mixer.init()
 
     def _quit_pygame(self):
@@ -127,14 +110,14 @@ class BGM(object):
     def _check_paths(self):
         """if ~ is used, change it to home directory
         (EXAMPLE: "~/BGM" to "/home/pi/BGM")"""
-        global MUSIC_PATH
-        if "~/" in MUSIC_PATH:
-            MUSIC_PATH = os.path.expanduser(MUSIC_PATH)
+        global CRT_BGM_MUS_PATH
+        if "~/" in CRT_BGM_MUS_PATH:
+            CRT_BGM_MUS_PATH = os.path.expanduser(CRT_BGM_MUS_PATH)
 
     def _get_playlist(self):
         """ This will find everything that's .mp3 or .ogg """
         self.m_lTrackList = 0
-        self.m_lTrackList = [track for track in os.listdir(MUSIC_PATH) \
+        self.m_lTrackList = [track for track in os.listdir(CRT_BGM_MUS_PATH) \
                             if track[-4:] == ".mp3" or track[-4:] == ".ogg"]
         if not self.m_lTrackList:
             logging.info("ERROR: NO music found in /config/music")
@@ -205,7 +188,7 @@ class BGM(object):
                 self.m_iTrackCurr = self._next_song()
         logging.info("INFO: next song: file [%s] - seq [%s]" \
                      % (self.m_lTrackList[self.m_iTrackCurr], self.m_iTrackCurr))
-        p_lTrack = os.path.join(MUSIC_PATH, self.m_lTrackList[self.m_iTrackCurr])
+        p_lTrack = os.path.join(CRT_BGM_MUS_PATH, self.m_lTrackList[self.m_iTrackCurr])
         mixer.music.load(p_lTrack)
         mixer.music.rewind()
         logging.info("INFO: song loaded on mixer, ready to play")
@@ -234,78 +217,60 @@ class BGM(object):
             except:
                 logging.info("INFO: END OF SEQUENCE, restarting reproduction")
                 self._get_playlist()
-                
+       
     def _fade_out(self):
         logging.info("INFO: fading out music")
-        while self.m_iVolume > 0:
-            self.m_iVolume -= self.m_iFadeHop
-            if self.m_iVolume < 0:
-                self.m_iVolume = 0
-            mixer.music.set_volume(self.m_iVolume);
+        while self.m_iVolStep > 0:
+            self.m_iVolStep -= self.m_iFadeHop
+            if self.m_iVolStep < 0:
+                self.m_iVolStep = 0
+            mixer.music.set_volume(self.m_iVolStep);
             time.sleep(self.m_iFadeSpeed)
 
     def _fade_in(self):
-        if self.m_iVolume < self.m_iMaxVolume:
+        if self.m_iVolStep < self.m_iVolume:
             logging.info("INFO: fading in music")
-            while self.m_iVolume < self.m_iMaxVolume:
-                self.m_iVolume += self.m_iFadeHop;
-                if self.m_iVolume > self.m_iMaxVolume:
-                    self.m_iVolume = self.m_iMaxVolume
-                mixer.music.set_volume(self.m_iVolume);
+            while self.m_iVolStep < self.m_iVolume:
+                self.m_iVolStep += self.m_iFadeHop;
+                if self.m_iVolStep > self.m_iVolume:
+                    self.m_iVolStep = self.m_iVolume
+                mixer.music.set_volume(self.m_iVolStep);
                 time.sleep(self.m_iFadeSpeed)
 
-    def _wait_process(self, p_sProcess, p_sState = 'stop',
-                     p_iTimes = 1, p_iWaitScs = 1):
-        """
-        This function will wait to start or stop for only one process or a 
-        list of them like emulators. By default will wait to start with
-        p_sState parameter, but you can change it on call to 'stop'.
-        If a list is passed, function will validate that at least one of
-        them started or all are stopped.
-        
-        """
-        bProcessFound = None
-        bCondition = True
-        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
-        if p_sState == 'stop':
-            bCondition = False
-        while bProcessFound != bCondition:
-            bProcessFound = self._check_process(p_sProcess, p_iTimes)
-            time.sleep(p_iWaitScs)
-        logging.info("INFO: wait finished")
+    def change_volume(self, p_iVol):
+        try:
+            if mixer.music.get_busy():
+                mixer.music.set_volume(p_iVol)
+                logging.info("INFO: remote volume to %s" % p_iVol)
+        except:
+            logging.info("INFO: can't change volume %s" % p_iVol)
+            pass
+        self.m_iVolume = p_iVol
+        self.save_volume()
 
-    def _check_process(self, p_sProcess, p_iTimes = 1):
-        p_bCheck = 0
-        if p_sProcess == "emulationstatio": p_iTimes = 3
-        
-        pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-        for pid in pids:
-            try:
-                procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-                if type(p_sProcess) is list:
-                    if procname[:-1] in p_sProcess:
-                        p_bCheck = p_iTimes
-                        break
-                elif type(p_sProcess) is str:
-                    if procname[:-1] == p_sProcess:
-                        p_bCheck += 1
-            except IOError:
-                pass
-        # p_iTimes >= 1 process was found
-        p_bCheck = True if p_bCheck >= p_iTimes else False 
-        return p_bCheck
+    def get_volume(self):
+        return self.m_iVolume
+
+    def load_volume(self):
+        if os.path.exists(CRT_UTILITY_FILE):
+            vol = int(ini_get(CRT_UTILITY_FILE, "music_volume"))
+            if vol: self.m_iVolume = (1.00 * vol) / 100
+            
+    def save_volume(self):
+        ini_set(CRT_UTILITY_FILE, "music_volume", int(self.m_iVolume * 100))
 
     def _loop(self):
         """ Main program loop of BGM service"""
         while True:
-            if not self._check_process("emulationstatio"):
+            if self.m_bStop: break
+            if not check_process("emulationstatio"):
                 logging.info("INFO: ES is not running, stopping music")
                 self.music_stop(True)
-                self._wait_process("emulationstatio", 'start')
-            if self._check_process(self.m_dEmulatorsName):
+                wait_process("emulationstatio", 'start')
+            if check_process(self.m_lProcesses):
                 logging.info("INFO: emulator or omxplayer found!")
                 self.music_stop()
-                self._wait_process(self.m_dEmulatorsName, 'stop')
+                wait_process(self.m_lProcesses, 'stop')
             self.music_start()
             time.sleep(1)
 
@@ -313,7 +278,7 @@ class BGM(object):
         os.system('clear')
         pygame.quit()
         self.__clean()
-        sys.exit()
+        sys.exit(1)
 
     # clean system
     def __clean(self):
@@ -326,10 +291,35 @@ class BGM(object):
         logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
         format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
 
+class VolBGMService(rpyc.Service):
+    def on_connect(self, conn):
+        pass
+
+    def on_disconnect(self, conn):
+        pass
+
+    def exposed_stop(self):
+        oBGM.m_bStop = True
+
+    def exposed_get_vol(self):
+        return int(round(oBGM.get_volume() * 100))
+
+    def exposed_change_vol(self, p_iVol):
+        vol = p_iVol / 100.0
+        oBGM.change_volume(vol)
+        vol = int(round(oBGM.get_volume() * 100))
+        return vol
+
 """ Load and launch BGM class for background music"""
-try:
-    oBackGrounMusic = BGM()
-except Exception as e:
-    with open(EXCEPTION_LOG, 'a') as f:
-        f.write(str(e))
-        f.write(traceback.format_exc())
+if __name__ == '__main__':
+    try:
+        oBGM = BGM()
+        server = ThreadedServer(VolBGMService, port = 18861)
+        t = Thread(target = server.start)
+        t.daemon = True
+        t.start()
+        oBGM.run()
+    except Exception as e:
+        with open(EXCEPTION_LOG, 'a') as f:
+            f.write(str(e))
+            f.write(traceback.format_exc())
