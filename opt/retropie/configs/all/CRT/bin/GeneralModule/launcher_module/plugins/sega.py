@@ -71,7 +71,7 @@ class sega(selector):
 
     def segacfg_generate(self):
         try:
-            logging.info("INFO: Custimizing SEGA retroach video core configuration")
+            logging.info("INFO: Custimizing SEGA retroarch video core configuration")
             dCFG = VDATA[self.m_sSystemFreq]
             # genesis-plus and other genesis cores by default
             self.m_sViewPortType = "default"
