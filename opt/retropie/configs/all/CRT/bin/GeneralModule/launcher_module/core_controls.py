@@ -82,10 +82,13 @@ class joystick(object):
     m_oScreen = None
 
     def __init__(self):
-        self._pygame_init()
+        self.screen_init()
         self.joy_daemon_watcher()
 
-    def _pygame_init(self):
+    def init(self):
+        self.__init__()
+
+    def screen_init(self):
         RES_X, RES_Y = self._get_screen_resolution()
         self.m_oScreen = pygame.display.set_mode((RES_X, RES_Y))
         self.m_oClock = pygame.time.Clock()
@@ -103,6 +106,7 @@ class joystick(object):
         during all 'core_controls' module execution.
         Launched internally as daemon
         """
+        self.m_bUnload = False
         p_iTime = 0.5
         p_iJoyNum = 2
         while not self.m_bUnload:
@@ -155,9 +159,9 @@ class joystick(object):
         logging.info("INFO: unloaded joystick daemon")
 
     def quit(self):
-        pygame.quit()
-        self.m_lJoys = []
         self.m_bUnload = True
+        pygame.joystick.quit()
+        self.m_lJoys = []
 
     def _remove(self, p_iJoy):
         pygame.joystick.Joystick(p_iJoy).quit()
@@ -301,3 +305,4 @@ class joystick(object):
                     input = self.get_axis(event.joy, event.axis, event.value)
                     if input: return input
             self.m_oClock.tick(20)
+            pygame.time.wait(0)
