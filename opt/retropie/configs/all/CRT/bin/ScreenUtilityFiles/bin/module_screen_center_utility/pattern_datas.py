@@ -45,10 +45,8 @@ IMG_TEST_SYSTEM_FILE = os.path.join(TEST_MEDIA_PATH,
 IMG_TEST_SYSTEM_FILE_V = os.path.join(TEST_MEDIA_PATH,
                       "screen_center_utility_su_pattern_v.png")
                       
-IMG_TEST_50HZ_FILE = os.path.join(TEST_MEDIA_PATH, "50hz.png")
 IMG_TEST_60HZ_FILE = os.path.join(TEST_MEDIA_PATH, "60hz.png")
 IMG_TEST_240p_FILE = os.path.join(TEST_MEDIA_PATH, "240p.png")
-IMG_TEST_270p_FILE = os.path.join(TEST_MEDIA_PATH, "270p.png")
 IMG_TEST_EMPT_FILE = os.path.join(TEST_MEDIA_PATH, "empty.png")
 
 RED = pygame.Color(255, 0, 0)
@@ -137,7 +135,7 @@ class datas(object):
         """ This function will prepare all the needed datas to create the whole
             test pattern on screen. Box for showing differents options and the
             options itself, coordinates for drawing or colours.Custom datas for
-            the different tests: system60, system50, test60 or test50. Datas are
+            the different tests: system60 or test60. Datas are
             separated on different variables for better comprenhension and join
             all together trough a dedicated function for main program. """
 
@@ -246,7 +244,7 @@ class datas(object):
             PatternCentY = ((self.m_dPatternAdj["ScreenVSize"]/2)+
                              self.m_dConfigFile["offsetY"])
 
-        elif self.m_sEnv == "system50" or self.m_sEnv == "system60":
+        elif self.m_sEnv == "system60":
             #Select pattern for system (EmulationStation)
             IMG_TEST_PATTERN_FILE = IMG_TEST_SYSTEM_FILE
             if self.m_iCurSide != 0:
@@ -274,12 +272,10 @@ class datas(object):
     def prepare_frequency_icon(self):
         global IMG_TEST_FREQ_FILE
         IMG_TEST_FREQ_FILE = IMG_TEST_EMPT_FILE
-        if self.m_sEnv == "test60":
-            IMG_TEST_FREQ_FILE = IMG_TEST_60HZ_FILE
-        elif self.m_sEnv == "system50":
-            IMG_TEST_FREQ_FILE = IMG_TEST_270p_FILE
-        elif self.m_sEnv == "system60":
-            IMG_TEST_FREQ_FILE = IMG_TEST_240p_FILE
+        #if self.m_sEnv == "test60":
+        #    IMG_TEST_FREQ_FILE = IMG_TEST_60HZ_FILE
+        #elif self.m_sEnv == "system60":
+        #    IMG_TEST_FREQ_FILE = IMG_TEST_240p_FILE
 
     def update_menu_colors(self):
         """Set info text color"""
@@ -299,12 +295,12 @@ class datas(object):
                 self._change_box_info_text("info3",
                                            "rndcolor", RED, "self.m_lInfo")
         elif self.m_iCurrent == 2:
-            if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+            if self.m_sEnv == "system60":
                 if abs(self.m_dConfigFile["height"]) == self.m_iMaxOffSetY:
                     self._change_box_info_text("info3",
                                                "rndcolor", RED, "self.m_lInfo")
             #RED info: vertical size locked
-            elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+            elif self.m_sEnv == "test60":
                 self._change_box_info_text("line1",
                                            "rndcolor", RED, "self.m_lInfo")
                 self._change_box_info_text("line2",
@@ -316,7 +312,7 @@ class datas(object):
                                        "rndcolor", YELLOW, "self.m_lInfo")
 
         #Set always these colors
-        if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+        if self.m_sEnv == "system60":
             if abs(self.m_dConfigFile["offsetX"]) == \
                abs(self.m_iMaxOffSetX - self.m_dConfigFile["width"]):
                 self._change_box_info_text("info1",
@@ -325,7 +321,7 @@ class datas(object):
                abs(self.m_iMaxOffSetY - self.m_dConfigFile["height"]):
                 self._change_box_info_text("info2",
                                            "rndcolor", RED, "self.m_lInfo")
-        elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+        elif self.m_sEnv == "test60":
             if abs(self.m_dConfigFile["offsetX"]) == \
                abs(self.m_iMaxOffSetX):
                 self._change_box_info_text("info1",
@@ -364,7 +360,7 @@ class datas(object):
             self._change_box_info_text("line3", "text",
                                        "<Press any button to set>",
                                        "self.m_lInfo")
-            if self.m_sEnv == "test50" or self.m_sEnv == "test60" and \
+            if self.m_sEnv == "test60" and \
                self.m_iCurSide != 0:
                     self._change_box_info_text("info3", "text",
                                                "Blocked!", "self.m_lInfo")
@@ -394,7 +390,7 @@ class datas(object):
             self._change_box_info_text("line3", "text",
                                        "<Press any button to set>",
                                        "self.m_lInfo")
-            if self.m_sEnv == "test50" or self.m_sEnv == "test60" and \
+            if self.m_sEnv == "test60" and \
                self.m_iCurSide == 0:
                     self._change_box_info_text("info3", "text",
                                                "Blocked!", "self.m_lInfo")

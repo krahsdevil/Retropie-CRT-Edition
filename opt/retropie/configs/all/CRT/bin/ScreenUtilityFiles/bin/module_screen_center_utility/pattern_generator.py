@@ -50,7 +50,6 @@ FONT_FILE = os.path.join(CRT_FONTS_PATH, "RPGSystem.ttf")
 CURSOR_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_cursor_01.ogg")
 CLICK_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_click_01.ogg")
 
-RASP_BOOTCFG_FILE = "/boot/config.txt"
 BOOTCFG_TEMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "config.txt")
 
 FPS = 0
@@ -121,7 +120,7 @@ class generate(object):
         self.cleanup()
 
     def _init_pygame(self):
-        pygame.mixer.pre_init(44100, -16, 1, 512)
+        pygame.mixer.pre_init(44100, -16, 2, 1024)
         pygame.init()
         self.m_PGoJoyHandler = joystick()
         self._init_screen()
@@ -146,8 +145,6 @@ class generate(object):
 
     def save(self):
         self._save_config()
-        p_oSaveBoot = saveboot()
-        p_oSaveBoot.save()
 
     def _save_config(self):
         """
@@ -201,19 +198,7 @@ class generate(object):
                 table = pygame.transform.rotate(table, 90)
                 POS_X = self.m_iRES_X - 86
                 POS_Y = self.m_iRES_Y/2
-        elif self.m_sEnv == "system50":
-            if self.m_iCurSide == 0:
-                POS_X = self.m_iRES_X/2
-                POS_Y = self.m_iRES_Y - 90
-            elif self.m_iCurSide == 1:
-                table = pygame.transform.rotate(table, -90)
-                POS_X = 110
-                POS_Y = self.m_iRES_Y/2
-            elif self.m_iCurSide == 3:
-                table = pygame.transform.rotate(table, 90)
-                POS_X = self.m_iRES_X - 110
-                POS_Y = self.m_iRES_Y/2
-        elif self.m_sEnv == "test60" or self.m_sEnv == "test50":
+        elif self.m_sEnv == "test60":
             if self.m_iCurSide == 0:
                 size = table.get_rect()
                 table = pygame.transform.scale(table, (size.width*5, size.height))
@@ -309,19 +294,7 @@ class generate(object):
                 tmp = pygame.transform.rotate(tmp, 90)
                 POS_X = 43
                 POS_Y = 60
-        elif self.m_sEnv == "system50":
-            if self.m_iCurSide == 0:
-                POS_X = 446
-                POS_Y = 42
-            elif self.m_iCurSide == 1:
-                tmp = pygame.transform.rotate(tmp, -90)
-                POS_X = self.m_iRES_X - 90
-                POS_Y = self.m_iRES_Y - 65
-            elif self.m_iCurSide == 3:
-                tmp = pygame.transform.rotate(tmp, 90)
-                POS_X = 84
-                POS_Y = 65
-        elif self.m_sEnv == "test60" or self.m_sEnv == "test50":
+        elif self.m_sEnv == "test60":
             if self.m_iCurSide == 0:
                 size = tmp.get_rect()
                 tmp = pygame.transform.scale(tmp, (size.width*5, size.height))
@@ -377,7 +350,7 @@ class generate(object):
             self.m_iMaxOffSetX = self.m_lTimings["H_BP"] - 1
 
         #Adding hor diff timings for change resolution
-        if self.m_sEnv == "test60" or self.m_sEnv == "test50":
+        if self.m_sEnv == "test60":
             #Static OffsetX if testX0 and don't need to add diff on resolution
             self.m_iMaxOffSetX = 25
 
@@ -388,7 +361,7 @@ class generate(object):
             self.m_dPatternAdj["ScreenHSize"] = self.m_lTimings["H_Res"]
             self.m_dPatternAdj["ScreenVSize"] = self.m_lTimings["V_Res"]
 
-        elif self.m_sEnv == "system60" or self.m_sEnv == "system50":
+        elif self.m_sEnv == "system60":
             self.m_lResizeRes["H_Res"] = 2*self.m_iMaxOffSetX
             self.m_lResizeRes["H_BP"] = -self.m_iMaxOffSetX
             self.m_lResizeRes["H_FP"] = -self.m_iMaxOffSetX
@@ -464,63 +437,63 @@ class generate(object):
         else: # Direction pressed
             if self.m_iCurrent == 0: #Move Pattern option
                 if p_iDirection == 1: #Move to Up
-                    if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                    if self.m_sEnv == "system60":
                         if self.m_dConfigFile["offsetY"] > \
                            -abs(self.m_iMaxOffSetY -
                             self.m_dConfigFile["height"]):
                             self.m_dConfigFile["offsetY"] -= 1
                             self.m_PGSndCursor.play()
-                    elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+                    elif self.m_sEnv == "test60":
                         if self.m_dConfigFile["offsetY"] > -self.m_iMaxOffSetY:
                             self.m_dConfigFile["offsetY"] -= 1
                             self.m_PGSndCursor.play()
                 elif p_iDirection == 2: #Move to Down
-                    if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                    if self.m_sEnv == "system60":
                         if self.m_dConfigFile["offsetY"] < \
                            abs(self.m_iMaxOffSetY -
                            self.m_dConfigFile["height"]):
                             self.m_dConfigFile["offsetY"] += 1
                             self.m_PGSndCursor.play()
-                    elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+                    elif self.m_sEnv == "test60":
                         if self.m_dConfigFile["offsetY"] < self.m_iMaxOffSetY:
                             self.m_dConfigFile["offsetY"] += 1
                             self.m_PGSndCursor.play()
                 elif p_iDirection == 3: #Move to Left
-                    if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                    if self.m_sEnv == "system60":
                         if self.m_dConfigFile["offsetX"] > \
                            -abs(self.m_iMaxOffSetX -
                            self.m_dConfigFile["width"]):
                             self.m_dConfigFile["offsetX"] -= 1
                             self.m_PGSndCursor.play()
-                    elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+                    elif self.m_sEnv == "test60":
                         if self.m_dConfigFile["offsetX"] > \
                            -(self.m_iMaxOffSetX):
                             self.m_dConfigFile["offsetX"] -= 1
                             self.m_PGSndCursor.play()
                 elif p_iDirection == 4: #Move to Right
-                    if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                    if self.m_sEnv == "system60":
                         if self.m_dConfigFile["offsetX"] < \
                            abs(self.m_iMaxOffSetX -
                            self.m_dConfigFile["width"]):
                             self.m_dConfigFile["offsetX"] += 1
                             self.m_PGSndCursor.play()
-                    elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+                    elif self.m_sEnv == "test60":
                         if self.m_dConfigFile["offsetX"] < (self.m_iMaxOffSetX):
                             self.m_dConfigFile["offsetX"] += 1
                             self.m_PGSndCursor.play()
 
             elif self.m_iCurrent == 1: #Change Width Pattern option
                 if p_iDirection == 3: #Decrease Width
-                    if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                    if self.m_sEnv == "system60":
                         if self.m_dConfigFile["width"] > -self.m_iMaxOffSetX:
                             self.m_dConfigFile["width"] -= 1
                             self.m_PGSndCursor.play()
-                    elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+                    elif self.m_sEnv == "test60":
                         if self.m_dConfigFile["width"] > -(self.m_iMaxOffSetX):
                             self.m_dConfigFile["width"] -= 1
                             self.m_PGSndCursor.play()
                 elif p_iDirection == 4:#Increase Width
-                    if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                    if self.m_sEnv == "system60":
                         if self.m_dConfigFile["width"] < self.m_iMaxOffSetX:
                             self.m_dConfigFile["width"] += 1
                             if abs(self.m_dConfigFile["offsetX"]) > \
@@ -531,14 +504,14 @@ class generate(object):
                                 elif self.m_dConfigFile["offsetX"] > 0:
                                     self.m_dConfigFile["offsetX"] -= 1
                             self.m_PGSndCursor.play()
-                    elif self.m_sEnv == "test50" or self.m_sEnv == "test60":
+                    elif self.m_sEnv == "test60":
                         if self.m_dConfigFile["width"] < (self.m_iMaxOffSetX):
                             self.m_dConfigFile["width"] += 1
                             self.m_PGSndCursor.play()
 
             elif self.m_iCurrent == 2: #Change Height Pattern option
                 if p_iDirection == 1: #Increase Height
-                    if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                    if self.m_sEnv == "system60":
                         if self.m_dConfigFile["height"] < self.m_iMaxOffSetY:
                             self.m_dConfigFile["height"] += 1
                             if abs(self.m_dConfigFile["offsetY"]) > \
@@ -551,7 +524,7 @@ class generate(object):
                             self.m_PGSndCursor.play()
 
                 elif p_iDirection == 2: #Decrease Height
-                   if self.m_sEnv == "system50" or self.m_sEnv == "system60":
+                   if self.m_sEnv == "system60":
                         if self.m_dConfigFile["height"] > -self.m_iMaxOffSetY:
                             self.m_dConfigFile["height"] -= 1
                             self.m_PGSndCursor.play()
@@ -584,157 +557,3 @@ class generate(object):
     # clean system
     def __clean(self):
         pass
-
-class saveboot(object):
-    """ virtual class save config.txt system resolution """
-    m_dConfigFile = { "offsetX": "", "offsetY": "",
-                      "width": "", "height": ""}
-    m_lBootTimings = [] # To calculate system resolution on boot.txt
-
-    m_lResizeRes = [] # To forwad diffs timings for pattern testing
-    m_sEnv = ""
-
-    def __init__(self, p_dConfigFile = None):
-        self._prepare(p_dConfigFile)
-
-    def _prepare(self, p_dConfigFile = None):
-        self._get_boot_timing()
-        if not p_dConfigFile:
-            self._prepare_cfg()
-            logging.info("INFO: taking custom parameters from utility.cfg")
-        else:
-            self.m_dConfigFile = p_dConfigFile
-            logging.info("INFO: custom parameters passed to function")
-
-        logging.info("INFO: OffsetX: %s, OffsetY: %s, Width: %s and Height: %s"%
-        (self.m_dConfigFile["offsetX"],self.m_dConfigFile["offsetY"],
-         self.m_dConfigFile["width"], self.m_dConfigFile["height"]))
-
-    def _get_boot_timing(self):
-        """ Take current system base timings from utility.cfg"""
-        self.m_sEnv = ini_get(CRT_UTILITY_FILE, "default")
-        self.m_lBootTimings = ini_getlist(CRT_UTILITY_FILE,
-                                          "%s_timings" % self.m_sEnv)
-        self.m_lBootTimings = map(int, self.m_lBootTimings)
-        if not self._apply_fix_tv():
-            logging.info("INFO: not fix tv to apply")
-        logging.info("INFO: default system resolution: %s"%self.m_sEnv)
-
-    def _apply_fix_tv(self):
-        sSelected = ini_get(CRT_FIXMODES_FILE, "mode_default")
-        if not sSelected or sSelected.lower() == "default":
-            return False
-        DiffTimings = ini_getlist(CRT_FIXMODES_FILE, 
-                                  "%s_%s"%(sSelected, self.m_sEnv))
-        DiffTimings = map(int, DiffTimings)
-        if len(DiffTimings) != 17: #If not 17 timings, not valid
-            return False
-        i = 0
-        for timing in DiffTimings: #SUM TV Fix to main timings
-            self.m_lBootTimings[i] += DiffTimings[i]
-            i += 1
-        logging.info("INFO: resolution + MODE: %s"%self.m_lBootTimings)
-        return True
-
-    def _prepare_cfg(self):
-        """ Take config from utility.cfg """
-        self.m_dConfigFile["offsetX"] = int(ini_get(CRT_UTILITY_FILE,
-                                                    self.m_sEnv+"_offsetX"))
-        self.m_dConfigFile["offsetY"] = int(ini_get(CRT_UTILITY_FILE,
-                                                    self.m_sEnv+"_offsetY"))
-        self.m_dConfigFile["width"] = int(ini_get(CRT_UTILITY_FILE,
-                                                  self.m_sEnv+"_width"))
-        self.m_dConfigFile["height"] = int(ini_get(CRT_UTILITY_FILE,
-                                                   self.m_sEnv+"_height"))
-
-    def save(self):
-        """ Save on boot.txt system timings """
-        if self._boot_timing_calculation():
-            self._write_boot_timing()
-        self.cleanup()
-
-    def _boot_timing_calculation(self):
-        #This function will check if a valid timing set result of applying
-        #offsetX, offsetY, width and height for config.txt system file.
-        #check01 must be identical to check03 and check02 to check04.
-        #If calculation is OK will return True, if not False.
-        #[H_Res] = self.m_lBootTimings[0]       [V_Res] = self.m_lBootTimings[5]
-        #[H_BP]  = self.m_lBootTimings[4]       [V_BP]  = self.m_lBootTimings[9]
-        #[H_FP]  = self.m_lBootTimings[2]       [V_FP]  = self.m_lBootTimings[7]
-
-        #Calculation of check01 & check02 on utility.cfg timings + MODES
-        check01 = self.m_lBootTimings[0] + self.m_lBootTimings[4] + \
-                  self.m_lBootTimings[2]
-        check02 = self.m_lBootTimings[5] + self.m_lBootTimings[9] + \
-                  self.m_lBootTimings[7]
-
-        #Apply width to timings
-        if self.m_dConfigFile["width"] < 0:
-            self.m_lBootTimings[0] -= abs(2*self.m_dConfigFile["width"])
-            self.m_lBootTimings[4] += abs(self.m_dConfigFile["width"])
-            self.m_lBootTimings[2] += abs(self.m_dConfigFile["width"])
-        else:
-            self.m_lBootTimings[0] += abs(2*self.m_dConfigFile["width"])
-            self.m_lBootTimings[4] -= abs(self.m_dConfigFile["width"])
-            self.m_lBootTimings[2] -= abs(self.m_dConfigFile["width"])
-
-        #Apply height to timings
-        if self.m_dConfigFile["height"] < 0:
-            self.m_lBootTimings[5] -= abs(2*self.m_dConfigFile["height"])
-            self.m_lBootTimings[9] += abs(self.m_dConfigFile["height"])
-            self.m_lBootTimings[7] += abs(self.m_dConfigFile["height"])
-        else:
-            self.m_lBootTimings[5] += abs(2*self.m_dConfigFile["height"])
-            self.m_lBootTimings[9] -= abs(self.m_dConfigFile["height"])
-            self.m_lBootTimings[7] -= abs(self.m_dConfigFile["height"])
-
-        #Apply offsetX to timings
-        if self.m_dConfigFile["offsetX"] < 0:
-            self.m_lBootTimings[4] -= abs(self.m_dConfigFile["offsetX"])
-            self.m_lBootTimings[2] += abs(self.m_dConfigFile["offsetX"])
-        else:
-            self.m_lBootTimings[4] += abs(self.m_dConfigFile["offsetX"])
-            self.m_lBootTimings[2] -= abs(self.m_dConfigFile["offsetX"])
-
-        #Apply offsetY to timings
-        if self.m_dConfigFile["offsetY"] < 0:
-            self.m_lBootTimings[9] -= abs(self.m_dConfigFile["offsetY"])
-            self.m_lBootTimings[7] += abs(self.m_dConfigFile["offsetY"])
-        else:
-            self.m_lBootTimings[9] += abs(self.m_dConfigFile["offsetY"])
-            self.m_lBootTimings[7] -= abs(self.m_dConfigFile["offsetY"])
-
-        #Calculation of check03 & check04 on utility.cfg timings + MODES + CENTERING
-        check03 = self.m_lBootTimings[0] + self.m_lBootTimings[4] + \
-                  self.m_lBootTimings[2]
-        check04 = self.m_lBootTimings[5] + self.m_lBootTimings[9] + \
-                  self.m_lBootTimings[7]
-
-        if (check01 == check03) and (check02 == check04):
-            logging.info("INFO: center and size applied correctly")
-            return True
-        else:
-            logging.error("ERROR: can't apply center and \
-                           size, check utility.cfg")
-            return False
-
-    def _write_boot_timing(self):
-        #Prepare timings, convert to string
-        self.m_lBootTimings = map(str, self.m_lBootTimings)
-        self.m_lBootTimings = " ".join(self.m_lBootTimings)
-        logging.info("INFO: calculated resolution to add in config.txt: %s"% \
-                     self.m_lBootTimings)
-
-        os.system('cp %s %s' %(RASP_BOOTCFG_FILE, BOOTCFG_TEMP_FILE))
-        modify_line(BOOTCFG_TEMP_FILE, "hdmi_timings=", 
-                    "hdmi_timings=%s"%self.m_lBootTimings)
-        os.system('sudo cp %s %s' %(BOOTCFG_TEMP_FILE, RASP_BOOTCFG_FILE))
-        logging.info("INFO: boot resolution saved at %s"%RASP_BOOTCFG_FILE)
-
-    # cleanup code
-    def cleanup(self):
-        self.__clean()
-
-    # clean system
-    def __clean(self):
-        os.remove(BOOTCFG_TEMP_FILE)

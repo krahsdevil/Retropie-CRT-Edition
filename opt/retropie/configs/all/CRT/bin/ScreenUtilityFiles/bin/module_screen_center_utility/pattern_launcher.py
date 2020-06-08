@@ -36,6 +36,7 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
+from module_config.config_utils import saveboot
 from launcher_module.utils import check_process, show_info, menu_options
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.screen import CRT
@@ -49,7 +50,7 @@ CLEAN_LOG_ONSTART = True
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Screen_Center.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
-tests = ["current", "system", "system50", "system60", "test60", "force"]
+tests = ["current", "system", "system60", "test60"]
 Arg = []
 
 class center(object):
@@ -71,13 +72,9 @@ class center(object):
         logging.info("INFO: arg 1 (test) = %s" %p_sArgv)
         self.m_sEnv = p_sArgv
         self.m_bRestart = p_sRestart
-        if self.m_sEnv == "force":
-            logging.info("INFO: Force mode, only apply sys resolution")
-            self._force_system_res()
-        else:
-            self.configure() # rom name work
-            self.prepare() # screen and pattern generator
-            self.run() # launch, wait and cleanup
+        self.configure() # rom name work
+        self.prepare() # screen and pattern generator
+        self.run() # launch, wait and cleanup
 
     # called at start, called by __init__()
     def configure(self):
@@ -107,13 +104,6 @@ class center(object):
         logging.info("INFO: timing_data_set POST-CALCULATED Diff - %s" %
                       self.m_dVideo)
 
-    def _force_system_res(self):
-        p_oSaveBoot = saveboot()
-        p_oSaveBoot.save()
-        self.m_oCRT = CRT()
-        self.cleanup()
-        self._restart_es()
-
     def screen_prepare(self):
         self.m_oCRT = CRT(self.m_sEnv + "_timings")
         self.m_dVideo = self.m_oCRT.pattern_data(CRT_UTILITY_FILE)
@@ -131,20 +121,10 @@ class center(object):
             self.__clean()
             sys.exit(1)
 
-    def _restart_es(self):
-        commandline = None
-        if self.m_bRestart:
-            if check_process("emulationstatio"):
-                commandline = "touch /tmp/es-restart "
-                commandline += "&& pkill -f \"/opt/retropie"
-                commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-                show_info("RESTARTING EMULATIONSTATION")
-                os.system(commandline)
-                time.sleep(2)
-                sys.exit(1)
-
     # cleanup code
     def cleanup(self):
+        p_oSaveBoot = saveboot()
+        p_oSaveBoot.save()
         self.m_oCRT.screen_restore()
         logging.info("ES mode recover")
         os.system('clear')
@@ -169,7 +149,7 @@ if __name__ == '__main__':
 
         sChoice = menu_options(lOptRot, sTitRot)
         if sChoice == "FRONTEND":
-            sChoice = "system"
+            sChoice = "system60"
         elif sChoice == "INGAME":
             sChoice = "test60"
         else:
@@ -188,7 +168,6 @@ if __name__ == '__main__':
 
         if opt == "system":
             Arg.append("system60")
-            Arg.append("system50")
         else:
             Arg.append(opt)
         for item in Arg:
