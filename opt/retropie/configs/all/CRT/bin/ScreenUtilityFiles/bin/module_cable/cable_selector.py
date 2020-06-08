@@ -41,14 +41,8 @@ from launcher_module.file_helpers import *
 from launcher_module.utils import check_process, wait_process, \
                                   show_info, menu_options
 
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_CableSelector.log")
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_RGB_Cable_Selector.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
-
-RGBCABLE_PATH = os.path.join(CRT_MODULES_PATH, "module_rgb_cable_switcher")
-SERVICE_FILE_NAME = "CRT-Daemon.service"
-SERVICE_FILE = os.path.join(RGBCABLE_PATH, SERVICE_FILE_NAME)
-SCRIPT_FILE_NAME = "CRT-Daemon.py"
-SCRIPT_FILE = os.path.join(RGBCABLE_PATH, SCRIPT_FILE_NAME)
 
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
@@ -97,16 +91,36 @@ class CableSelector(object):
     m_oControls = None
 
     def __init__(self):
-        self.__clean()
         self.__temp()
         logging.info("INFO: Launching CRT cable selector")
+
+    def prepare(self):
+        #self.__clean()
         self.m_sBootTempFile = generate_random_temp_filename(RASP_BOOTCFG_FILE)
         self._clone_boot_cfg()
         self._check_crtdaemon() # Check service
         self._check_base_config()
         self.m_oControls = CTRLSMgmt()
 
+    def change_cable(self, p_sCableName = None):
+        if p_sCableName not in self.m_lCables: return False
+        self.prepare()
+        self._cable_config(p_sCableName, True)
+        self._ctrls_configuration(p_sCableName)
+        self._upload_boot_cfg()
+        return self.get_cable()
+        
+    def get_cable(self):
+        self.prepare()
+        self.__clean()
+        if self.m_bFix: return False
+        return self.m_sCableName
+
+    def get_cable_list(self):
+        return self.m_lCables
+        
     def run(self):
+        self.prepare()
         show_info('PLEASE WAIT...')
         self._check_if_first_boot()
         self._loop()
@@ -385,12 +399,12 @@ class CableSelector(object):
             wait_process(self.m_sFstBootApp, 'stop', 1, 5)
 
     def _check_crtdaemon(self):
-        if self._check_service(SERVICE_FILE_NAME, 'load'):
-            if not self._check_service(SERVICE_FILE_NAME, 'run'):
+        if self._check_service(CRT_RGB_SRV_FILE, 'load'):
+            if not self._check_service(CRT_RGB_SRV_FILE, 'run'):
                 #show_info('INITIALIZING CRT DAEMON...')
                 os.system('sudo systemctl start %s > /dev/null 2>&1' \
-                          % SERVICE_FILE_NAME)
-            if not self._check_service(SERVICE_FILE_NAME, 'run'):
+                          % CRT_RGB_SRV_FILE)
+            if not self._check_service(CRT_RGB_SRV_FILE, 'run'):
                 self._remove_crtdaemon()
                 self._install_crtdaemon()
         else:
@@ -398,37 +412,37 @@ class CableSelector(object):
 
     def _check_crtdaemon_files(self):
         """ Check if needed service files exists """
-        bCheck01 = os.path.exists(SERVICE_FILE)
-        bCheck02 = os.path.exists(SCRIPT_FILE)
+        bCheck01 = os.path.exists(CRT_RGB_SRV_PATH)
+        bCheck02 = os.path.exists(CRT_RGB_CORE_PATH)
         if bCheck01 and bCheck02:
             logging.info("INFO: Found daemon files %s and %s" \
-                         % (SERVICE_FILE_NAME, SCRIPT_FILE_NAME))
+                         % (CRT_RGB_SRV_FILE, CRT_RGB_CORE_FILE))
             return True
         logging.info("ERROR: NOT found daemon files %s and %s" \
-                     % (SERVICE_FILE_NAME, SCRIPT_FILE_NAME))
+                     % (CRT_RGB_SRV_FILE, CRT_RGB_CORE_FILE))
         return False
 
     def _install_crtdaemon(self):
         if self._check_crtdaemon_files:
-            show_info('REINSTALLING CRT DAEMON...')
+            #show_info('REINSTALLING CRT DAEMON...')
             os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' \
-                      % (SERVICE_FILE, SERVICE_FILE_NAME))
+                      % (CRT_RGB_SRV_PATH, CRT_RGB_SRV_FILE))
             os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1' \
-                      % SERVICE_FILE_NAME)
+                      % CRT_RGB_SRV_FILE)
             os.system('sudo systemctl enable %s > /dev/null 2>&1' \
-                      % SERVICE_FILE_NAME)
+                      % CRT_RGB_SRV_FILE)
             os.system('sudo systemctl start %s > /dev/null 2>&1' \
-                      % SERVICE_FILE_NAME)
+                      % CRT_RGB_SRV_FILE)
 
     def _remove_crtdaemon(self):
         if self._check_crtdaemon_files:
-            show_info('CLEANING CRT DAEMON...')
+            #show_info('CLEANING CRT DAEMON...')
             os.system('sudo systemctl disable %s > /dev/null 2>&1' \
-                      % SERVICE_FILE_NAME)
+                      % CRT_RGB_SRV_FILE)
             os.system('sudo systemctl stop %s > /dev/null 2>&1' \
-                      % SERVICE_FILE_NAME)
+                      % CRT_RGB_SRV_FILE)
             os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' \
-                      % SERVICE_FILE_NAME)
+                      % CRT_RGB_SRV_FILE)
 
     def _check_service(self, p_sService, p_sState):
         """
@@ -484,7 +498,6 @@ class CableSelector(object):
     # clean system
     def __clean(self):
         remove_file(self.m_sBootTempFile)
-        pass
 
     def __temp(self):
         if CLEAN_LOG_ONSTART:
@@ -492,10 +505,11 @@ class CableSelector(object):
         logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
         format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
 
-try:
-    oLaunch = CableSelector()
-    oLaunch.run()
-except Exception as e:
-    with open(EXCEPTION_LOG, 'a') as f:
-        f.write(str(e))
-        f.write(traceback.format_exc())
+if __name__ == '__main__':
+    try:
+        oLaunch = CableSelector()
+        oLaunch.run()
+    except Exception as e:
+        with open(EXCEPTION_LOG, 'a') as f:
+            f.write(str(e))
+            f.write(traceback.format_exc())

@@ -28,15 +28,13 @@ import subprocess, commands, filecmp
 import logging, traceback
 import time
 
-RETROPIE_PATH = "/opt/retropie"
-RETROPIE_CFG_PATH = os.path.join(RETROPIE_PATH, "configs")
-CRT_ROOT_PATH = os.path.join(RETROPIE_CFG_PATH, "all/CRT")
-CRT_BIN_PATH = os.path.join(CRT_ROOT_PATH, "bin")
-CRT_ASST_PATH = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/resources/assets")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
 
-CRTCONFIGS_PATH = os.path.join(CRT_BIN_PATH, "ScreenUtilityFiles/config_files")
-CRTMODES_FILE = os.path.join(CRTCONFIGS_PATH, "modes.cfg")
-
+from launcher_module.core_paths import *
+from launcher_module.utils import set_procname
 
 PI2JAMMA_PATH = os.path.join(CRT_ASST_PATH, 'driver_pi2jamma')
 PI2JAMMA_BIN = 'pikeyd165'
@@ -49,16 +47,14 @@ PI2JAMMA_CFG_FILE_DST = os.path.join('/etc', PI2JAMMA_CFG)
 
 JAMMARGBPI_MODULE = 'mk_arcade_joystick_rpi'
 
-ES_PATH = "/opt/retropie/configs/all/emulationstation"
-TMP_LAUNCHER_PATH = '/dev/shm'
-RASP_BOOTCFG_FILE = "/boot/config.txt"
-
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_Daemon.log")
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_RGB_Cable.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
+
+set_procname(PNAME_RGBCABLE)
 
 class CRTDaemon(object):
     m_iJammaCable = 0
@@ -290,7 +286,6 @@ class CRTDaemon(object):
                 return
             # Try to detect jamma-rgb-pi hardware
             if not self._i2c_check():
-                logging.info("WARNING: Hardware jamma-rgb-pi NOT found")
                 return
             os.system('sudo modprobe %s i2c0=0x20,0x21' % JAMMARGBPI_MODULE)
             time.sleep(2)
@@ -315,14 +310,19 @@ class CRTDaemon(object):
         This function try to detect in i2c bus 0 if any i2c device is 
         connected looking for addreses.
         """
-        bus = smbus.SMBus(0)
         p_bCheck = False
+        try: bus = smbus.SMBus(0)
+        except: 
+            logging.info("WARNING: i2c driver not working")
+            return p_bCheck
         for device in range(3, 128):
             try:
                 bus.read_byte(device)
                 p_bCheck = True
             except:
                 pass
+        if not p_bCheck: 
+            logging.info("WARNING: Hardware jamma-rgb-pi NOT found")
         return p_bCheck
 
     def _module_exists(self, p_sModule):
@@ -439,16 +439,16 @@ class CRTDaemon(object):
         following the scheme of current ones.
         """
         if self.m_iRecoverEna == 1:
-            p_lCheck = self._ini_get(CRTMODES_FILE, self.m_sRecoverMod)
+            p_lCheck = self._ini_get(CRT_FIXMODES_FILE, self.m_sRecoverMod)
             if p_lCheck[0]:
                 logging.info("INFO: Recovery mode {%s} " % self.m_sRecoverMod + \
                              "exist, changing in modes.cfg" )
-                self._modify_line(CRTMODES_FILE, 'mode_default',
+                self._modify_line(CRT_FIXMODES_FILE, 'mode_default',
                                   'mode_default %s' % self.m_sRecoverMod.upper())
             else:
                 logging.info("INFO: Recovery mode {%s} " % self.m_sRecoverMod + \
                              "NOT exist, changing to DEFAULT in modes.cfg")
-                self._modify_line(CRTMODES_FILE, 'mode_default',
+                self._modify_line(CRT_FIXMODES_FILE, 'mode_default',
                                   'mode_default DEFAULT')
 
             # Cleaning video recovery from /boot/config.txt
