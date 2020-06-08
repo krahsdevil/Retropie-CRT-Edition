@@ -30,7 +30,8 @@ from distutils.version import LooseVersion
 from launcher_module.core_paths import RETROPIE_CFG_PATH, TMP_LAUNCHER_PATH, \
                                        CRT_RA_MAIN_CFG_PATH, CRT_DB_PATH
 from launcher_module.emulator import emulator
-from launcher_module.utils import ra_version_fixes, show_info, menu_options
+from launcher_module.utils import ra_version_fixes, show_info, menu_options, \
+                                  get_side
 from launcher_module.file_helpers import add_line, modify_line
 from launcher_module.screen import CRT
 
@@ -56,6 +57,7 @@ class arcade(emulator):
     m_sRndCore01  = ""  # first core selected before runcommand
     m_sRndCore02  = ""  # second core selected after runcommand
 
+    m_iSide = 0
     cfg_encap = ""
     cfg_offsetx = 0
     cfg_offsety = 0
@@ -74,6 +76,7 @@ class arcade(emulator):
         self.screen_set()
 
     def screen_prepare(self):
+        self.m_iSide = get_side()
         self.core_round_checks()
 
     def screen_set(self):
@@ -151,25 +154,21 @@ class arcade(emulator):
                 self.ra_integer_calculator()
             self.ra_config_create()
         else:
-            if self.m_oCRT.m_iRSys != 0:
-                if self.m_oCRT.m_iRSys == 90:
+            if self.m_iSide != 0:
+                if self.m_iSide == 1:
                     self.m_oCRT.m_sSide_Game = 'V1'
-                elif self.m_oCRT.m_iRSys == -90:
+                elif self.m_iSide == 3:
                     self.m_oCRT.m_sSide_Game = 'V3'
                 self.ra_config_create()
             else:
-                if self.m_oCRT.m_iRGame == -90:
-                    self.m_oCRT.m_sSide_Game = 'H'
-                    self.cfg_hres = 1120
-                    #Force vertical resolution to 224 in rotated games
-                    self.m_dVideo["V_Res"] = 224
-                    self.cfg_vres = self.m_dVideo["V_Res"]
-                    self.cfg_offsetx = 400
-                    self.cfg_offsety = 0
-                    self.ra_config_create(p_bSmooth = True)
-                else:
-                    self.m_oCRT.m_sSide_Game = 'V1'
-                    self.ra_config_create()
+                self.m_oCRT.m_sSide_Game = 'H'
+                self.cfg_hres = 1160
+                #Force vertical resolution to 224 in rotated games
+                self.m_dVideo["V_Res"] = 224
+                self.cfg_vres = self.m_dVideo["V_Res"]
+                self.cfg_offsetx = 360
+                self.cfg_offsety = 0
+                self.ra_config_create(p_bSmooth = True)
                     
     def ra_config_create(self, p_bSmooth = False):
         self.ra_config_write(p_bSmooth)
@@ -198,7 +197,7 @@ class arcade(emulator):
 
         # Check orientation
         logging.info("m_sSide_Game %s" % (self.m_oCRT.m_sSide_Game))
-        logging.info("m_iRSys %s" % (self.m_oCRT.m_iRSys))
+        logging.info("System Side: %s" % (self.m_iSide))
         if self.m_oCRT.m_sSide_Game == "H":
             add_line(TMP_ARCADE_FILE, 'video_rotation = "0"')
         elif self.m_oCRT.m_sSide_Game == "V3":
@@ -223,9 +222,9 @@ class arcade(emulator):
         display_rol = "no"
 
         if self.m_oCRT.m_sSide_Game == 'V':
-            if (self.m_oCRT.m_iRGame == 0 and self.m_oCRT.m_iRSys != -90) or self.m_oCRT.m_iRSys == 90:
+            if self.m_iSide == 1:
                 display_ror = "yes"
-            elif self.m_oCRT.m_iRSys == -90:
+            elif self.m_iSide == 3:
                 display_rol = "yes"
 
         logging.info("INFO: advmame result - ror %s, rol %s - DIR: %s" % (display_ror, display_rol, self.m_sFileDir))
