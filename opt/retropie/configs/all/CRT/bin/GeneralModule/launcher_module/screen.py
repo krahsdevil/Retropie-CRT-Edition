@@ -63,8 +63,6 @@ class CRT(object):
                 # Some values will be limited due to other values.
     }
 
-    m_iRSys = 0         # R_Sys   - Frontend rotation
-    m_iRGame = 0        # R_Game  - Game rotation
     m_sSide_Game = ""   #
 
     def __init__(self, p_sSystem = "system"):
@@ -158,8 +156,6 @@ class CRT(object):
         self.timing_add("H_Pos", ini_get(CRT_UTILITY_FILE, "test60_offsetX"))
         self.timing_add("V_Pos", ini_get(CRT_UTILITY_FILE, "test60_offsetY"))
         self.timing_add("H_Zoom", ini_get(CRT_UTILITY_FILE, "test60_width"))
-        self.m_iRSys = int(ini_get(CRT_UTILITY_FILE, "frontend_rotation"))
-        self.m_iRGame = int(ini_get(CRT_UTILITY_FILE, "game_rotation"))
 
     def get_fix_user_raw(self):
         offsetX = int(ini_get(CRT_UTILITY_FILE, "system60_offsetX"))
@@ -300,15 +296,13 @@ class CRT(object):
         self.m_dData["Unk_P"] = 1
 
     def get_values(self):
-        with open(self.p_sTimingPath) as f:
-            for line in f:
-                lValues = line.strip().split(' ')
-                if self.m_sSystem == lValues[0]:
-                    logging.info("%s timing found at: %s" % (self.m_sSystem, self.p_sTimingPath))
-                    return lValues[1:] # ignore first value
+        lValues = ini_getlist(self.p_sTimingPath, self.m_sSystem)
+        if lValues:
+            logging.info("%s timing found at: %s" % (self.m_sSystem, self.p_sTimingPath))
+            return lValues
         logging.error("%s timing not found using default for: %s" % (self.m_sSystem, self.p_sTimingPath))
         subprocess.Popen(DEFAULT_SCREEN_BIN) # show to user default resolution used
-        return DEFAULT_RES
+        return DEFAULT_RE
 
     def _calculated_adjustement(self):
         # Scaling Front and back porch horizontals according to horizontal position and horizontal zoom settings.
