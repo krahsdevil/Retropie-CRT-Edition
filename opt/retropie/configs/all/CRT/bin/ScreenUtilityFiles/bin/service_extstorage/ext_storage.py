@@ -10,7 +10,6 @@ USB Automount service code for Retropie by -krahs-
 https://github.com/krahsdevil/crt-for-retropie/
 
 Copyright (C)  2018/2020 -krahs- - https://github.com/krahsdevil/
-Copyright (C)  2019 dskywalk - http://david.dantoine.org
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -23,60 +22,35 @@ You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import os
-import subprocess, commands
+import os, sys
+import subprocess, commands, re
 import logging, traceback
 import time
 
-CRT_PATH = "/opt/retropie/configs/all/CRT"
-RETROPIE_PATH = "/home/pi/RetroPie"
-ES_PATH = "/opt/retropie/configs/all/emulationstation"
-TMP_LAUNCHER_PATH = '/dev/shm'
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_USBAutoMount.log")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
+from main_paths import MODULES_PATH
+sys.path.append(MODULES_PATH)
+
+from launcher_module.core_paths import *
+from launcher_module.utils import check_process, wait_process, set_procname
+
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_External_Storage.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
-
-ROMS_FOLDER = "roms"
-ROMS_PATH = os.path.join(RETROPIE_PATH, ROMS_FOLDER)
-
-BIOS_FOLDER = "BIOS"
-BIOS_PATH = os.path.join(RETROPIE_PATH, BIOS_FOLDER)
 
 CRT_OPT_FOLDER = "1CRT"
 RETROPIE_OPT_FOLDER = "retropie"
-GAMELIST_FOLDER = "gamelists"
-GAMELIST_PATH = os.path.join(ES_PATH, GAMELIST_FOLDER)
-
-USBAUTO_PATH = os.path.join(CRT_PATH, "bin/AutomountService")
-TRG_MNT_FILE = os.path.join(USBAUTO_PATH, "mounted.cfg") #Trigger USB is mounted
-TRG_UMNT_FILE = os.path.join(USBAUTO_PATH, "umounted.cfg") #Trigger USB is NOT mounted
 
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = False
 
+set_procname(PNAME_EXTSTRG)
+
 class USBAutoService(object):
-    m_dEmulatorsName = ["retroarch", "ags", "uae4all2", "uae4arm", "capricerpi",
-                        "linapple", "hatari", "stella", "atari800", "xroar",
-                        "vice", "daphne", "reicast", "pifba", "osmose", "gpsp",
-                        "jzintv", "basiliskll", "mame", "advmame", "dgen",
-                        "openmsx", "mupen64plus", "gngeo", "dosbox", "ppsspp",
-                        "simcoupe", "scummvm", "snes9x", "pisnes", "frotz",
-                        "fbzx", "fuse", "gemrb", "cgenesis", "zdoom", "eduke32",
-                        "lincity", "love", "kodi", "alephone", "micropolis",
-                        "openbor", "openttd", "opentyrian", "cannonball",
-                        "tyrquake", "ioquake3", "residualvm", "xrick", "sdlpop",
-                        "uqm", "stratagus", "wolf4sdl", "solarus", "drastic",
-                        "coolcv", "PPSSPPSDL", "moonlight", "Xorg", "smw",
-                        "omxplayer.bin", "wolf4sdl-3dr-v14", "wolf4sdl-gt-v14",
-                        "wolf4sdl-spear", "wolf4sdl-sw-v14", "xvic",
-                        "xvic cart", "xplus4", "xpet", "x128", "x64sc", "x64",
-                        "prince", "fba2x", "steamlink", "pcsx-rearmed",
-                        "limelight", "sdltrs", "ti99sm", "dosbox-sdl2",
-                        "minivmac", "quasi88", "xm7", "yabause", "abuse",
-                        "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
-                        "love", "love-0.10.2", "openblok", "openfodder", "srb2",
-                        "yquake2", "amiberry", "zesarux", "dxx-rebirth",
-                        "zesarux"]
+    m_lProcesses = PROCESSES
+    m_bPRestart = False
+
     m_lMountUSBsPrev = []  # Previous scan: disk ID + mnt Path
     m_lMountPathsPrev = [] # Previous scan: only mnt Path
     m_lMountUSBs = []      # Current scan: disk ID + mnt Path
@@ -101,12 +75,15 @@ class USBAutoService(object):
                        {"script": "+Start Fuse.sh", 
                         "binary": "/opt/retropie/emulators/fuse/bin/fuse"})
 
-    m_dRootFolders = [ROMS_FOLDER, BIOS_FOLDER, GAMELIST_FOLDER]
+    m_dRootFolders = [RETROPIE_ROMS_FOLDER, RETROPIE_BIOS_FOLDER, RETROPIE_GAMELIST_FOLDER]
     m_dGamelistFolders = [CRT_OPT_FOLDER, RETROPIE_OPT_FOLDER]
+    m_iMntTime = 0
 
     def __init__(self):
         self.__temp()
         self.__clean()
+        self.m_lProcesses.append(PNAME_CONFIG)
+        self.m_lProcesses.remove("omxplayer.bin")
         logging.info("INFO: Initializating USB Automount Service")
         
     def run(self):
@@ -143,15 +120,16 @@ class USBAutoService(object):
         for device in self.m_lMountUSBs:
             if device[1] == p_sMount:
                 p_sDisk = device[0]
-        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, ROMS_FOLDER, ROMS_PATH))
-        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, ROMS_FOLDER, ROMS_PATH))
-        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, BIOS_FOLDER, BIOS_PATH))
-        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, BIOS_FOLDER, BIOS_PATH))
-        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, GAMELIST_FOLDER, GAMELIST_PATH))
-        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, GAMELIST_FOLDER, GAMELIST_PATH))
-        os.system('rm "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
-        os.system('echo "/dev/%s %s" > "%s"' % (p_sDisk, p_sMount, TRG_MNT_FILE))
+        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, RETROPIE_ROMS_FOLDER, RETROPIE_ROMS_PATH))
+        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, RETROPIE_ROMS_FOLDER, RETROPIE_ROMS_PATH))
+        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, RETROPIE_BIOS_FOLDER, RETROPIE_BIOS_PATH))
+        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, RETROPIE_BIOS_FOLDER, RETROPIE_BIOS_PATH))
+        os.system('sudo mount --bind "%s/%s" "%s" > /dev/null 2>&1' % (p_sMount, RETROPIE_GAMELIST_FOLDER, RETROPIE_GAMELIST_PATH))
+        logging.info("INFO: Mounting %s/%s in %s" % (p_sMount, RETROPIE_GAMELIST_FOLDER, RETROPIE_GAMELIST_PATH))
+        os.system('rm "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_UMNT_PATH)
+        os.system('echo "/dev/%s %s" > "%s"' % (p_sDisk, p_sMount, CRT_EXTSTRG_TRIG_MNT_PATH))
         logging.info("INFO: Created trigger file mount : \"/dev/%s %s\"" % (p_sDisk, p_sMount))
+        self.m_iMntTime = time.time()
 
     def _check_mount(self):
         """ 
@@ -184,8 +162,8 @@ class USBAutoService(object):
 
     def _valid_usb_storage(self, p_sMount):
         for folder in os.listdir(p_sMount):
-            #logging.info("INFO: Compare %s %s" % (folder.lower(), ROMS_FOLDER.lower()))
-            if folder.lower() == ROMS_FOLDER.lower():
+            #logging.info("INFO: Compare %s %s" % (folder.lower(), RETROPIE_ROMS_FOLDER.lower()))
+            if folder.lower() == RETROPIE_ROMS_FOLDER.lower():
                 logging.info('INFO: Found "/roms" folder in root at %s' % p_sMount)
                 return True
         logging.info("INFO: No valid folder structure found at %s" % p_sMount)
@@ -194,17 +172,17 @@ class USBAutoService(object):
     def _umount(self, p_sMount = None):
         """ Force umount of all mounted paths """
         try:
-            os.system('sudo umount -l "%s" > /dev/null 2>&1' % ROMS_PATH)
-            logging.info("INFO: Umounting %s" % ROMS_PATH)
-            os.system('sudo umount -l "%s" > /dev/null 2>&1' % BIOS_PATH)
-            logging.info("INFO: Umounting %s" % BIOS_PATH)
-            os.system('sudo umount -l "%s" > /dev/null 2>&1' % GAMELIST_PATH)
-            logging.info("INFO: Umounting %s" % GAMELIST_PATH)
+            os.system('sudo umount -l "%s" > /dev/null 2>&1' % RETROPIE_ROMS_PATH)
+            logging.info("INFO: Umounting %s" % RETROPIE_ROMS_PATH)
+            os.system('sudo umount -l "%s" > /dev/null 2>&1' % RETROPIE_BIOS_PATH)
+            logging.info("INFO: Umounting %s" % RETROPIE_BIOS_PATH)
+            os.system('sudo umount -l "%s" > /dev/null 2>&1' % RETROPIE_GAMELIST_PATH)
+            logging.info("INFO: Umounting %s" % RETROPIE_GAMELIST_PATH)
             if p_sMount:
                 os.system('sudo umount -l "%s" > /dev/null 2>&1' % p_sMount)
                 logging.info("INFO: Umounting device %s" % p_sMount)
-            os.system('rm "%s" > /dev/null 2>&1' % TRG_MNT_FILE)
-            os.system('touch "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
+            os.system('rm "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_MNT_PATH)
+            os.system('touch "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_UMNT_PATH)
         except:
             pass
 
@@ -234,8 +212,8 @@ class USBAutoService(object):
     def _check_folder_names(self, p_sMount):
         """ Will fix wrong folder names, from some recalbox usb roms packs """
         p_sRootPath = p_sMount
-        p_sGamelistsPath = (os.path.join(p_sRootPath, GAMELIST_FOLDER))
-        p_sROMsPath = (os.path.join(p_sRootPath, ROMS_FOLDER))
+        p_sGamelistsPath = (os.path.join(p_sRootPath, RETROPIE_GAMELIST_FOLDER))
+        p_sROMsPath = (os.path.join(p_sRootPath, RETROPIE_ROMS_FOLDER))
         logging.info("INFO: Starting folder names check")
         # Fix main folders names on USB root
         self._fix_folder_names(self.m_dRootFolders, p_sRootPath)
@@ -273,19 +251,19 @@ class USBAutoService(object):
     def _check_missing_folders(self, p_sMount):
         """ Will fix and create base folders: roms, bios, gamelists... """
         p_sRootPath = p_sMount
-        p_sGamelistsPath = (os.path.join(p_sRootPath, GAMELIST_FOLDER))
-        p_sROMsPath = (os.path.join(p_sRootPath, ROMS_FOLDER))
+        p_sGamelistsPath = (os.path.join(p_sRootPath, RETROPIE_GAMELIST_FOLDER))
+        p_sROMsPath = (os.path.join(p_sRootPath, RETROPIE_ROMS_FOLDER))
         logging.info("INFO: Creating missing folders")
         # Create main folders
         self._create_miss_folders(self.m_dRootFolders, p_sRootPath)
         # Create system CRT and retropie 
         self._create_miss_folders(self.m_dGamelistFolders, p_sGamelistsPath)
         # Replicate roms/gamelist folders internal -> usb
-        self._create_miss_folders(os.listdir(ROMS_PATH), p_sROMsPath)
-        self._create_miss_folders(os.listdir(GAMELIST_PATH), p_sGamelistsPath)
+        self._create_miss_folders(os.listdir(RETROPIE_ROMS_PATH), p_sROMsPath)
+        self._create_miss_folders(os.listdir(RETROPIE_GAMELIST_PATH), p_sGamelistsPath)
         # Replicate roms/gamelist folders usb -> internal
-        self._create_miss_folders(os.listdir(p_sROMsPath), ROMS_PATH)
-        self._create_miss_folders(os.listdir(p_sGamelistsPath), GAMELIST_PATH)
+        self._create_miss_folders(os.listdir(p_sROMsPath), RETROPIE_ROMS_PATH)
+        self._create_miss_folders(os.listdir(p_sGamelistsPath), RETROPIE_GAMELIST_PATH)
 
     def _create_miss_folders(self, p_lFolderLST, p_sPath):
         for p_sFolderDST in p_lFolderLST:
@@ -297,20 +275,20 @@ class USBAutoService(object):
 
     def _sync_system_gamelist(self, p_sMount):
         """ Will create and sync to usb CRT and retropie options for ES """
-        p_sGamelistsPath = (os.path.join(p_sMount, GAMELIST_FOLDER))
+        p_sGamelistsPath = (os.path.join(p_sMount, RETROPIE_GAMELIST_FOLDER))
         for p_sFolder in self.m_dGamelistFolders:
             logging.info("INFO: Synchronizing folder %s/%s to %s/%s" % \
-                        (GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
+                        (RETROPIE_GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
             os.system('rsync -a --delete "%s/%s/" "%s/%s/"' % \
-                       (GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
+                       (RETROPIE_GAMELIST_PATH, p_sFolder, p_sGamelistsPath, p_sFolder))
 
     def _sync_start_scripts(self, p_sMount):
         p_sRootPath = p_sMount
-        p_sROMsPath = (os.path.join(p_sRootPath, ROMS_FOLDER))
+        p_sROMsPath = (os.path.join(p_sRootPath, RETROPIE_ROMS_FOLDER))
         # Clean +Start_xxx scripts on internal storage
-        self._clean_start_scripts(ROMS_PATH, p_sROMsPath)
+        self._clean_start_scripts(RETROPIE_ROMS_PATH, p_sROMsPath)
         # Clean +Start_xxx scripts on external usb device
-        self._clean_start_scripts(p_sROMsPath, ROMS_PATH)
+        self._clean_start_scripts(p_sROMsPath, RETROPIE_ROMS_PATH)
 
     def _clean_start_scripts(self, p_sPathSRC, p_sPathDST):
         p_lFolderLST = os.listdir(p_sPathSRC)
@@ -333,74 +311,57 @@ class USBAutoService(object):
                             os.system('cp "%s" "%s" > /dev/null 2>&1' % \
                                      (p_sScriptSRC, p_sScriptDST))
 
-    def _loop(self, p_iTime = 2):
+    def _loop(self, p_iTime = 1):
         while True:
-            self._get_mounted_list()
-            if self._check_umount():
-                self._restart_ES()
-            elif self._check_mount():
-                self._restart_ES()
+            if self.m_bPRestart: self._restart_ES()
             time.sleep(p_iTime)
+            self._get_mounted_list()
+            if self._check_umount(): self._restart_ES()
+            elif self._check_mount(): self._restart_ES()
 
     def _restart_ES(self):
         """ Restart ES if it's running """
-        if self._check_process("emulationstatio"):
+        if check_process("emulationstatio"):
             logging.info("INFO: Restarting EmulationStation...")
-            if self._check_process(self.m_dEmulatorsName):
-                logging.info("INFO: Waiting emulator stops...")
-                self._wait_process(self.m_dEmulatorsName, 'stop')
-            commandline = "touch /tmp/es-restart "
-            commandline += "&& pkill -f \"/opt/retropie"
-            commandline += "/supplementary/.*/emulationstation([^.]|$)\""
-            os.system(commandline)
-            os.system('clear')
+            self.m_bPRestart = True
+            if check_process(self.m_lProcesses):
+                logging.info("INFO: Pending Reboot...")
+                return
+            if self.mounted_time():
+                time.sleep(1)
+                commandline = "touch /tmp/es-restart "
+                commandline += "&& pkill -f \"/opt/retropie"
+                commandline += "/supplementary/.*/emulationstation([^.]|$)\""
+                os.system(commandline)
+                os.system('clear')
+            self.m_bPRestart = False
 
-    def _wait_process(self, p_sProcess, p_sState = 'stop',
-                     p_iTimes = 1, p_iWaitScs = 1):
-        """
-        This function will wait to start or stop for only one process or a 
-        list of them like emulators. By default will wait to start with
-        p_sState parameter, but you can change it on call to 'stop'.
-        If a list is passed, function will validate that at least one of
-        them started or all are stopped.
-        
-        """
-        bProcessFound = None
-        bCondition = True
-        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
-        if p_sState == 'stop':
-            bCondition = False
-        while bProcessFound != bCondition:
-            bProcessFound = self._check_process(p_sProcess, p_iTimes)
-            time.sleep(p_iWaitScs)
-        logging.info("INFO: wait finished")
+    def mounted_time(self):
+        p_iTime = time.time() - self.m_iMntTime
+        commandline = 'ps -Ao comm,etime | grep -i emulationstatio'
+        output = commands.getoutput(commandline)
+        output = re.sub(r' +', " ", output).split('\n')
+        timings = []
+        for line in output:
+            timings.append(self._get_seconds(line.split(' ')[1]))
+        if min(timings) > p_iTime: return True
+        logging.info("INFO: canceling emulationstation restart")
+        return False
 
-    def _check_process(self, p_sProcess, p_iTimes = 1):
-        p_bCheck = 0
-        if p_sProcess == "emulationstatio": p_iTimes = 3
-        
-        pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-        for pid in pids:
-            try:
-                procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-                if type(p_sProcess) is list:
-                    if procname[:-1] in p_sProcess:
-                        p_bCheck = p_iTimes
-                        break
-                elif type(p_sProcess) is str:
-                    if procname[:-1] == p_sProcess:
-                        p_bCheck += 1
-            except IOError:
-                pass
-        # p_iTimes >= 1 process was found
-        p_bCheck = True if p_bCheck >= p_iTimes else False 
-        return p_bCheck
-        
+    def _get_seconds(self, p_sTime):
+        try:
+            h, m, s = p_sTime.split(':')
+        except:
+            h = 0
+            m, s = p_sTime.split(':')
+        secs = int(h) * 3600 + int(m) * 60 + int(s)
+        return secs
+
     # clean trigger files
     def __clean(self):
-        os.system('rm "%s" > /dev/null 2>&1' % TRG_MNT_FILE)
-        os.system('rm "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
-        os.system('touch "%s" > /dev/null 2>&1' % TRG_UMNT_FILE)
+        os.system('rm "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_MNT_PATH)
+        os.system('rm "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_UMNT_PATH)
+        os.system('touch "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_UMNT_PATH)
 
     def __temp(self):
         if CLEAN_LOG_ONSTART:
