@@ -7,16 +7,15 @@ ROTATION_CFG_PATH+="/CRT/bin/ScreenUtilityFiles/resources"
 ROTATION_CFG_PATH+="/assets/screen_emulationstation/crt_modes_change/configs"
 CABLE_SELECTOR_FILE="/opt/retropie/configs/all"
 CABLE_SELECTOR_FILE+="/CRT/bin/ScreenUtilityFiles/bin"
-CABLE_SELECTOR_FILE+="/module_rgb_cable_switcher/CRT-RGB-Cable_Launcher.py"
+CABLE_SELECTOR_FILE+="/module_cable/cable_selector.py"
 
 
 RES_X=0
 RES_Y=0
 ES_ROTATION_FLAGS=""
 
-MODE_TATE1_FILE="$ROTATION_CFG_PATH/es-select-tate1"
-MODE_TATE3_FILE="$ROTATION_CFG_PATH/es-select-tate3"
-MODE_YOKO_FILE="$ROTATION_CFG_PATH/es-select-yoko"
+MODE_TATE1_FILE="$ROTATION_CFG_PATH/es-tate1"
+MODE_TATE3_FILE="$ROTATION_CFG_PATH/es-tate3"
 MODE_FBOOT_FILE="$ROTATION_CFG_PATH/first-boot"
 
 function rotate_screen ()
