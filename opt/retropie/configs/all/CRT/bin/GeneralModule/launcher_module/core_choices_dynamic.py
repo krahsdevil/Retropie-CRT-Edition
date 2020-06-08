@@ -105,7 +105,7 @@ class choices(object):
         self._check_current_es_side()
         self.dCFG = p_dChoices.copy()
         self.m_sSkinPath = os.path.join(CRT_MEDIA_PATH, self.dCFG['style'])
-        pygame.mixer.pre_init(44100, -16, 1, 512)
+        pygame.mixer.pre_init(44100, -16, 2, 1024)
         pygame.init()
         self._init_screen()
         self._init_sounds()
