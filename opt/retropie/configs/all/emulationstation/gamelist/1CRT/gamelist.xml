@@ -5,19 +5,4 @@
 		<name>1. Configuration Utility</name>
 		<image>./icons/1. Configuration Utility.png</image>
 	</game>
-	<game>
-		<path>./2. USB AutoMount.py</path>
-		<name>2. USB AutoMount</name>
-		<image>./icons/2. USB AutoMount.png</image>
-	</game>
-	<game>
-		<path>./3. RGB Cable Selector.py</path>
-		<name>3. RGB Cable Selector</name>
-		<image>./icons/3. RGB Cable Selector.png</image>
-	</game>
-	<game>
-		<path>./4. Credits.py</path>
-		<name>4. Credits</name>
-		<image>./icons/4. Credits.png</image>
-	</game>
 </gameList>
