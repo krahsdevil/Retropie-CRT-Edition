@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, logging
-import hashlib, shutil, random
+import hashlib, shutil, random, re
 import xml.etree.ElementTree as ET
 
 from .core_paths import TMP_LAUNCHER_PATH, CRT_ROOT_PATH, ES_CFG_FILE
@@ -69,7 +69,10 @@ def ini_get(p_sFile, p_sFindMask, p_bFullData = False):
         return None
     with open(p_sFile, "r") as f:
         for line in f:
-            lValues = line.strip().replace('=',' ').split(' ')
+            lValues = line.strip()
+            lValues = lValues.replace('"', '')
+            lValues = lValues.replace('=',' ')
+            lValues = re.sub(r' +', " ", lValues).split(' ')
             if p_sFindMask == lValues[0].strip():
                 if p_bFullData:
                     return lValues
