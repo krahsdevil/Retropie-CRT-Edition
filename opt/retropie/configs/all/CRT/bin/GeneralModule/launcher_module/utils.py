@@ -136,16 +136,7 @@ def check_process(p_sProcess, p_iTimes = 1):
     # p_iTimes >= 1 process was found
     p_bCheck = True if p_bCheck >= p_iTimes else False 
     return p_bCheck
-
-def get_side():
-    """ Check current side of EmulatioStation """
-    iCurSide = 0
-    if os.path.exists(ROTMODES_TATE1_FILE):
-        iCurSide = 1
-    elif os.path.exists(ROTMODES_TATE3_FILE):
-        iCurSide = 3
-    return iCurSide
-    
+   
 def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
     """
     This function will wait to start or stop for only one process or
@@ -167,6 +158,22 @@ def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
         bProcessFound = check_process(p_sProcess, p_iTimes)
         time.sleep(p_iWaitScs)
     logging.info("INFO: wait finished")
+
+def get_side():
+    """ Check current side of EmulatioStation """
+    iCurSide = 0
+    if os.path.exists(ROTMODES_TATE1_FILE):
+        iCurSide = 1
+    elif os.path.exists(ROTMODES_TATE3_FILE):
+        iCurSide = 3
+    return iCurSide
+
+def set_procname(p_sProcName):
+	from ctypes import cdll, byref, create_string_buffer
+	libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
+	buff = create_string_buffer(len(p_sProcName)+1) #Note: One larger than the name (man prctl says that)
+	buff.value = p_sProcName                 #Null terminated string as it should be
+	libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious value 16 & arg[3..5] are zero as the man page says.
     
 class HideScreen(object):
     """ Class for hide the screen filling with a color """
@@ -247,7 +254,7 @@ class ra_version_fixes():
             logging.info("WARNING: need a custom retroarch file to check")
         if not os.path.isfile(p_sSystemCfgPath):
             p_bCheck = False
-            logging.info("WARNING: custom retroach config NOT found")
+            logging.info("WARNING: custom retroarch config NOT found")
         else:
             p_bCheck = True
             self.m_sSystemCfgPath = p_sSystemCfgPath
@@ -285,7 +292,7 @@ class ra_version_fixes():
                 self.m_sRAVersion = lValues[5]
                 add_line(CRT_RA_HASHDB_FILE, "RetroArch %s %s" % \
                         (self.m_sRAHash, self.m_sRAVersion))
-                logging.info("INFO: added new retroach hash to db: " + \
+                logging.info("INFO: added new retroarch hash to db: " + \
                              "{%s} {%s}" % (self.m_sRAHash, self.m_sRAVersion))
 
     def _apply_fixes(self):
