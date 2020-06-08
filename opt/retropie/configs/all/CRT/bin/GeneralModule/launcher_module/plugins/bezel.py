@@ -38,6 +38,6 @@ class bezel(libretro):
 
     def configure(self):
         super(bezel, self).configure()
-        if ini_get(CRT_UTILITY_FILE, "handheld_bezel") == "1":
+        if ini_get(CRT_UTILITY_FILE, "handheld_bezel").lower() == "true":
             self.m_sSystemCfg = self.m_sSystemFreq + "_s.cfg"
             logging.info("enabled bezel cfg: %s" % self.m_sSystemCfg)
