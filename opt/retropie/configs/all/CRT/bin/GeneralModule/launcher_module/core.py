@@ -54,28 +54,7 @@ class launcher(object):
     m_lBinaryMasks = []
     m_lBinaryUntouchable = []
     m_lBinaries = []
-    m_lProcesses = ["retroarch", "mupen64plus", "uae4all2", "uae4arm", "capricerpi",
-                    "linapple", "hatari", "stella", "atari800", "xroar",
-                    "vice", "daphne", "reicast", "pifba", "osmose", "gpsp",
-                    "jzintv", "basiliskll", "mame", "advmame", "dgen",
-                    "openmsx", "ags", "gngeo", "dosbox", "ppsspp",
-                    "simcoupe", "scummvm", "snes9x", "pisnes", "frotz",
-                    "fbzx", "fuse", "gemrb", "cgenesis", "zdoom", "eduke32",
-                    "lincity", "love", "kodi", "alephone", "micropolis",
-                    "openbor", "openttd", "opentyrian", "cannonball",
-                    "tyrquake", "ioquake3", "residualvm", "xrick", "sdlpop",
-                    "uqm", "stratagus", "wolf4sdl", "solarus", "drastic",
-                    "coolcv", "PPSSPPSDL", "moonlight", "Xorg", "smw",
-                    "omxplayer.bin", "wolf4sdl-3dr-v14", "wolf4sdl-gt-v14",
-                    "wolf4sdl-spear", "wolf4sdl-sw-v14", "xvic",
-                    "xvic cart", "xplus4", "xpet", "x128", "x64sc", "x64",
-                    "prince", "fba2x", "steamlink", "pcsx-rearmed",
-                    "limelight", "sdltrs", "ti99sm", "dosbox-sdl2",
-                    "minivmac", "quasi88", "xm7", "yabause", "abuse",
-                    "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
-                    "love", "love-0.10.2", "openblok", "openfodder", "srb2",
-                    "yquake2", "amiberry", "zesarux", "dxx-rebirth",
-                    "zesarux", "daphne.bin"]
+    m_lProcesses = PROCESSES
     m_oBlackScreen = None
     m_oRunProcess = None
     m_oCRT = None
@@ -126,7 +105,11 @@ class launcher(object):
         self.screen_set()
 
     def wait(self):
+        time_start = time.time()
         self.m_oRunProcess.wait()
+        time_elapsed = int(time.time() - time_start)
+        self.statistics(time_elapsed)
+        logging.info("INFO: game time: %s" % time_elapsed)
         logging.info("INFO: process end")
 
     # generate command string
@@ -262,6 +245,32 @@ class launcher(object):
             logging.error("EXIT: crt_launcher forced")
             self.__clean()
             sys.exit(1)
+
+    def statistics(self, p_iTime):
+        if not os.path.exists(CRT_STATS_FILE):
+            touch_file(CRT_STATS_FILE)
+            add_line(CRT_STATS_FILE, 'timer = "0"')
+            
+        value = ini_get(CRT_STATS_FILE, 'timer')
+        if value:
+            value = int(value) + p_iTime
+            ini_set(CRT_STATS_FILE, 'timer', value)
+        else: 
+            add_line(CRT_STATS_FILE, 'timer = "0"')
+
+        value = ini_get(CRT_STATS_FILE, 'played_%s' % self.m_sSystem)
+        if value:
+            value = int(value) + 1
+            ini_set(CRT_STATS_FILE, "played_%s" % self.m_sSystem, value)
+        else: 
+            add_line(CRT_STATS_FILE, 'played_%s = "1"' % self.m_sSystem)
+
+        value = ini_get(CRT_STATS_FILE, 'timer_%s' % self.m_sSystem)
+        if value:
+            value = int(value) + p_iTime
+            ini_set(CRT_STATS_FILE, "timer_%s" % self.m_sSystem, value)
+        else: 
+            add_line(CRT_STATS_FILE, 'timer_%s = "%s"' % (self.m_sSystem, p_iTime))
 
     # cleanup code
     def cleanup(self):
