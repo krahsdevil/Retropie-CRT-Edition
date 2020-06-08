@@ -27,6 +27,29 @@ TMP_SPEEPER_NAME = "lchtmp"
 TMP_LAUNCHER_PATH = "/dev/shm"
 TMP_SLEEPER_FILE = os.path.join(TMP_LAUNCHER_PATH, TMP_SPEEPER_NAME)
 
+PROCESSES = ["retroarch", "ags", "uae4all2", "uae4arm", "capricerpi",
+            "linapple", "hatari", "stella", "atari800", "xroar",
+            "vice", "daphne", "reicast", "pifba", "osmose", "gpsp",
+            "jzintv", "basiliskll", "mame", "advmame", "dgen",
+            "openmsx", "mupen64plus", "gngeo", "dosbox", "ppsspp",
+            "simcoupe", "scummvm", "snes9x", "pisnes", "frotz",
+            "fbzx", "fuse", "gemrb", "cgenesis", "zdoom", "eduke32",
+            "lincity", "love", "kodi", "alephone", "micropolis",
+            "openbor", "openttd", "opentyrian", "cannonball",
+            "tyrquake", "ioquake3", "residualvm", "xrick", "sdlpop",
+            "uqm", "stratagus", "wolf4sdl", "solarus", "drastic",
+            "coolcv", "PPSSPPSDL", "moonlight", "Xorg", "smw",
+            "wolf4sdl-3dr-v14", "wolf4sdl-gt-v14",
+            "wolf4sdl-spear", "wolf4sdl-sw-v14", "xvic",
+            "xvic cart", "xplus4", "xpet", "x128", "x64sc", "x64",
+            "prince", "fba2x", "steamlink", "pcsx-rearmed",
+            "limelight", "sdltrs", "ti99sm", "dosbox-sdl2",
+            "minivmac", "quasi88", "xm7", "yabause", "abuse",
+            "cdogs-sdl", "cgenius", "digger", "gemrb", "hcl",
+            "love", "love-0.10.2", "openblok", "openfodder", "srb2",
+            "yquake2", "amiberry", "zesarux", "dxx-rebirth",
+            "zesarux", "daphne.bin", "omxplayer.bin"]
+
 # RETROPIE
 RETROPIE_PATH = "/opt/retropie"
 RETROPIE_CFG_PATH = os.path.join(RETROPIE_PATH, "configs")
@@ -35,11 +58,8 @@ RETROPIE_MUSIC_PATH = os.path.join(RETROPIE_CFG_PATH, "music")
 RETROPIE_SPLASH_PATH = os.path.join(RETROPIE_PATH, "supplementary/splashscreen")
 RETROPIE_VIDEOMODES_FILE = os.path.join(RETROPIE_CFG_PATH, "all/videomodes.cfg")
 RETROPIE_CUSTEMU_FILE = os.path.join(RETROPIE_CFG_PATH, "all/emulators.cfg")
+RETROPIE_RUNCOMMAND_CFG_FILE = os.path.join(RETROPIE_CFG_PATH, "all/runcommand.cfg")
 RETROPIE_RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
-
-# RETROARCH
-RA_CFG_FILE = os.path.join(RETROPIE_CFG_PATH, "all/retroarch.cfg")
-RA_BIN_FILE = os.path.join(RETROPIE_EMULATORS_PATH, "retroarch/bin/retroarch")
 
 # EMULATIONSTATION
 ES_PATH = "/etc/emulationstation"
@@ -50,6 +70,19 @@ ES_THEMES_SEC_PATH = os.path.join(ES_CFG_PATH, "themes")
 ES_SYSTEMS_PRI_FILE = os.path.join(ES_PATH, "es_systems.cfg")
 ES_CONTROLS_FILE = os.path.join(ES_CFG_PATH, "es_input.cfg")
 ES_CFG_FILE = os.path.join(ES_CFG_PATH, "es_settings.cfg")
+
+# RETROPIE CONTENT
+RETROPIE_HOME_PATH = "/home/pi/RetroPie"
+RETROPIE_ROMS_FOLDER = "roms"
+RETROPIE_ROMS_PATH = os.path.join(RETROPIE_HOME_PATH, RETROPIE_ROMS_FOLDER)
+RETROPIE_BIOS_FOLDER = "BIOS"
+RETROPIE_BIOS_PATH = os.path.join(RETROPIE_HOME_PATH, RETROPIE_BIOS_FOLDER)
+RETROPIE_GAMELIST_FOLDER = "gamelists"
+RETROPIE_GAMELIST_PATH = os.path.join(ES_CFG_PATH, RETROPIE_GAMELIST_FOLDER)
+
+# RETROARCH
+RA_CFG_FILE = os.path.join(RETROPIE_CFG_PATH, "all/retroarch.cfg")
+RA_BIN_FILE = os.path.join(RETROPIE_EMULATORS_PATH, "retroarch/bin/retroarch")
 
 # CRT MAIN LAUNCHING SOFTWARE
 CRT_ROOT_PATH = os.path.join(RETROPIE_CFG_PATH, "all/CRT")
@@ -68,6 +101,7 @@ CRT_FIXMODES_FILE = os.path.join(CRT_CONFIG_PATH, "modes.cfg")
 CRT_UTILITY_FILE = os.path.join(CRT_CONFIG_PATH, "utility.cfg")
 CRT_NETPLAY_FILE = os.path.join(CRT_CONFIG_PATH, "netplay.cfg")
 CRT_AUTOFREQ_FILE = os.path.join(CRT_CONFIG_PATH, "autofreqdb.cfg")
+CRT_STATS_FILE = os.path.join(CRT_CONFIG_PATH, "statistics.cfg")
 CRT_ES_SYSTEMDB_FILE = os.path.join(CRT_BIN_PATH, "GeneralModule/systems_check_db.py")
 
 # CRT CONFIGURATIONS FOR RETROARCH
@@ -89,9 +123,8 @@ CRT_LNCH_IMG_ROT_PATH = os.path.join(CRT_ES_RES_PATH, "launch_images_rotate")
 CRT_ICONS_SET_PATH = os.path.join(CRT_ES_RES_PATH, "crt_icons")
 CRT_ES_CONFIGS_PATH = os.path.join(CRT_ES_RES_PATH, "configs")
 
-ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate1")
-ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-tate3")
-ROTMODES_YOKO_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-select-yoko")
+ROTMODES_TATE1_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-tate1")
+ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-tate3")
 
 CRT_FONTS_PATH = os.path.join(CRT_ASST_PATH, "screen_fonts")
 CRT_SOUNDS_PATH = os.path.join(CRT_ASST_PATH, "screen_sounds")
@@ -100,3 +133,33 @@ CRT_SOUNDS_PATH = os.path.join(CRT_ASST_PATH, "screen_sounds")
 RASP_BOOTCFG_FILE = "/boot/config.txt"
 RASP_CMDLINE_FILE = "/boot/cmdline.txt"
 RASP_SERVICES_PATH = "/etc/systemd/system"
+
+# CRT SERVICE EXTERNAL STORAGE
+CRT_EXTSTRG_PATH = os.path.join(CRT_MODULES_PATH, "service_extstorage")
+CRT_EXTSTRG_CORE_FILE = "ext_storage.py"
+CRT_EXTSTRG_CORE_PATH = os.path.join(CRT_EXTSTRG_PATH, CRT_EXTSTRG_CORE_FILE)
+CRT_EXTSTRG_SRV_FILE = "ext_storage.service"
+CRT_EXTSTRG_SRV_PATH = os.path.join(CRT_EXTSTRG_PATH, CRT_EXTSTRG_SRV_FILE)
+CRT_EXTSTRG_TRIG_MNT_PATH = os.path.join(CRT_EXTSTRG_PATH, "mounted.cfg")
+CRT_EXTSTRG_TRIG_UMNT_PATH = os.path.join(CRT_EXTSTRG_PATH, "umounted.cfg")
+
+# CRT SERVICE BACKGROUND MUSIC
+CRT_BGM_PATH = os.path.join(CRT_MODULES_PATH, "service_bgm")
+CRT_BGM_CORE_FILE = "bgm.py"
+CRT_BGM_CORE_PATH = os.path.join(CRT_BGM_PATH, CRT_BGM_CORE_FILE)
+CRT_BGM_SRV_FILE = "bgm.service"
+CRT_BGM_SRV_PATH = os.path.join(CRT_BGM_PATH, CRT_BGM_SRV_FILE)
+CRT_BGM_MUS_PATH = os.path.join(RETROPIE_CFG_PATH, "music")
+
+# CRT SERVICE RGB CABLE
+CRT_RGB_PATH = os.path.join(CRT_MODULES_PATH, "module_cable")
+CRT_RGB_CORE_FILE = "rgb_cable.py"
+CRT_RGB_CORE_PATH = os.path.join(CRT_RGB_PATH, CRT_RGB_CORE_FILE)
+CRT_RGB_SRV_FILE = "rgb_cable.service"
+CRT_RGB_SRV_PATH = os.path.join(CRT_RGB_PATH, CRT_RGB_SRV_FILE)
+
+# PYTHON SCRIPTS PROCESSES NAME
+PNAME_CONFIG = "CRTconfig"
+PNAME_EXTSTRG = "CRTautomnt"
+PNAME_BGM = "CRTbgm"
+PNAME_RGBCABLE = "CRTcable"
