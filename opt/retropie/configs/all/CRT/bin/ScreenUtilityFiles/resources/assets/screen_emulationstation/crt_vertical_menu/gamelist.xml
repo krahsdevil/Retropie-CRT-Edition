@@ -1,23 +1,8 @@
 <?xml version="1.0"?>
 <gameList>
 	<game>
-		<path>./1. Rotate Screen.py</path>
-		<name>1. Rotate Screen</name>
-		<image>./icons/1. Rotate Screen.png</image>
-	</game>
-	<game>
-		<path>./2. USB AutoMount.py</path>
-		<name>2. USB AutoMount</name>
-		<image>./icons/2. USB AutoMount.png</image>
-	</game>
-	<game>
-		<path>./3. RGB Cable Selector.py</path>
-		<name>3. RGB Cable Selector</name>
-		<image>./icons/3. RGB Cable Selector.png</image>
-	</game>
-	<game>
-		<path>./4. Screen Center Utility.py</path>
-		<name>4. Screen Center Utility</name>
-		<image>./icons/4. Screen Center Utility.png</image>
+		<path>./1. Configuration Utility.py</path>
+		<name>1. Configuration Utility</name>
+		<image>./icons/1. Configuration Utility.png</image>
 	</game>
 </gameList>

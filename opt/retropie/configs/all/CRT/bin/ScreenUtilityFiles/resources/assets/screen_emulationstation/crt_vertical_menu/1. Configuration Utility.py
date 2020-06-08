@@ -3,7 +3,7 @@
 
 
 """
-RGB Cable Selector Launcher
+Configuration Utility Launcher
 
 Module to check and load/unload USB Automount service for Retropie by -krahs-
 
@@ -25,4 +25,4 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os, sys, traceback
 
-os.system('python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_rgb_cable_switcher/CRT-RGB-Cable_Launcher.py')
+os.system('python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_config/config.py')
