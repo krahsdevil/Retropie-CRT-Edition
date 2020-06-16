@@ -216,8 +216,7 @@ class CTRLSMgmt(object):
                     p_bChange = True
                 # edit line if needed
                 if p_bChange:
-                    modify_line(RA_CFG_FILE, 
-                                      key['line'] + ' ', p_sCFGLine)
+                    modify_line(RA_CFG_FILE, key['line'] + ' ', p_sCFGLine)
     
     def _inputs_retroarch_hotkeys(self, p_lInputs, p_bEnable, p_bComment = False):
         """ 
@@ -248,8 +247,7 @@ class CTRLSMgmt(object):
                 if p_Return[2] != p_sValue.strip('"'):
                         p_bChange = True
                 if p_bChange:
-                    modify_line(RA_CFG_FILE, 
-                                      key['line'] + ' ', p_sCFGLine)
+                    modify_line(RA_CFG_FILE, key['line'] + ' ', p_sCFGLine)
 
     def inputs_advmame_pi2jamma_enable(self):
         """ All actions to enable pi2jamma in advmame """

@@ -24,7 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys, smbus, hashlib, random
-import subprocess, commands, filecmp
+import subprocess, commands, filecmp, re
 import logging, traceback
 import time
 
@@ -35,6 +35,8 @@ sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
 from launcher_module.utils import set_procname
+from launcher_module.file_helpers import modify_line, ini_set
+from module_config.config_utils import saveboot
 
 PI2JAMMA_PATH = os.path.join(CRT_ASST_PATH, 'driver_pi2jamma')
 PI2JAMMA_BIN = 'pikeyd165'
@@ -339,22 +341,6 @@ class CRTDaemon(object):
             return True
         return False
 
-    def _modify_line(self, p_sFile, p_sLineToFind, p_sNewLine, p_bEndLine = True):
-        """ This function modifies a line in a text file """
-        if not os.path.isfile(p_sFile):
-            return None
-        with open(p_sFile, "r+") as f:
-            new_file = f.readlines()
-            f.seek(0) # rewind
-            for line in new_file:
-                if p_sLineToFind in line:
-                    line = p_sNewLine
-                    if p_bEndLine:
-                        line += "\n"
-                f.write(line) # new line
-            f.truncate() # remove everything after the last write
-            return True
-
     def _ini_get(self, p_sFile, p_sFindMask):
         """
         This function will return three values:
@@ -369,7 +355,10 @@ class CRTDaemon(object):
             return p_lCheck
         with open(p_sFile, "r") as f:
             for line in f:
-                lValues = line.strip().replace(' ','').split('=')
+                lValues = line.strip()
+                lValues = lValues.replace('"', '')
+                lValues = lValues.replace('=',' ')
+                lValues = re.sub(r' +', " ", lValues).split(' ')
                 if p_sFindMask == lValues[0].strip('# '):
                     p_lCheck[0] = True
                     if line[:1] == '#':
@@ -377,13 +366,12 @@ class CRTDaemon(object):
                         logging.info('WARNING: %s is ' % p_sFindMask + \
                                      'commented or without value')
                     try:
-                        p_lCheck[2] = lValues[1].strip('" ')
+                        p_lCheck[2] = lValues[1]
                         logging.info('INFO: %s=' % p_sFindMask + \
                                       '%s' % p_lCheck[2])
                     except:
                         logging.info('WARNING: %s has ' % p_sFindMask + \
                                      'not value')
-
         if not p_lCheck[0]:
             logging.info('WARNING: %s NOT found' % p_sFindMask)
         return p_lCheck
@@ -443,30 +431,25 @@ class CRTDaemon(object):
             if p_lCheck[0]:
                 logging.info("INFO: Recovery mode {%s} " % self.m_sRecoverMod + \
                              "exist, changing in modes.cfg" )
-                self._modify_line(CRT_FIXMODES_FILE, 'mode_default',
-                                  'mode_default %s' % self.m_sRecoverMod.upper())
+                ini_set(CRT_FIXMODES_FILE, 'mode_default', self.m_sRecoverMod.upper())
             else:
                 logging.info("INFO: Recovery mode {%s} " % self.m_sRecoverMod + \
                              "NOT exist, changing to DEFAULT in modes.cfg")
-                self._modify_line(CRT_FIXMODES_FILE, 'mode_default',
-                                  'mode_default DEFAULT')
+                ini_set(CRT_FIXMODES_FILE, 'mode_default', "DEFAULT")
 
             # Cleaning video recovery from /boot/config.txt
-            self._modify_line(self.m_sBootTempFile, 'crt_recovery_enabled',
+            self.modify_line(self.m_sBootTempFile, 'crt_recovery_enabled',
                               'crt_recovery_enabled=0')
-            self._modify_line(self.m_sBootTempFile, 'crt_recovery_mode',
+            self.modify_line(self.m_sBootTempFile, 'crt_recovery_mode',
                               'crt_recovery_mode=DEFAULT')
 
             # Upload /boot/config.txt
             self._upload_boot_cfg()
 
             # Create timings with MODE for system/ES in /boot/config.txt
-            commandline = "/usr/bin/python /opt/retropie/configs/all/CRT"
-            commandline += "/bin/ScreenUtilityFiles/bin"
-            commandline += "/module_screen_center_utility"
-            commandline += "/pattern_launcher.py force"
-            os.system(commandline)
-
+            p_oRESClass = saveboot()
+            p_oRESClass.save()
+            p_oRESClass.apply()
             self._restart_system()
 
     def _restart_system(self):
