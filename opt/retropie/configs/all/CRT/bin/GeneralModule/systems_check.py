@@ -33,7 +33,7 @@ sys.dont_write_bytecode = True
 from launcher_module.core_paths import CRT_LAUNCHER_FILE, \
                                        ES_SYSTEMS_PRI_FILE, \
                                        CRT_ES_SYSTEMDB_FILE
-from launcher_module.file_helpers import md5_file, modify_line
+from launcher_module.file_helpers import md5_file, ini_set
 from systems_check_db import SYSTEMS, LAST_HASH
 from launcher_module.utils import show_info
 
@@ -129,8 +129,7 @@ def hash_check(p_sFile):
 def update_last_hash(p_sFile):
     """ Update last hash if any change """
     sHashFile = md5_file(p_sFile)
-    modify_line(CRT_ES_SYSTEMDB_FILE, "LAST_HASH", 
-                "LAST_HASH = \"%s\"" % sHashFile)
+    ini_set(CRT_ES_SYSTEMDB_FILE, "LAST_HASH", sHashFile)
 
 """ main program """
 # only analize or change file if hash is different
