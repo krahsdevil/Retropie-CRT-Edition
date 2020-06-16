@@ -200,11 +200,8 @@ class FixDaphneControls(object):
                 modify_line(self.DAPHNE_CFG_FILE, control[0], sNewLine)
 
     def _remap_option_menu(self):
-        m_sTitRemap = "JOYSTICK CONFIG"
-        m_lOptRemap = [("REMAP JOYSTICK", "REMAP"),
-                     ("CANCEL", "CANCEL")]
-        select = menu_options(m_lOptRemap, m_sTitRemap)
-        if select == "REMAP": return True
+        value = ini_get(CRT_UTILITY_FILE, "daphne_remap")
+        if value.lower() == "true": return True
         return False
 
     def _show_remap(self):
