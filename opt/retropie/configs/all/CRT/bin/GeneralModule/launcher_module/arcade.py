@@ -25,21 +25,17 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, shutil, math, commands
+import os, logging, math, commands
 from distutils.version import LooseVersion
 from launcher_module.core_paths import RETROPIE_CFG_PATH, TMP_LAUNCHER_PATH, \
                                        CRT_RA_MAIN_CFG_PATH, CRT_DB_PATH
 from launcher_module.emulator import emulator
 from launcher_module.utils import ra_version_fixes, show_info, menu_options, \
                                   get_side
-from launcher_module.file_helpers import add_line, modify_line
+from launcher_module.file_helpers import add_line, modify_line, ini_set
 from launcher_module.screen import CRT
 
 RC_ADVANCEDMAME_FILE = os.path.join(RETROPIE_CFG_PATH, "mame-advmame/advmame.rc")
-RA_ARCADE_CFG_FILE = "arcade.cfg"
-CFG_ARCADE_BASE = os.path.join(CRT_RA_MAIN_CFG_PATH, RA_ARCADE_CFG_FILE)
-TMP_ARCADE_FILE = os.path.join(TMP_LAUNCHER_PATH, RA_ARCADE_CFG_FILE)
-
 
 DB_MAME037_FILE = os.path.join(CRT_DB_PATH, "mame037b5_games.txt")
 DB_MAME078_FILE = os.path.join(CRT_DB_PATH, "mame078_games.txt")
@@ -104,18 +100,6 @@ class arcade(emulator):
         self.m_dVideo = self.m_oCRT.arcade_data(self.m_sArcadeDB)
         self.arcade_encapsulator()
         self.core_config()    
-
-    def runcommand_generate(self, p_sCMD):
-        current_cmd = super(arcade, self).runcommand_generate(p_sCMD)
-        # Check if a VALID binary of the list must be excluded of the 
-        # --appendconfig flag addition (non RetroArch emulators):
-        if self.m_sNextValidBinary in self.m_lBinaryUntouchable:
-            return current_cmd
-
-        # update system_custom_cfg, used in ra_version_fixes
-        append_cmd = "--appendconfig %s" % TMP_ARCADE_FILE
-        append_cmd += " " + self.m_sFileNameVar
-        return current_cmd.replace(self.m_sFileNameVar, append_cmd)
 
     def core_config(self):
         #Check if libretro core of advmame is selected whitin
@@ -185,37 +169,34 @@ class arcade(emulator):
             p_bSmooth
             ))
         # copy cfg base
-        shutil.copy2(CFG_ARCADE_BASE, TMP_ARCADE_FILE)
-        add_line(TMP_ARCADE_FILE, 'custom_viewport_width = "%s"' % self.cfg_hres)
-        add_line(TMP_ARCADE_FILE, 'custom_viewport_height = "%s"' % self.cfg_vres)
-        add_line(TMP_ARCADE_FILE, 'custom_viewport_x = "%s"' % self.cfg_offsetx)
-        add_line(TMP_ARCADE_FILE, 'custom_viewport_y = "%s"' % self.cfg_offsety)
-        add_line(TMP_ARCADE_FILE, 'video_refresh_rate = "%s"' % self.m_dVideo["R_Rate"])
+        add_line(self.m_sCustomRACFG, 'custom_viewport_width = "%s"' % self.cfg_hres)
+        add_line(self.m_sCustomRACFG, 'custom_viewport_height = "%s"' % self.cfg_vres)
+        add_line(self.m_sCustomRACFG, 'custom_viewport_x = "%s"' % self.cfg_offsetx)
+        add_line(self.m_sCustomRACFG, 'custom_viewport_y = "%s"' % self.cfg_offsety)
+        add_line(self.m_sCustomRACFG, 'video_refresh_rate = "%s"' % self.m_dVideo["R_Rate"])
 
         # smooth vertical games on horizontal screens
-        modify_line(TMP_ARCADE_FILE, "video_smooth", 'video_smooth = "%s"' % str(p_bSmooth).lower())
+        ini_set(self.m_sCustomRACFG, "video_smooth", str(p_bSmooth).lower())
 
         # Check orientation
         logging.info("m_sSide_Game %s" % (self.m_oCRT.m_sSide_Game))
         logging.info("System Side: %s" % (self.m_iSide))
         if self.m_oCRT.m_sSide_Game == "H":
-            add_line(TMP_ARCADE_FILE, 'video_rotation = "0"')
+            add_line(self.m_sCustomRACFG, 'video_rotation = "0"')
         elif self.m_oCRT.m_sSide_Game == "V3":
-            add_line(TMP_ARCADE_FILE, 'video_rotation = "1"')
+            add_line(self.m_sCustomRACFG, 'video_rotation = "1"')
         elif self.m_oCRT.m_sSide_Game == "V1":
-            add_line(TMP_ARCADE_FILE, 'video_rotation = "3"')
+            add_line(self.m_sCustomRACFG, 'video_rotation = "3"')
 
         # Video Scale Integer activation
-        modify_line(TMP_ARCADE_FILE, "video_scale_integer =",
-                    'video_scale_integer = "%s"' % self.cfg_scaleint)
+        ini_set(self.m_sCustomRACFG, "video_scale_integer", self.cfg_scaleint)
 
         # Change custom core config if applies, like neogeo
         if self.m_sCstCoreCFG:
-            modify_line(TMP_ARCADE_FILE, "core_options_path", 
-                        'core_options_path = "%s"' % self.m_sCstCoreCFG)
+            ini_set(self.m_sCustomRACFG, "core_options_path", self.m_sCstCoreCFG)
 
         # Check retroarch version
-        ra_version_fixes(TMP_ARCADE_FILE)
+        ra_version_fixes(self.m_sCustomRACFG)
 
     def adv_config_generate(self):
         display_ror = "no"
