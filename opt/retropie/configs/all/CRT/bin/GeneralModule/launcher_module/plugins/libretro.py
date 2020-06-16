@@ -61,13 +61,3 @@ class libretro(emulator):
         logging.info("CRT Custom Retroarch cfg: %s" % self.m_sCustomRACFG)
         ra_version_fixes(self.m_sCustomRACFG)
 
-    # just called if need rebuild the CMD
-    def runcommand_generate(self, p_sCMD):
-        current_cmd = super(libretro, self).runcommand_generate(p_sCMD)
-        if not self.m_sCustomRACFG:
-            return current_cmd
-        # update system_custom_cfg, used in ra_version_fixes
-        append_cmd = "--appendconfig %s" % self.m_sCustomRACFG
-        append_cmd += " " + self.m_sFileNameVar
-        return current_cmd.replace(self.m_sFileNameVar, append_cmd)
-
