@@ -24,7 +24,7 @@ import pygame, time, imp, copy
 import sys, os, commands, subprocess, math
 import filecmp, time, threading, logging
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
@@ -67,6 +67,7 @@ DEFAULT_CFG = {
     'icon_false': "icon_false.png",
     'icon_clock': "icon_clock.png",
     'icon_warn': "icon_warn.png",
+    'icon_edit': "icon_edit.png",
     'icon_eject': "icon_eject.png",
     'icon_es': "icon_es.png",
     'icon_sys': "icon_sys.png",
@@ -100,7 +101,7 @@ class core(object):
     m_sSkinPath = ""
 
     m_oThreads      = [] # to store threads
-    m_bPause        = [False, False]
+    m_bPause        = [False]
     m_bExit         = False
     m_lRestart      = {'restart': False, 'icon_render': None}
     m_lReboot       = {'reboot': False, 'icon_render': None}
@@ -225,24 +226,11 @@ class core(object):
             time.sleep(0.1)
 
     def _pause(self):
-        '''
-        self.m_bPause[0]: true, pauses main configuration tool. By default
-                          if m_bPause[1] is false, will stop pygame joy
-                          module to avoid conflicts with other CRT python
-                          scripts.
-        self.m_bPause[1]: true, pauses without stop pygame joy module
-                          for fast control recovery after launch an
-                          application
-        '''
-        resjoy = False
-        if not self.m_bPause[1]:
-            self.m_oJoyHandler.quit()
-            resjoy = True
+        self.m_oJoyHandler.quit()
         if self.m_bPause[0]: self._wait()
         if self.m_bExit: return
-        if resjoy: self.m_oJoyHandler.init()
-        else: self.m_oJoyHandler.screen_init()
-        pygame.display.init()
+        self.m_oJoyHandler.init()
+        self.m_oScreen = pygame.display.set_mode(self.m_lResolutionXY, pygame.FULLSCREEN)
 
     def _init_pygame(self):
         pygame.mixer.pre_init(44100, -16, 2, 2048)
@@ -262,7 +250,6 @@ class core(object):
         self.m_oFontText = pygame.font.Font(os.path.join(self.m_sSkinPath,
                            self.dCFG['font']), self.dCFG['font_size'])
         self.dCFG['font_line'] = self.m_oFontText.get_linesize()
-        self.dCFG['blank_line'] = 1 # bottom blank space in character
 
         # screen
         self.m_lResolutionXY = get_screen_resolution()
@@ -300,8 +287,6 @@ class core(object):
             self.m_iInfo_rgt = 219
             self.m_iMax_Lines = 15
 
-        self.m_iLDrawMin = 0
-        self.m_iLDrawMax = self.m_iMax_Lines - 1
         self.m_lScreenCenter = map(lambda x: x/2, self.m_lRES)
 
         return p_iSide
@@ -641,16 +626,19 @@ class core(object):
         elif self.m_lLayer40[0]:
             p_lList = self.m_lLayer40
         
+        try: self.prev_L40Input
+        except: self.prev_L40Input = None
+        
         if p_lList:
-            if not self.m_oLayer40:
-                self._render_info_layer(p_lList[0], p_lList[1])
-                # Rotate if vertical mode
-                if self.m_iSide == 1: 
-                    self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, -90)
-                elif self.m_iSide == 3: 
-                    self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, 90)
+            if not self.m_oLayer40 or (self.prev_L40Input != p_lList[0]):
+                if type(p_lList[0]) is str or type(p_lList[0]) is list:
+                    self._render_info_layer(p_lList[0], p_lList[1])
+                elif type(p_lList[0]) == pygame.Surface:
+                    self.push_info_image(p_lList[0])
+            self.prev_L40Input = p_lList[0]
         else:
             self.m_oLayer40 = None
+            self.prev_L40Input = None
 
     def _update_text(self):
         if not self.m_oLayer20:

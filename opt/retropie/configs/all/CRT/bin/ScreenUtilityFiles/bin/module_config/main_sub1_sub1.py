@@ -21,9 +21,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, threading, time, commands
-import logging
+import logging, pygame
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
@@ -51,10 +51,10 @@ RA_MD_CORE_FILE = os.path.join(CRT_ADDN_PATH,
                   "addon_240p_suite/genesis_plus_gx_libretro.so")
 
 PATTERN_LAUNCHER_FILE = os.path.join(CRT_MODULES_PATH,
-                        "module_screen_center_utility/pattern_launcher.py")
+                        "module_center/pattern_launcher.py")
 
 class main_sub1_sub1(object):
-    m_bPause = [False, False]
+    m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
 
@@ -68,7 +68,7 @@ class main_sub1_sub1(object):
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = "01 Image Utilities"
+    m_sSection = "Image Utilities"
 
     m_lLayer40 = [None, None] # text & icon label
     
@@ -83,9 +83,30 @@ class main_sub1_sub1(object):
     def info(self, p_sText = False, p_sIcon = False):
         self.m_lLayer40[0] = None
         self.m_lLayer40[1] = None
-        if p_sText:
-            self.m_lLayer40[0] = p_sText
-            self.m_lLayer40[1] = p_sIcon
+        if not p_sText: return
+        if type(p_sText) is not list:
+            if type(p_sText) == pygame.Surface:
+                self.m_lLayer40[0] = p_sText
+                return
+            elif type(p_sText) is str:
+                if os.path.exists(p_sText):
+                    self.m_lLayer40[0] = render_image(p_sText)
+                    press_back()
+                    return
+        self.m_lLayer40[0] = p_sText
+        self.m_lLayer40[1] = p_sIcon
+
+    def _launch_kbd(self, p_sString):
+        try: self.m_oKBDClass
+        except: self.m_oKBDClass = keyboard()
+        while True:
+            value = self.m_oKBDClass.write(p_sString)
+            if type(value) is str:
+                break
+            else: 
+                self.info(value)
+        self.info()
+        return value
 
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]

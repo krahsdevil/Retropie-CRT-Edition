@@ -21,17 +21,16 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, threading, time, commands, re
-import logging
+import logging, pygame
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import explore_list, find_submenus, load_submenu, \
-                         check_es_restart, run, check_sys_reboot
+from config_utils import *                         
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import *
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
@@ -51,7 +50,7 @@ RA_GBA_CORE_FILE = os.path.join(CRT_ADDN_PATH,
                   "addon_credits/mgba_libretro.so")
 
 class main_sub6(object):
-    m_bPause = [False, False]
+    m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
 
@@ -80,9 +79,30 @@ class main_sub6(object):
     def info(self, p_sText = False, p_sIcon = False):
         self.m_lLayer40[0] = None
         self.m_lLayer40[1] = None
-        if p_sText:
-            self.m_lLayer40[0] = p_sText
-            self.m_lLayer40[1] = p_sIcon
+        if not p_sText: return
+        if type(p_sText) is not list:
+            if type(p_sText) == pygame.Surface:
+                self.m_lLayer40[0] = p_sText
+                return
+            elif type(p_sText) is str:
+                if os.path.exists(p_sText):
+                    self.m_lLayer40[0] = render_image(p_sText)
+                    press_back()
+                    return
+        self.m_lLayer40[0] = p_sText
+        self.m_lLayer40[1] = p_sIcon
+
+    def _launch_kbd(self, p_sString):
+        try: self.m_oKBDClass
+        except: self.m_oKBDClass = keyboard()
+        while True:
+            value = self.m_oKBDClass.write(p_sString)
+            if type(value) is str:
+                break
+            else: 
+                self.info(value)
+        self.info()
+        return value
 
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
@@ -288,12 +308,8 @@ class main_sub6(object):
         if p_iJoy == None:
             return self.opt10_datas()
         if p_iJoy & CRT_OK:
-            commandline = "%s -L %s " % (RA_BIN_FILE, RA_GBA_CORE_FILE)
-            commandline += "--config %s " % RA_GBA_CFG_FILE1
-            commandline += "--appendconfig %s " % RA_GBA_CFG_FILE2
-            commandline += "\"%s\" " % ROM_FILE
-            commandline += "> /dev/null 2>&1"
-            self._launch_app(commandline, "gba")
+            self.info(os.path.join(SCRIPT_DIR, "assets/credits.png"))
+            self.info()
 
     def opt10_datas(self):
         p_lLines = {'text': "Credits",

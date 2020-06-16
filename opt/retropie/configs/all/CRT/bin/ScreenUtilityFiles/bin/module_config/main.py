@@ -22,7 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os, logging
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
@@ -47,7 +47,7 @@ class main(object):
     m_lSubMenus = []
     m_lIcon = {'icon': "icon_info"}
     m_sSection = "MAIN"
-    m_bPause = [False, False]
+    m_bPause = [False]
     m_bThreadsStop = True
 
     m_lLayer40 = [None, None] # text & icon label

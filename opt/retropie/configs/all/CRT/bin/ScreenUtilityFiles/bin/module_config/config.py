@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import pygame, os, sys, logging, traceback, time
 import filecmp
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))

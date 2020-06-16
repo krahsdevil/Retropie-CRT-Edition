@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys, os
 import logging
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
@@ -41,7 +41,7 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 class index(object):
     m_lLines = []
-    m_bPause = [False, False]
+    m_bPause = [False]
     
     m_oCurPage = None
     m_lSubMenus = []

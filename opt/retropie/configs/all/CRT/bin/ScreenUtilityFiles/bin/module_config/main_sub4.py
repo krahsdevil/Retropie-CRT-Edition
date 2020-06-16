@@ -21,9 +21,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, threading, time, commands
-import logging
+import logging, pygame
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
@@ -31,7 +31,7 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from config_utils import explore_list, find_submenus, load_submenu, \
-                         check_es_restart, check_sys_reboot
+                         check_es_restart, check_sys_reboot, get_ip_address
 from launcher_module.core_paths import *
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
@@ -44,7 +44,7 @@ FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
 class main_sub4(object):
-    m_bPause = [False, False]
+    m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
 
@@ -73,9 +73,30 @@ class main_sub4(object):
     def info(self, p_sText = False, p_sIcon = False):
         self.m_lLayer40[0] = None
         self.m_lLayer40[1] = None
-        if p_sText:
-            self.m_lLayer40[0] = p_sText
-            self.m_lLayer40[1] = p_sIcon
+        if not p_sText: return
+        if type(p_sText) is not list:
+            if type(p_sText) == pygame.Surface:
+                self.m_lLayer40[0] = p_sText
+                return
+            elif type(p_sText) is str:
+                if os.path.exists(p_sText):
+                    self.m_lLayer40[0] = render_image(p_sText)
+                    press_back()
+                    return
+        self.m_lLayer40[0] = p_sText
+        self.m_lLayer40[1] = p_sIcon
+
+    def _launch_kbd(self, p_sString):
+        try: self.m_oKBDClass
+        except: self.m_oKBDClass = keyboard()
+        while True:
+            value = self.m_oKBDClass.write(p_sString)
+            if type(value) is str:
+                break
+            else: 
+                self.info(value)
+        self.info()
+        return value
 
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
@@ -86,7 +107,7 @@ class main_sub4(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = []
+        p_lAutoL = [self.opt1, self.opt2, self.opt3]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -95,7 +116,7 @@ class main_sub4(object):
                 time.sleep(timer)
                 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2]
+        p_lOptFn = [self.opt1, self.opt2, self.opt3]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -136,43 +157,41 @@ class main_sub4(object):
                     self.m_lLines.append(temp)
         except:
             raise
-  
+
     def opt1(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt1_datas()
-        list = self.m_lLines[p_iLine]['options']
-        value = self.m_lLines[p_iLine]['value']
-        new = explore_list(p_iJoy, value, list)
-        if not new: return
-        #TAKE ANY ACTION
-        
-        self.m_lLines[p_iLine]['value'] = new
 
     def opt1_datas(self):
-        p_lLines = {'text': "Imagen", 'icon': None, 
-                    'value': "Retropie CRT", 
-                    'options': ["Retropie CRT", "RGB-Pi", "Otros"]}
+        p_lLines = {'text': "Public IP", 'icon': None, 
+                    'color_val': "type_color_1"}
+        value = get_ip_address("public")
+        p_lLines.update({'value': value})
         return p_lLines
-
+  
     def opt2(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
-        list = self.m_lLines[p_iLine]['options']
-        value = self.m_lLines[p_iLine]['value']
-        new = explore_list(p_iJoy, value, list)
-        if not new: return
-        #TAKE ANY ACTION
-        
-        self.m_lLines[p_iLine]['value'] = new
 
     def opt2_datas(self):
+        p_lLines = {'text': "LAN IP", 'icon': None, 
+                    'color_val': "type_color_1"}
+        value = get_ip_address("eth0")
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt3(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
-        temp = commands.getoutput('vcgencmd measure_temp')
-        temp = temp.strip().split("=")[1]
-        p_lLines.update({'text': "Temperature"})
-        p_lLines.update({'value': temp})
+        if p_iJoy == None:
+            return self.opt3_datas()
+
+    def opt3_datas(self):
+        p_lLines = {'text': "WLAN IP", 'icon': None, 
+                    'color_val': "type_color_1"}
+        value = get_ip_address("wlan0")
+        p_lLines.update({'value': value})
         return p_lLines
         
     def input(self, p_iLine, p_iJoy):

@@ -30,9 +30,10 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import *
-from module_cable.cable_selector import CableSelector
-from launcher_module.file_helpers import ini_get, ini_set
+from config_utils import explore_list, find_submenus, load_submenu, \
+                         check_es_restart, check_sys_reboot
+from keyb.keyboard import keyboard
+from launcher_module.netplay import netplay
 from launcher_module.core_paths import *
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
@@ -44,7 +45,7 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
-class main_sub5(object):
+class main_sub4_sub1(object):
     m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
@@ -53,13 +54,13 @@ class main_sub5(object):
     m_lMainOpts = []
     m_lSubMenus = []
     m_lOptFn = []
-
+    
     m_lCtrl = []
     m_lRestart = [__name__, False]
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = "05 System"
+    m_sSection = "Retroarch Netplay"
 
     m_lLayer40 = [None, None] # text & icon label
     
@@ -108,7 +109,8 @@ class main_sub5(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = []
+        p_lAutoL = [self.opt2, self.opt3, self.opt4,
+                    self.opt5]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -159,142 +161,145 @@ class main_sub5(object):
                     self.m_lLines.append(temp)
         except:
             raise
-  
+
     def opt1(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         if p_iJoy == None:
             return self.opt1_datas()
-        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
-            try: self.p_oRESClass
-            except: self.p_oRESClass = saveboot()
-            list = self.m_lLines[p_iLine]['options']
+        if p_iJoy & CRT_OK:
             value = self.m_lLines[p_iLine]['value']
-            new = explore_list(p_iJoy, value, list)
-            if new:
-                value = new
-                if new.lower() == "default": value = 'default'
-                ini_set(CRT_FIXMODES_FILE, "mode_default", value)
-                self.m_lLines[p_iLine].update({'value': new})
-                self.p_oRESClass.save()
-                self.p_oRESClass.apply()
+            new = explore_list(p_iJoy, value)
+            if new: cfg = self.m_oNETClass.enable()
+            else: cfg = self.m_oNETClass.disable()
+            self.m_lLines[p_iLine]['value'] = cfg
 
     def opt1_datas(self):
-        p_lLines = {'text': "TV Modes", 
-                    'es_restart': True,
-                    'color_val': "type_color_1"}
-        value = ini_get(CRT_FIXMODES_FILE, "mode_default")
-        if value.lower() == "default": value = 'Default'
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Enable Netplay", 
+                    'icon': None}
+        value = self.m_oNETClass.status()
         p_lLines.update({'value': value})
-        p_lLines.update({'options': get_modes()}) 
         return p_lLines
 
     def opt2(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         p_lLines = {}
-        try: self.m_oCABLEClass
-        except: self.m_oCABLEClass = CableSelector()
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            if not self.m_oNETClass.status(): return
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            if new:
-                self.info("Please Wait", "icon_clock")
-                value = self.m_oCABLEClass.change_cable(new)
-                if value == new:
-                    self.m_lLines[p_iLine].update({'value': new})
-                    if "NEED FIX" in self.m_lLines[p_iLine]['options']:
-                        self.m_lLines[p_iLine]['options'].remove("NEED FIX")
-                self.info()
+            if new and new == self.m_oNETClass.mode(new).title():
+                self.m_lLines[p_iLine]['value'] = new
+                if new.lower() == "host":
+                    self.info(["Check your router",
+                               "has configured port",
+                               "NAT to your raspberry"],
+                               "icon_info")
+                    time.sleep(5)
+                    self.info()
 
     def opt2_datas(self):
-        p_lLines = {'text': "RGB Cable",
-                    'sys_reboot': True,
-                    'color_val': "type_color_1"}
-        try: self.m_oCABLEClass
-        except: self.m_oCABLEClass = CableSelector()
-        list = self.m_oCABLEClass.get_cable_list()
-        p_lLines.update({'options': list})
-        value = self.m_oCABLEClass.get_cable()
-        if not value:
-            if not "NEED FIX" in p_lLines['options']:
-                p_lLines['options'].insert(0, "NEED FIX")
-            p_lLines.update({'value': "NEED FIX"})
-        else:
-            p_lLines.update({'value': value})
-        logging.info("values %s" % p_lLines)
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Connection Mode", 
+                    'color_val': "type_color_1",
+                    'icon': None}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        value = self.m_oNETClass.get_mode().title()
+        p_lLines.update({'options': ["Host", "Client"]})
+        p_lLines.update({'value': value})
         return p_lLines
 
     def opt3(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         if p_iJoy == None:
             return self.opt3_datas()
-        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
-            list = self.m_lLines[p_iLine]['options']
+        if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): return
             value = self.m_lLines[p_iLine]['value']
-            new = explore_list(p_iJoy, value, list)
-            if new:
-                if new == "Default":
-                    ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "governor", "")
-                else:
-                    ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "governor", new.lower())
-                self.m_lLines[p_iLine].update({'value': new})
+            new = self._launch_kbd(value).replace(" ", "_")
+            if new and new == self.m_oNETClass.nick(new):
+                self.m_lLines[p_iLine]['value'] = new
 
     def opt3_datas(self):
-        p_lLines = {'text': "CPU Governor", 
-                    'options': ["Default", "Conservative", 
-                                "Ondemand", "Userspace",
-                                "Powersave", "Performance", 
-                                "Schedutil"],
-                    'color_val': "type_color_1"}
-        options = []
-        value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "governor")
-        if value == "":
-            value = "Default"
-        else:
-            value = value.title()
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Nickname", 
+                    'color_val': "type_color_1",
+                    'icon': "icon_edit"}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        value = self.m_oNETClass.get_nick()
         p_lLines.update({'value': value})
         return p_lLines
 
     def opt4(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         if p_iJoy == None:
             return self.opt4_datas()
         if p_iJoy & CRT_OK:
-            list = self.m_lLines[p_iLine]['options']
+            if not self.m_oNETClass.status(): return
+            if self.m_oNETClass.get_mode() == "host": return
             value = self.m_lLines[p_iLine]['value']
-            new = explore_list(p_iJoy, value, list)
-            if new == False: ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu", "1")
-            elif new == True: ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu", "0")
-            self.m_lLines[p_iLine].update({'value': new})
+            new = self._launch_kbd(value)
+            if new and new == self.m_oNETClass.host(new):
+                self.m_lLines[p_iLine]['value'] = new
+            else:
+                self.info("Wrong IP", "icon_info")
+                time.sleep(2)
+                self.info()
 
     def opt4_datas(self):
-        p_lLines = {'text': "Retropie Runcommand",
-                    'color_val': "type_color_1"}
-        value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu")
-        if value == "0": value = True
-        else: value = False 
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Remote Host", 
+                    'color_val': "type_color_1",
+                    'icon': "icon_edit"}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        if self.m_oNETClass.get_mode() == "host": value = "N/A"
+        else: value = self.m_oNETClass.get_host()
         p_lLines.update({'value': value})
         return p_lLines
 
     def opt5(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         if p_iJoy == None:
             return self.opt5_datas()
         if p_iJoy & CRT_OK:
-            list = self.m_lLines[p_iLine]['options']
+            if not self.m_oNETClass.status(): return
             value = self.m_lLines[p_iLine]['value']
-            new = explore_list(p_iJoy, value, list)
-            if new == False: ini_set(RA_CFG_FILE, "menu_driver", "Null")
-            elif new == True: ini_set(RA_CFG_FILE, "menu_driver", "rgui")
-            self.m_lLines[p_iLine].update({'value': new})
+            new = self._launch_kbd(value)
+            if new and new == self.m_oNETClass.port(new):
+                self.m_lLines[p_iLine]['value'] = new
+            else:
+                self.info("Wrong Port", "icon_info")
+                time.sleep(2)
+                self.info()
 
     def opt5_datas(self):
-        p_lLines = {'text': "Retroarch Menu",
-                    'color_val': "type_color_1"}
-        value = ini_get(RA_CFG_FILE, "menu_driver")
-        if value == "Null": value = False
-        else: value = True
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Port", 
+                    'color_val': "type_color_1",
+                    'icon': "icon_edit"}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        value = self.m_oNETClass.get_port()
         p_lLines.update({'value': value})
         return p_lLines
         

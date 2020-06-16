@@ -22,8 +22,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os, imp, math, re, time, shlex
 import logging, subprocess, commands
+import socket, fcntl, struct
+import pygame
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
@@ -35,7 +37,7 @@ from launcher_module.core_paths import *
 from launcher_module.utils import get_side, check_process
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set
-from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
+from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
 
@@ -88,6 +90,22 @@ def explore_list(p_iJoy, p_sValue, p_lList = None):
                     new = list[pos - 1]
     logging.info("new value is: %s" % new)
     return new
+
+def get_ip_address(p_sIFname):
+    if p_sIFname == "public":
+        addr = os.popen('wget -qO- http://ipecho.net/plain --timeout=0.8 --tries=1 ; echo').readlines(-1)[0].strip()
+        if addr: return addr
+        else: return "Not Available"
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        addr = socket.inet_ntoa(fcntl.ioctl(s.fileno(),
+              0x8915,  # SIOCGIFADDR
+              struct.pack('256s', p_sIFname[:15]))[20:24])
+    except: addr = "Getting IP"
+    command = "sudo ethtool %s | grep \"Link detected\"" % p_sIFname
+    output = commands.getoutput(command).strip()
+    if not output or "no" in output.lower(): addr = "Disconnected"
+    return addr
     
 def get_modes():
     p_lList = []
@@ -129,33 +147,16 @@ def check_sys_reboot(p_lList, p_lCtrl):
     return p_bCheck
 
 def launching_images(p_bShow):
-    for Level1 in os.listdir(RETROPIE_CFG_PATH):
-        LEVEL1 = os.path.join(RETROPIE_CFG_PATH, Level1)
-        if os.path.isdir(LEVEL1):
-            for Level2 in os.listdir(LEVEL1):
-                LEVEL2 = os.path.join(LEVEL1, Level2)
-                sFile2 = os.path.join(Level1, Level2)
-                if os.path.isdir(LEVEL2):
-                    for Level3 in os.listdir(LEVEL2):
-                        LEVEL3 = os.path.join(LEVEL2, Level3)
-                        sFile3 = os.path.join(Level1, Level2, Level3)
-                        if os.path.isdir(LEVEL3):
-                            for Level4 in os.listdir(LEVEL3):
-                                LEVEL4 = os.path.join(LEVEL3, Level4)
-                                sFile4 = os.path.join(Level1, Level2, Level3, Level4)
-                                if os.path.isfile(LEVEL4):
-                                    rename_image(sFile4, RETROPIE_CFG_PATH, p_bShow)
-                        else:
-                            rename_image(sFile3, RETROPIE_CFG_PATH, p_bShow)
-                else:
-                    rename_image(sFile2, RETROPIE_CFG_PATH, p_bShow)
+    for (root,dirs,files) in os.walk(RETROPIE_CFG_PATH, topdown=True): 
+            for f in files:
+                if not "/all" in root:
+                    if f[-4:] in (".png", ".jpg"):
+                        p_sFile = os.path.join(root, f)
+                        rename_image(p_sFile, p_bShow)
 
-def rename_image(p_sImage, p_sSrcPath, p_bShow):
-    img_dis = ["dis_launching.png", "dis_launching.jpg"]
-    img_ena = ["launching.png", "launching.jpg"]
-    img_src = None
-    img_dst = None
-    file_dst = None
+def rename_image(p_sImage, p_bShow):
+    img_dis = "dis_launching"
+    img_ena = "launching"
     img_src = img_ena
     img_dst = img_dis
     if p_bShow: 
@@ -163,21 +164,38 @@ def rename_image(p_sImage, p_sSrcPath, p_bShow):
         img_dst = img_ena
 
     file = os.path.basename(p_sImage)
-    filepath_src = os.path.join(p_sSrcPath, p_sImage)
-    path = os.path.dirname(os.path.abspath(filepath_src))
-    
-    if file not in img_src: return
-    logging.info("show: %s" % p_bShow)
-    logging.info("src: %s" % img_src)
-    logging.info("filename: %s" % file)
-    for f in img_dst:
-        logging.info('file ext %s and f is %s' % (file[-4:], f))
-        if file[-4:] in f:
-            filepath_dst = os.path.join(path, f)
-            logging.info('mv -f "%s" "%s" > /dev/null 2>&1' % \
-                     (filepath_src, filepath_dst))
-            os.system('mv -f "%s" "%s" > /dev/null 2>&1' % \
-                     (filepath_src, filepath_dst))
+    ext = file[-4:]
+    path = os.path.dirname(os.path.abspath(p_sImage))
+    logging.info("filename: %s" % file[:-4])
+    if file[:-4] != img_src: return
+
+    filepath_dst = os.path.join(path, img_dst)
+    filepath_dst += ext
+    os.system('mv -f "%s" "%s" > /dev/null 2>&1' % \
+             (p_sImage, filepath_dst))
+
+def press_back():
+    m_oJoyHandler = joystick()
+    while True:
+        event = m_oJoyHandler.event_wait()
+        if event & CRT_CANCEL: 
+            m_oJoyHandler.quit()
+            break
+
+def render_image(p_sImg):
+    if not os.path.exists(p_sImg): 
+        logging.info("INFO: image not found")
+        return None
+    try:
+        img = pygame.image.load(p_sImg).convert_alpha()
+        rect = img.get_rect()
+        rect.bottomleft = (0, rect.height)
+        sf = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+        sf.blit(img, rect)
+        return sf
+    except:
+        raise
+        #return None
     
 def restart_ES():
     """ Restart ES if it's running """

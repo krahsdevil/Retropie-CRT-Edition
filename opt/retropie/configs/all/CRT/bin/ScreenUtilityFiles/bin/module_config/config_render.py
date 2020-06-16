@@ -22,7 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pygame, os, sys, logging, traceback, math
 
-#sys.dont_write_bytecode = True
+sys.dont_write_bytecode = False
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
@@ -63,8 +63,6 @@ class render(core):
             except: p_oTextColor = C_WHITE
         elif p_lTextColor: 
             p_oTextColor = p_lTextColor
-        #else: 
-        #    p_oTextColor = C_WHITE
 
         if p_lShadowColor and "type" in p_lShadowColor:
             try: p_oShadowColor = self.dCFG[p_lShadowColor]
@@ -190,7 +188,6 @@ class render(core):
             alignY = 0
             if icon.get_height() > self.dCFG['font_size']:
                 alignY -= math.ceil((icon.get_height() - self.dCFG['font_size']) / 2.0)
-            logging.info("INFO: alignY %s" % alignY)
             rect = icon.get_rect()
             rect.midleft = (0, (oSectSf.get_height() / 2) + alignY)
             oSectSf.blit(icon, rect)
@@ -246,6 +243,25 @@ class render(core):
 
         # draw text
         self.m_oLayer40.blit(p_oTable.img, rect)
+
+        # Rotate if vertical mode
+        if self.m_iSide == 1: 
+            self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, -90)
+        elif self.m_iSide == 3: 
+            self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, 90)
+        return 
+
+    def push_info_image(self, p_oImg):
+        self.m_oLayer40 = pygame.Surface(self.m_lRES, pygame.SRCALPHA)
+        rect = p_oImg.get_rect()
+        rect.center = (self.m_lScreenCenter[0], self.m_lScreenCenter[1])
+        self.m_oLayer40.blit(p_oImg, rect)
+        
+        # Rotate if vertical mode
+        if self.m_iSide == 1: 
+            self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, -90)
+        elif self.m_iSide == 3: 
+            self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, 90)
         return 
 
 class Table(object):
