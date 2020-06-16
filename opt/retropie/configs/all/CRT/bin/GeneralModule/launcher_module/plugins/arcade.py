@@ -24,10 +24,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging
+import os, logging, shutil
 from launcher_module.file_helpers import ini_get
 from launcher_module.arcade import arcade
-from launcher_module.core_paths import CRT_UTILITY_FILE, CRT_RA_CORES_CFG_PATH
+from launcher_module.core_paths import CRT_UTILITY_FILE, CRT_RA_CORES_CFG_PATH, \
+                                       CRT_RA_MAIN_CFG_PATH, TMP_LAUNCHER_PATH
 
 class arcade(arcade):
     m_bIntegerScale = False
@@ -38,7 +39,7 @@ class arcade(arcade):
         return ["arcade", "mame-advmame", "mame-libretro", "fba", "neogeo"]
 
     def pre_configure(self):
-        if ini_get(CRT_UTILITY_FILE, "integer_scale") == "1":
+        if ini_get(CRT_UTILITY_FILE, "integer_scale") == "true":
             self.m_bIntegerScale = True
             logging.info("enabled integer scale for arcade/neogeo")
 
@@ -50,6 +51,10 @@ class arcade(arcade):
         if self.m_sSystem == "neogeo":
             sFile = self.m_sSystem + "-core.cfg"
             self.m_sCstCoreCFG = os.path.join(CRT_RA_CORES_CFG_PATH, sFile)
+        
+        cfg = os.path.join(CRT_RA_MAIN_CFG_PATH, "arcade.cfg")
+        self.m_sCustomRACFG = os.path.join(TMP_LAUNCHER_PATH, "arcade.cfg")
+        shutil.copy2(cfg, self.m_sCustomRACFG)
         super(arcade, self).pre_configure()
 
     def configure(self):
