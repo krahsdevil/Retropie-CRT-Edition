@@ -27,7 +27,7 @@ from launcher_module.core_paths import CRT_ROOT_PATH, RETROPIE_EMULATORS_PATH, \
                                        RA_BIN_FILE, CRT_RA_HASHDB_FILE, \
                                        ROTMODES_TATE1_FILE, ROTMODES_TATE3_FILE
 from launcher_module.file_helpers import md5_file, ini_get, touch_file, \
-                                         add_line, modify_line
+                                         add_line, ini_set
 from launcher_module.core_choices_dynamic import choices
 from distutils.version import LooseVersion
 
@@ -273,27 +273,31 @@ class ra_version_fixes():
         f.close()
 
         for line in full_lines:
-            if line != "\n":
-                lValues = line.strip().split(' ')
+            lValues = line.strip().split(' ')
+            try:
                 if self.m_sRAHash == lValues[1]:
                     self.m_sRAVersion = lValues[2]
                     logging.info("INFO: found hash in db: {%s} {%s}" % \
                                 (self.m_sRAHash, self.m_sRAVersion))
                     break
+            except: pass
         if not self.m_sRAVersion:
             self._add_ra_version_to_db()
 
     def _add_ra_version_to_db(self):
         # update file if not found
+        self.m_sRAVersion = self.get_ra_version()
+        add_line(CRT_RA_HASHDB_FILE, "RetroArch %s %s" % \
+                (self.m_sRAHash, self.m_sRAVersion))
+        logging.info("INFO: added new retroarch hash to db: " + \
+                     "{%s} {%s}" % (self.m_sRAHash, self.m_sRAVersion))
+
+    def get_ra_version(self):
         output = commands.getoutput("%s --version" % RA_BIN_FILE)
         for line in output.splitlines():
             lValues = line.strip().split(' ')
             if 'RetroArch' in lValues[0]:
-                self.m_sRAVersion = lValues[5]
-                add_line(CRT_RA_HASHDB_FILE, "RetroArch %s %s" % \
-                        (self.m_sRAHash, self.m_sRAVersion))
-                logging.info("INFO: added new retroarch hash to db: " + \
-                             "{%s} {%s}" % (self.m_sRAHash, self.m_sRAVersion))
+                return lValues[5]
 
     def _apply_fixes(self):
         self._ra_aspect_ratio()
@@ -307,8 +311,7 @@ class ra_version_fixes():
         p_sRatioCur = ini_get(self.m_sSystemCfgPath, "aspect_ratio_index")
         logging.info("INFO: Checking if aspect ratio number is %s" % p_sRatioNew)
         if p_sRatioNew != p_sRatioCur.replace('"', ''):
-            modify_line(self.m_sSystemCfgPath, "aspect_ratio_index",
-                        "aspect_ratio_index = \"%s\"" % p_sRatioNew)
+            ini_set(self.m_sSystemCfgPath, "aspect_ratio_index", p_sRatioNew)
             logging.info("INFO: fixed: %s version: %s ratio: %s (was %s)" % \
                         (self.m_sSystemCfgPath, self.m_sRAVersion,
                          p_sRatioNew, p_sRatioCur))
