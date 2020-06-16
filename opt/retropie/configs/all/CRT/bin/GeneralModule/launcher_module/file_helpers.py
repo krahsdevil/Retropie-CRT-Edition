@@ -87,7 +87,10 @@ def ini_set(p_sFile, p_sKeyMask, p_sNewValue):
         new_file = f.readlines()
         f.seek(0) # rewind
         for line in new_file:
-            lValues = line.strip().replace('=',' ').split(' ')
+            lValues = line.strip()
+            lValues = lValues.replace('"', '')
+            lValues = lValues.replace('=',' ')
+            lValues = re.sub(r' +', " ", lValues).split(' ')
             if p_sKeyMask == lValues[0].strip():
                 line = '%s = "%s"\n' % (p_sKeyMask, p_sNewValue)
             f.write(line) # new line
