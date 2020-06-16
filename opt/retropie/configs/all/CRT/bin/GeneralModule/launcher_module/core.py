@@ -28,12 +28,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys
 import subprocess, commands, time
-import logging
+import logging, re
 
 from .screen import CRT
 from .utils import HideScreen, check_process, show_info
 from .core_paths import *
 from .file_helpers import *
+from .netplay import netplay
 
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
@@ -41,12 +42,12 @@ CLEAN_LOG_ONSTART = True
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 
-CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1.5 && "
+CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 1 && "
 
 class launcher(object):
     """ virtual class for crt launcher """
     m_sFileName = ""
-    m_sFileNameVar = "%ROM%"
+    m_sFileNameVar = '%ROM%'
     m_sCfgSystemPath = ""
     m_sSystemFreq = ""
     m_sSelCore = ""
@@ -54,6 +55,7 @@ class launcher(object):
     m_lBinaryMasks = []
     m_lBinaryUntouchable = []
     m_lBinaries = []
+    m_sCustomRACFG = "" #retroarch custom append config for CRT
     m_lProcesses = PROCESSES
     m_oBlackScreen = None
     m_oRunProcess = None
@@ -119,19 +121,16 @@ class launcher(object):
         new_cmd = self.m_sNextValidBinary + " = \""
         new_cmd += CRT_RUNCOMMAND_FORMAT % TMP_SLEEPER_FILE
         new_cmd += p_sCMD + "\""
+        new_cmd = re.sub(r' +', " ", new_cmd)
         return new_cmd
-        # --apendconfig must be added on each plugin if needed
-        # usually for retroarch.
 
     def runcommand_clean(self, p_sCMD):
         # first remove quotes
         p_sCMD = p_sCMD.replace('"', '')
         # check if %BASENAME% is used instead of %ROM%
         if '%BASENAME%' in p_sCMD:
-            self.m_sFileNameVar = "%BASENAME%"
-        elif '%ROM%' in p_sCMD:
-            self.m_sFileNameVar = "%ROM%"
-
+            self.m_sFileNameVar = '%BASENAME%'
+        p_sCMD = p_sCMD.replace(self.m_sFileNameVar, '')
         # "touch /path/lchtmp && sleep 1 && /path/retroarch ...
         # "/path/retroarch ...
         if "&&" in p_sCMD:
@@ -140,17 +139,55 @@ class launcher(object):
         # ... %ROM%"'
         if "--appendconfig" in p_sCMD:
             p_sCMD = p_sCMD.split("--appendconfig")[0]
-        # add at the end
-        if self.m_sFileNameVar not in p_sCMD:
-            p_sCMD += self.m_sFileNameVar
-        # finally add quotes
-        p_sCMD = '"' + p_sCMD.strip() + '"'
+        # --apendconfig for retroach only. Custom cfg files
+        # defined in plugins.
+        if RA_BIN_FILE in p_sCMD:
+            if self.m_sCustomRACFG:
+                p_sCMD += " --appendconfig %s" % self.m_sCustomRACFG
+        p_sCMD += " " + self.m_sFileNameVar
+        p_sCMD = self.runcommand_netplay(p_sCMD)
         return p_sCMD
 
-    # check if runcommand has correct behaivor:
-    #   FROM emulator-binary-name = "command-to-launch-the-game"
-    #   TO   emulator-binary-name = "crt-command && command-to-launch-the-game"
+    def runcommand_netplay(self, p_sCMD):
+        if not RA_BIN_FILE in p_sCMD: return p_sCMD
+        p_lNet = ['-C', '-H', '--port', '--nick']
+        p_lCMD = p_sCMD.split(' ')
+        count = 0
+        # clean netplay config
+        for item in p_lCMD:
+            if item == '-C' or item == '-H':
+                p_sCMD = p_sCMD.replace(item, '')
+            elif item == '--port' or item == '--nick':
+                text = p_lCMD[count] + " " + p_lCMD[count + 1]
+                p_sCMD = p_sCMD.replace(text, '')
+            count += 1
+        p_sCMD = re.sub(r' +', " ", p_sCMD)
+        p_oNetplay = netplay()
+
+        # append netplay if enabled
+        if p_oNetplay.status():
+            logging.info("INFO: netplay enabled")
+            if p_oNetplay.get_mode().lower() == 'client': mode = '-C'
+            else: mode = '-H'
+            port = '--port %s' % p_oNetplay.get_port()
+            nick = '--nick %s' % p_oNetplay.get_nick()
+            p_sCMD += " " + mode
+            p_sCMD += " " + port
+            p_sCMD += " " + nick
+            ini = ini_get(CRT_UTILITY_FILE, 'netplay_stateless')
+            if ini.lower() == "true": p_sCMD += " --stateless"
+            lframes = ini_get(CRT_UTILITY_FILE, 'netplay_lframes')
+            ini_set(self.m_sCustomRACFG, 
+                    'netplay_input_latency_frames_min',
+                    lframes)
+            logging.info("INFO: netplay config: %s %s %s" % (mode, port, nick))
+        return p_sCMD
+
     def runcommand_prepare(self):
+        ''' check if runcommand has correct behaivor:
+            FROM emulator-binary-name = "command-to-launch-the-game"
+            TO   emulator-binary-name = "crt-command && command-to-launch-the-game"
+        '''
         f = open(self.m_sCfgSystemPath, "r")
         new_file = f.readlines()
         f.close()
@@ -170,19 +207,17 @@ class launcher(object):
                         logging.info("changed command (%s)" % cmd_current)
                         modify_line(self.m_sCfgSystemPath, line, cmd_current)
 
-
-    # wait_runcommand: wait for user launcher menu
-    #   @only_runcommand: off, just check current process.
-    #   return: True, if user wants close emulation directly.
     def runcommand_wait(self, only_runcommand = True):
-        timer = 0 # security timer
-        if not self.m_lProcesses:
-            self.panic("processes not available")
-        if only_runcommand:
-            logging.info("INFO: waiting runcommand ends and start")
-        else:
-            logging.info("INFO: waiting one emulator process on this list: %s " % \
-                        str(self.m_lProcesses))
+        ''' wait_runcommand: wait for user launcher menu
+           @only_runcommand: off, just check current process.
+           return: True, if user wants close emulation directly.
+        '''
+        tctrl = time.time()
+        wtime = 3
+        if not self.m_lProcesses: self.panic("processes not available")
+        if only_runcommand: logging.info("INFO: waiting runcommand ends and start")
+        else: logging.info("INFO: waiting one emulator process on this list: %s " % \
+              str(self.m_lProcesses))
         # TODO: better use a symple socket daemon
         while True:
             if only_runcommand:
@@ -193,15 +228,12 @@ class launcher(object):
                 poll = self.m_oRunProcess.poll()
                 if poll != None:
                     logging.info("INFO: runcommand closed by user (poll = %s)" % poll)
-                    RuncommandClosed = True
                     return True
             if check_process(self.m_lProcesses):
                 logging.info("INFO: detected emulator active process, wait finished...")
                 return False
             elif not only_runcommand:
-                time.sleep(0.01)
-                timer += 0.01
-                if timer > 1.5:
+                if (time.time() - tctrl) > wtime:
                     logging.info("INFO: Process not found, exiting by security timer.")
                     return None
 
