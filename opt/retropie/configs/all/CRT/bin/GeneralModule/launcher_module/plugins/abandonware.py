@@ -46,12 +46,11 @@ class abandonware(emulator):
         if self.m_sSystem == "scummvm":
             self.m_lBinaryMasks = ["scummvm"]
             self._scummvm_change_gfxmode()
-            if not "+Start " in self.m_sGameName:
-                self._scummvm_change_aspect()
+            self._scummvm_change_aspect()
         elif self.m_sSystem == "pc":
             self.m_lBinaryMasks = ["dosbox"]
         super(abandonware, self).configure()
-        show_info("Better with keyboard and mouse")
+        #show_info("Better with keyboard and mouse")
 
     def _scummvm_create_cfg(self):
         """ create base ini file if not exist """
@@ -81,7 +80,7 @@ class abandonware(emulator):
         p_sScummARC = ini_get(CRT_UTILITY_FILE, "scummvm_arc")
         if p_sScummARC == "false":
             self._scummvm_change_ini(SCUMMVMCFG_FILE, p_sARValue, "false")
-        if p_sScummARC == "true":
+        elif p_sScummARC == "true":
             self._scummvm_change_ini(SCUMMVMCFG_FILE, p_sARValue, "true")
 
     def _scummvm_change_ini(self, p_sFile, p_sKey, p_sValue,
@@ -101,5 +100,5 @@ class abandonware(emulator):
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         if "+Start " in self.m_sGameName:
-            show_info("Launching %s Configurator!" % self.m_sSystem.upper())
+            show_info("LAUNCHING %s CONFIGURATOR!" % self.m_sSystem.upper())
         super(abandonware, self).runcommand_start()
