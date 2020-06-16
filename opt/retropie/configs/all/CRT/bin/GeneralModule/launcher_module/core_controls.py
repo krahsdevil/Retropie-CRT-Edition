@@ -82,22 +82,19 @@ class joystick(object):
     m_oScreen = None
 
     def __init__(self):
-        self.screen_init()
+        self._set_clock()
         self.joy_daemon_watcher()
 
     def init(self):
         self.__init__()
 
-    def screen_init(self):
-        RES_X, RES_Y = self._get_screen_resolution()
-        self.m_oScreen = pygame.display.set_mode((RES_X, RES_Y))
+    def _set_clock(self):
         self.m_oClock = pygame.time.Clock()
 
     def joy_daemon_watcher(self):
         oJoyWatcher = threading.Thread(target = self.joystick_detection)
         oJoyWatcher.setDaemon(True)
         oJoyWatcher.start()
-        time.sleep(1) # give time to load joystick module
         
     def joystick_detection(self):
         """ 
@@ -107,7 +104,6 @@ class joystick(object):
         Launched internally as daemon
         """
         self.m_bUnload = False
-        p_iTime = 0.5
         p_iJoyNum = 2
         while not self.m_bUnload:
             p_iCount = 0
@@ -118,50 +114,44 @@ class joystick(object):
                 if os.path.exists("/dev/input/js%s" % j):
                     p_lJoyAdd.append(j) # joy number existent
                     p_iCount += 1
-                else:
-                    p_lJoyRem.append(j) # joy number missing
+                else: p_lJoyRem.append(j) # joy number missing
             
             # if there is MORE joys configured than counted
             if self.m_iNumJoys > p_iCount:
                 for joy in p_lJoyRem:
-                    try:
-                        self._remove(joy)
-                    except:
-                        pass
+                    try: self._remove(joy)
+                    except: pass
 
             # if there is LESS joys configured than counted            
             elif self.m_iNumJoys < p_iCount:
                 # reset pygame joystick module to load all joys
                 if pygame.joystick.get_init():
                     pygame.joystick.quit()
-                if self.m_bUnload:
-                    break
+                if self.m_bUnload: break
                 pygame.joystick.init()
                 # load all joys detected in system
                 self.m_lJoys = []       # cleaning db buttons of joys
                 try:
                     for joy in p_lJoyAdd:
                         self._initialize(joy)
-                except:
-                    pass
+                except: pass
 
             # detecting how many joystick are loaded in pygame
             self.m_iNumJoys = 0
             for j in range(0, p_iJoyNum):
                 try:
-                    if pygame.joystick.Joystick(j).get_init():
-                        self.m_iNumJoys += 1
-                except:
-                    pass
+                    if pygame.joystick.Joystick(j).get_init(): self.m_iNumJoys += 1
+                except: pass
+            self.m_oClock.tick(20)
+            pygame.time.wait(0)
 
-            time.sleep(p_iTime)
-        pygame.joystick.quit()
+        for i in range(0, len(self.m_lJoys) + 1):
+            try: pygame.joystick.Joystick.quit(i)
+            except: pass
         logging.info("INFO: unloaded joystick daemon")
 
     def quit(self):
         self.m_bUnload = True
-        pygame.joystick.quit()
-        self.m_lJoys = []
 
     def _remove(self, p_iJoy):
         pygame.joystick.Joystick(p_iJoy).quit()
@@ -236,49 +226,42 @@ class joystick(object):
         return len(self.m_lJoys)
 
     def get_key(self, p_oKey):
-        try:
-            return KEY_CFG[p_oKey]
-        except:
-            return None
+        try: return KEY_CFG[p_oKey]
+        except: return None
 
     def get_button(self, p_iDevice, p_iButton):
-        if self.m_lJoys[p_iDevice]['ok'] == p_iButton:
-            return CRT_OK
-        elif self.m_lJoys[p_iDevice]['cancel'] == p_iButton:
-            return CRT_CANCEL
+        if len(self.m_lJoys) == 0: return None
+        if self.m_lJoys[p_iDevice]['ok'] == p_iButton: return CRT_OK
+        elif self.m_lJoys[p_iDevice]['cancel'] == p_iButton: return CRT_CANCEL
         #logging.info("jb-ign: %i %i" % (p_iDevice, p_iButton))
         return None
 
     def get_axis(self, p_iDevice, p_iAxis, p_fValue):
         global ABS_CTRL_STATE
+        if len(self.m_lJoys) == 0: return None
         fValue = round(float(p_fValue), 1)
         #logging.info("jb-ign: %i %i %s" % (p_iDevice, p_iAxis, str(fValue)))
 
         if abs(fValue) < ABS_DIF:
             ABS_CTRL_STATE = False
             return None
-        elif ABS_CTRL_STATE:
-            return None
+        elif ABS_CTRL_STATE: return None
             
         if self.m_lJoys[p_iDevice]['x']['axis'] == p_iAxis:
             ABS_CTRL_STATE = True
             if fValue > self.m_lJoys[p_iDevice]['x']['value']:
                 return CRT_RIGHT
-            else:
-                return CRT_LEFT
+            else: return CRT_LEFT
         if self.m_lJoys[p_iDevice]['y']['axis'] == p_iAxis:
             ABS_CTRL_STATE = True
             if fValue > self.m_lJoys[p_iDevice]['y']['value']:
                 return CRT_DOWN
-            else:
-                return CRT_UP
+            else: return CRT_UP
         return None
 
     def get_hat(self, p_lValue):
-        try:
-            return HAT_CFG[p_lValue]
-        except:
-            return None
+        try: return HAT_CFG[p_lValue]
+        except: return None
 
     def _get_screen_resolution(self):
         """ main function to get screen resolution """
@@ -292,6 +275,7 @@ class joystick(object):
     def event_wait(self):
         while True:
             for event in pygame.event.get():
+                if self.m_bUnload: break
                 if event.type == pygame.KEYDOWN:
                     input = self.get_key(event.key)
                     if input: return input
