@@ -133,6 +133,7 @@ class core(object):
     m_lInfo         = ({'info': "A:OK"}, {'info': "B:BACK"})
 
     def __init__(self, p_dSkin = DEFAULT_CFG):
+        self.check_cfg_file()
         self.dCFG = p_dSkin.copy()
         self.m_sSkinPath = os.path.join(SCRIPT_DIR, self.dCFG['style'])
         self.m_oIndex = index()
@@ -686,6 +687,6 @@ class core(object):
             os.system('sudo reboot')
         elif self.m_lRestart['restart']: 
             restart_ES()
-            time.sleep(2)
+            #time.sleep(3)
         sys.exit(0)
 
