@@ -53,7 +53,6 @@ class launcher(object):
     m_sSelCore = ""
     m_sNextValidBinary = ""
     m_lBinaryMasks = []
-    m_lBinaryUntouchable = []
     m_lBinaries = []
     m_sCustomRACFG = "" #retroarch custom append config for CRT
     m_lProcesses = PROCESSES
@@ -167,6 +166,7 @@ class launcher(object):
         # append netplay if enabled
         if p_oNetplay.status():
             logging.info("INFO: netplay enabled")
+            # main netplay config
             if p_oNetplay.get_mode().lower() == 'client': mode = '-C'
             else: mode = '-H'
             port = '--port %s' % p_oNetplay.get_port()
@@ -176,10 +176,16 @@ class launcher(object):
             p_sCMD += " " + nick
             ini = ini_get(CRT_UTILITY_FILE, 'netplay_stateless')
             if ini.lower() == "true": p_sCMD += " --stateless"
-            lframes = ini_get(CRT_UTILITY_FILE, 'netplay_lframes')
+            # other options
+            lframes = p_oNetplay.get_lframes()
             ini_set(self.m_sCustomRACFG, 
-                    'netplay_input_latency_frames_min',
-                    lframes)
+                    'netplay_input_latency_frames_min', lframes)
+            spect = "true" if p_oNetplay.get_spectator() else "false"
+            ini_set(self.m_sCustomRACFG, 
+                    'netplay_start_as_spectator', spect)
+            lobby = "true" if p_oNetplay.get_lobby() else "false"
+            ini_set(self.m_sCustomRACFG, 
+                    'netplay_public_announce', lobby)
             logging.info("INFO: netplay config: %s %s %s" % (mode, port, nick))
         return p_sCMD
 
