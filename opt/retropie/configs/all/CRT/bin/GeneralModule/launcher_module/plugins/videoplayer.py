@@ -44,8 +44,8 @@ class videoplayer(launcher):
     m_sPlayAll = "False"
 
     m_sTitVideo = "VIDEO PLAYER"
-    m_lOptVideo = [("Just this video...", "False"),
-                   ("Play ALL from this!", "True")]
+    m_lOptVideo = [("PLAY VIDEO", "False"),
+                   ("PLAY ALL FROM THIS", "True")]
 
     """ OMX Player command string """
     m_sOMXPart01 = 'omxplayer -b --align center --layer 10000 '
