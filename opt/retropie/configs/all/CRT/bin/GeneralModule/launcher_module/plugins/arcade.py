@@ -31,8 +31,8 @@ from launcher_module.core_paths import CRT_UTILITY_FILE, CRT_RA_CORES_CFG_PATH, 
                                        CRT_RA_MAIN_CFG_PATH, TMP_LAUNCHER_PATH
 
 class arcade(arcade):
-    m_bIntegerScale = False
-    m_sCstCoreCFG = ""
+    m_bIScale = False
+    m_sCoreCFG = ""
 
     @staticmethod
     def get_system_list():
@@ -40,7 +40,7 @@ class arcade(arcade):
 
     def pre_configure(self):
         if ini_get(CRT_UTILITY_FILE, "integer_scale") == "true":
-            self.m_bIntegerScale = True
+            self.m_bIScale = True
             logging.info("enabled integer scale for arcade/neogeo")
 
         """
@@ -50,18 +50,10 @@ class arcade(arcade):
         """
         if self.m_sSystem == "neogeo":
             sFile = self.m_sSystem + "-core.cfg"
-            self.m_sCstCoreCFG = os.path.join(CRT_RA_CORES_CFG_PATH, sFile)
-        
-        cfg = os.path.join(CRT_RA_MAIN_CFG_PATH, "arcade.cfg")
-        self.m_sCustomRACFG = os.path.join(TMP_LAUNCHER_PATH, "arcade.cfg")
-        shutil.copy2(cfg, self.m_sCustomRACFG)
+            self.m_sCoreCFG = os.path.join(CRT_RA_CORES_CFG_PATH, sFile)
         super(arcade, self).pre_configure()
 
     def configure(self):
-        #Identifing emulators that is not necesary to change part of
-        #its launching string like '--append' flag
-        self.m_lBinaryUntouchable = ["advmame"]
-
         if self.m_sSystem == "mame-advmame":
             self.m_lBinaryMasks = ["advmame"]
         elif self.m_sSystem == "arcade":
@@ -69,3 +61,14 @@ class arcade(arcade):
             # if BinaryMask doesn't match will try to close all these process
         else:
             self.m_lBinaryMasks = ["lr-"]
+            
+    def post_configure(self):
+        file = os.path.join(CRT_RA_MAIN_CFG_PATH, "arcade.cfg")
+        # if not exists report it
+        if not os.path.exists(file):
+            logging.error("not found cfg: %s" % file)
+            return
+        logging.info("CRT Custom Retroarch cfg: %s" % file)
+        self.m_sCustomRACFG = os.path.join(TMP_LAUNCHER_PATH, "arcade.cfg")
+        logging.info("INFO: copying: %s => %s" % (file, self.m_sCustomRACFG))
+        shutil.copy2(file, self.m_sCustomRACFG)

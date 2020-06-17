@@ -47,7 +47,6 @@ class laserdisc(emulator):
     def configure(self):
         if self.m_sSystem == "daphne":
             self.m_lBinaryMasks = ["daphne"]
-            self.m_lBinaryUntouchable = ["daphne"]
             FixDaphneControls(self.m_sSystem).fix()
         p_sSelectFreq = FrequencySelector(self.m_sFileName).get_frequency()
         self.m_sSystemFreq = self.m_sSystem
@@ -109,15 +108,6 @@ class laserdisc(emulator):
     def screen_set(self):
         super(laserdisc, self).screen_set()
         self.create_daphne_config()
-
-    def runcommand_generate(self, p_sCMD):
-        current_cmd = super(laserdisc, self).runcommand_generate(p_sCMD)
-        if self.m_sNextValidBinary in self.m_lBinaryUntouchable:
-            return current_cmd
-        # update system_custom_cfg, used in ra_version_fixes
-        append_cmd = "--appendconfig %s" % self.m_sCustomRACFG
-        append_cmd += " " + self.m_sFileNameVar
-        return current_cmd.replace(self.m_sFileNameVar, append_cmd)
 
 class FixDaphneControls(object):
     """

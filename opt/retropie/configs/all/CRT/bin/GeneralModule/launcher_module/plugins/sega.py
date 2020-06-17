@@ -23,8 +23,7 @@ You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import os, logging, shutil
-from launcher_module.core_paths import TMP_LAUNCHER_PATH
+import os, logging
 from launcher_module.plugins.selector import selector
 from launcher_module.file_helpers import ini_set
 
@@ -55,15 +54,6 @@ class sega(selector):
     def get_system_list():
         return ["megadrive", "mastersystem"]
 
-    def post_configure(self):
-        super(sega, self).post_configure()
-        # copy cfg base
-        self.m_sSegaTmpPath = os.path.join(TMP_LAUNCHER_PATH, os.path.basename(self.m_sCustomRACFG))
-        logging.info("INFO: copying: %s => %s" % (self.m_sCustomRACFG, self.m_sSegaTmpPath))
-        shutil.copy2(self.m_sCustomRACFG, self.m_sSegaTmpPath)
-        # use tmp config
-        self.m_sCustomRACFG = self.m_sSegaTmpPath
-
     # get ready sega retroarch video settings
     def prepare(self):
         current_cmd = super(sega, self).prepare()
@@ -90,10 +80,10 @@ class sega(selector):
     def segacfg_write(self, p_dData):
         if self.m_sRndCore != self.m_sSelCore:
             logging.info("INFO: system: %s core: %s" % (self.m_sSystemFreq, self.m_sSelCore))
-            ini_set(self.m_sSegaTmpPath, "custom_viewport_width", p_dData["width"])
-            ini_set(self.m_sSegaTmpPath, "custom_viewport_height", p_dData["height"])
-            ini_set(self.m_sSegaTmpPath, "custom_viewport_x", p_dData["x"])
-            ini_set(self.m_sSegaTmpPath, "custom_viewport_y", p_dData["y"])
+            ini_set(self.m_sCustomRACFG, "custom_viewport_width", p_dData["width"])
+            ini_set(self.m_sCustomRACFG, "custom_viewport_height", p_dData["height"])
+            ini_set(self.m_sCustomRACFG, "custom_viewport_x", p_dData["x"])
+            ini_set(self.m_sCustomRACFG, "custom_viewport_y", p_dData["y"])
             logging.info("INFO: Changes type %s => %s" % (self.m_sViewPortType, str(p_dData)))
         else:
             logging.info("INFO: same SEGA core, changes already applied")

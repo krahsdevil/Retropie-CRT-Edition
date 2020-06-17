@@ -25,8 +25,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, commands
-from launcher_module.core_paths import CRT_RA_MAIN_CFG_PATH
+import os, logging, commands, shutil
+from launcher_module.core_paths import CRT_RA_MAIN_CFG_PATH, TMP_LAUNCHER_PATH
 from launcher_module.emulator import emulator
 from launcher_module.utils import ra_version_fixes
 
@@ -53,11 +53,14 @@ class libretro(emulator):
     def post_configure(self):
         self.m_lBinaryMasks = ["lr-"]
 
-        self.m_sCustomRACFG = os.path.join(CRT_RA_MAIN_CFG_PATH, self.m_sSystemCfg)
+        file = os.path.join(CRT_RA_MAIN_CFG_PATH, self.m_sSystemCfg)
         # if not exists report it
-        if not os.path.exists(self.m_sCustomRACFG):
-            logging.error("not found cfg: %s" % self.m_sCustomRACFG)
+        if not os.path.exists(file):
+            logging.error("not found cfg: %s" % file)
             return
-        logging.info("CRT Custom Retroarch cfg: %s" % self.m_sCustomRACFG)
+        logging.info("CRT Custom Retroarch cfg: %s" % file)
+        self.m_sCustomRACFG = os.path.join(TMP_LAUNCHER_PATH, "system.cfg")
+        logging.info("INFO: copying: %s => %s" % (file, self.m_sCustomRACFG))
+        shutil.copy2(file, self.m_sCustomRACFG)
         ra_version_fixes(self.m_sCustomRACFG)
 

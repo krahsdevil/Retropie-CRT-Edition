@@ -59,7 +59,7 @@ class arcade(emulator):
     cfg_offsety = 0
     cfg_hres = 0
     cfg_vres = 0
-    cfg_scaleint = "false"
+    cfg_iscale = "false"
     cfg_ghres = 0 #Real Horizontal Resolution of the game
     
     m_sTitEnc = "Arcade Encapsulator"
@@ -134,7 +134,7 @@ class arcade(emulator):
         self.cfg_ghres = self.m_dVideo["Game_H_Res"]
         self.cfg_offsetx = 0
         if self.m_oCRT.m_sSide_Game != 'V':
-            if self.m_bIntegerScale:
+            if self.m_bIScale:
                 self.ra_integer_calculator()
             self.ra_config_create()
         else:
@@ -163,7 +163,7 @@ class arcade(emulator):
             self.cfg_vres,
             self.cfg_offsetx,
             self.cfg_offsety,
-            self.cfg_scaleint,
+            self.cfg_iscale,
             self.m_dVideo["R_Rate"],
             self.m_oCRT.m_sSide_Game,
             p_bSmooth
@@ -189,11 +189,11 @@ class arcade(emulator):
             add_line(self.m_sCustomRACFG, 'video_rotation = "3"')
 
         # Video Scale Integer activation
-        ini_set(self.m_sCustomRACFG, "video_scale_integer", self.cfg_scaleint)
+        ini_set(self.m_sCustomRACFG, "video_scale_integer", self.cfg_iscale)
 
         # Change custom core config if applies, like neogeo
-        if self.m_sCstCoreCFG:
-            ini_set(self.m_sCustomRACFG, "core_options_path", self.m_sCstCoreCFG)
+        if self.m_sCoreCFG:
+            ini_set(self.m_sCustomRACFG, "core_options_path", self.m_sCoreCFG)
 
         # Check retroarch version
         ra_version_fixes(self.m_sCustomRACFG)
@@ -248,7 +248,7 @@ class arcade(emulator):
                 self.cfg_offsetx -= 64
             else:
                 #Horizontal auto center through 'video_scale_integer'
-                self.cfg_scaleint = "true"
+                self.cfg_iscale = "true"
             logging.info("game h_res %s - Calculated Int_Multiplier %s" % (self.cfg_ghres,int_multiplier))
         
     def arcade_encapsulator(self):
