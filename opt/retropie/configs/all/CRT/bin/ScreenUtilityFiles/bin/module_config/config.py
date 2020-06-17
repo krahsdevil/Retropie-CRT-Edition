@@ -31,7 +31,8 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.file_helpers import modify_line, ini_get, remove_file
+from launcher_module.file_helpers import modify_line, ini_get, remove_file, \
+                                         touch_file, add_line
 from config_render import render
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Configuration_Utility.log")
@@ -79,6 +80,41 @@ class config(render):
                                      "icon_info"]
             time.sleep(6)
             os.system('sudo reboot')
+
+    def check_cfg_file(self):
+        CFG = ["default = \"system60\"",
+               "system60_timings = \"320 1 10 30 40 240 1 6 5 12 0 0 0 60 0 6400000 1\"",
+               "system60_offsetX = \"0\"",
+               "system60_offsetY = \"0\"",
+               "system60_width = \"0\"",
+               "system60_height = \"0\"",
+               "test60_timings = \"1920 240 60.00 -4 -10 3 48 192 240 5 15734\"",
+               "test60_offsetX = \"0\"",
+               "test60_offsetY = \"0\"",
+               "test60_width = \"0\"",
+               "test60_height = \"0\"",
+               "netplay = \"false\"",
+               "netplay_stateless = \"false\"",
+               "netplay_lframes = \"2\"",
+               "netplay_spectator = \"false\"",
+               "netplay_lobby = \"true\"",
+               "music_volume = \"50\"",
+               "audio_presets = \"flat\"",
+               "handheld_bezel = \"false\"",
+               "freq_selector = \"manual\"",
+               "integer_scale = \"false\"",
+               "scummvm_arc = \"false\"",
+               "daphne_remap = \"true\"",
+               "version = \"EVO v2.0\"",
+               "v_theme = \"VCRT-UniFlyered-Dark\"",
+               "h_theme = \"CRT-UniFlyered-Color\"",
+              ]
+        if not os.path.exists(CRT_UTILITY_FILE):
+            logging.info("INFO: config file not found")
+            touch_file(CRT_UTILITY_FILE)
+            for line in CFG:
+                add_line(CRT_UTILITY_FILE, line)
+            logging.info("INFO: created base config file")
 
     def __clean(self):
         pass
