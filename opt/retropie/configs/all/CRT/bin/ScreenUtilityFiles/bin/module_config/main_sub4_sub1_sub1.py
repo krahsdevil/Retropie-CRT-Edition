@@ -109,7 +109,7 @@ class main_sub4_sub1_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = []
+        p_lAutoL = [self.opt3]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -118,7 +118,8 @@ class main_sub4_sub1_sub1(object):
                 time.sleep(timer)
                 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2]
+        p_lOptFn = [self.opt1, self.opt2, self.opt3,
+                    self.opt4]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -196,11 +197,57 @@ class main_sub4_sub1_sub1(object):
         if p_iJoy & CRT_OK:
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value)
+            if new: cfg = self.m_oNETClass.spectator_enable()
+            else: cfg = self.m_oNETClass.spectator_disable()
+            self.m_lLines[p_iLine]['value'] = cfg
+
+    def opt2_datas(self):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Spectator Mode", 
+                    'icon': None}
+        value = self.m_oNETClass.get_spectator()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt3(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        if p_iJoy == None:
+            return self.opt3_datas()
+        if p_iJoy & CRT_OK:
+            if self.m_oNETClass.get_mode().lower() == "client": return
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value)
+            if new: cfg = self.m_oNETClass.lobby_enable()
+            else: cfg = self.m_oNETClass.lobby_disable()
+            self.m_lLines[p_iLine]['value'] = cfg
+
+    def opt3_datas(self):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Netplay Public Announce", 
+                    'icon': None}
+        if self.m_oNETClass.get_mode().lower() == "client":
+            p_lLines.update({'value': "N/A"})
+            return p_lLines
+        value = self.m_oNETClass.get_lobby()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt4(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        if p_iJoy == None:
+            return self.opt4_datas()
+        if p_iJoy & CRT_OK:
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value)
             if new: cfg = self.m_oNETClass.stateless_enable()
             else: cfg = self.m_oNETClass.stateless_disable()
             self.m_lLines[p_iLine]['value'] = cfg
 
-    def opt2_datas(self):
+    def opt4_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         p_lLines = {'text': "Stateless Mode", 
