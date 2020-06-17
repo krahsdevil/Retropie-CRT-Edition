@@ -300,6 +300,7 @@ class main_sub6(object):
                             counter = play
                             value = system.split("=")[0].replace("timer_", '')
                             value = value.upper()
+        if value.lower() in SYSTEMSDB: value = SYSTEMSDB[value.lower()]
         p_lLines.update({'value': value})
         return p_lLines
 
