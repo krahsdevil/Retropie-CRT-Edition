@@ -49,7 +49,7 @@ class netplay(object):
     def _check_netplay_cfg(self):
         if not os.path.exists(CRT_NETPLAY_FILE):
             touch_file(CRT_NETPLAY_FILE)
-            for line in NETPLAY_CFG:
+            for line in self.NETPLAY_CFG:
                 add_line(CRT_NETPLAY_FILE, line)
 
     def enable(self):
@@ -175,6 +175,34 @@ class netplay(object):
         try: frame = int(value)
         except: frame = 2
         return frame
+
+    def spectator_enable(self):
+        ini_set(CRT_UTILITY_FILE, "netplay_spectator", "true")
+        return self.get_spectator()
+
+    def spectator_disable(self):
+        ini_set(CRT_UTILITY_FILE, "netplay_spectator", "false")
+        return self.get_spectator()
+        
+    def get_spectator(self):
+        value = ini_get(CRT_UTILITY_FILE, "netplay_spectator")
+        if value.lower() == "true": return True
+        elif value.lower() == "false": return False
+        return None
+
+    def lobby_enable(self):
+        ini_set(CRT_UTILITY_FILE, "netplay_lobby", "true")
+        return self.get_lobby()
+
+    def lobby_disable(self):
+        ini_set(CRT_UTILITY_FILE, "netplay_lobby", "false")
+        return self.get_lobby()
+        
+    def get_lobby(self):
+        value = ini_get(CRT_UTILITY_FILE, "netplay_lobby")
+        if value.lower() == "true": return True
+        elif value.lower() == "false": return False
+        return None
 
     def check_ip_format(self, p_sIP):
         addr = p_sIP.split(".")
