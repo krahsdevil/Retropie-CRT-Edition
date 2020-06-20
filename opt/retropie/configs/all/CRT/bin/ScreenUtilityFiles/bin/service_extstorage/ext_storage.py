@@ -78,6 +78,7 @@ class USBAutoService(object):
     m_dRootFolders = [RETROPIE_ROMS_FOLDER, RETROPIE_BIOS_FOLDER, RETROPIE_GAMELIST_FOLDER]
     m_dGamelistFolders = [CRT_OPT_FOLDER, RETROPIE_OPT_FOLDER]
     m_iMntTime = 0
+    m_iUMntTime = 0
 
     def __init__(self):
         self.__temp()
@@ -183,6 +184,7 @@ class USBAutoService(object):
                 logging.info("INFO: Umounting device %s" % p_sMount)
             os.system('rm "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_MNT_PATH)
             os.system('touch "%s" > /dev/null 2>&1' % CRT_EXTSTRG_TRIG_UMNT_PATH)
+            self.m_iUMntTime = time.time()
         except:
             pass
 
@@ -322,13 +324,12 @@ class USBAutoService(object):
     def _restart_ES(self):
         """ Restart ES if it's running """
         if check_process("emulationstatio"):
-            logging.info("INFO: Restarting EmulationStation...")
             self.m_bPRestart = True
             if check_process(self.m_lProcesses):
                 logging.info("INFO: Pending Reboot...")
                 return
             if self.mounted_time():
-                time.sleep(1)
+                logging.info("INFO: Restarting EmulationStation...")
                 commandline = "touch /tmp/es-restart "
                 commandline += "&& pkill -f \"/opt/retropie"
                 commandline += "/supplementary/.*/emulationstation([^.]|$)\""
@@ -337,23 +338,32 @@ class USBAutoService(object):
             self.m_bPRestart = False
 
     def mounted_time(self):
-        p_iTime = time.time() - self.m_iMntTime
-        commandline = 'ps -Ao comm,etime | grep -i emulationstatio'
-        output = commands.getoutput(commandline)
-        output = re.sub(r' +', " ", output).split('\n')
-        timings = []
-        for line in output:
-            timings.append(self._get_seconds(line.split(' ')[1]))
-        if min(timings) > p_iTime: return True
+        if self.m_bUSBMounted:
+            p_iTime = int(time.time() - self.m_iMntTime)
+        else:
+            p_iTime = int(time.time() - self.m_iUMntTime)
+        uptime = self._get_es_uptime()
+        logging.info("INFO: emulationstation uptime: %ssecs, " % uptime \
+                     + "device mount/umounted since %ssecs" % p_iTime)
+        if uptime > p_iTime: return True
         logging.info("INFO: canceling emulationstation restart")
         return False
 
+    def _get_es_uptime(self):
+        commandline = 'ps -Ao comm,etime | grep -i emulationstatio'
+        output = commands.getoutput(commandline)
+        output = re.sub(r' +', " ", output).split('\n')
+        uptime = []
+        for line in output:
+            uptime.append(self._get_seconds(line.strip().split(' ')[1]))
+        return min(uptime)
+
     def _get_seconds(self, p_sTime):
-        try:
-            h, m, s = p_sTime.split(':')
-        except:
-            h = 0
-            m, s = p_sTime.split(':')
+        timer = p_sTime.split(':')
+        if len(timer) == 2: h = 0
+        elif len(timer) == 3: h = timer[0]
+        m = timer[-2]
+        s = timer[-1]
         secs = int(h) * 3600 + int(m) * 60 + int(s)
         return secs
 
