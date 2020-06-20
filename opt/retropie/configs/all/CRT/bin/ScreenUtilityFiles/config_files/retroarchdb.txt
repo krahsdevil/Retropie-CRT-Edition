@@ -1,2 +1,3 @@
 RetroArch 8b672e66ec5ec81dfbb048548124dae4 v1.7.6
 RetroArch ba4686b3479d40cb83f00cb0f4dc331e v1.8.4
+RetroArch 1fca446ed92d59dc3847e7ebe4c0173f v1.8.8
