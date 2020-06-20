@@ -25,7 +25,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, re, sys, logging, commands, glob, subprocess
+import os, sys, logging, commands, subprocess
+import time, re, glob
 from launcher_module.utils import menu_options
 from launcher_module.core import launcher
 from launcher_module.core_paths import *
@@ -109,6 +110,7 @@ class videoplayer(launcher):
                             break
                     else:
                         break
+            time.sleep(0.5)
         logging.info("process end")
 
     def cleanup(self):
