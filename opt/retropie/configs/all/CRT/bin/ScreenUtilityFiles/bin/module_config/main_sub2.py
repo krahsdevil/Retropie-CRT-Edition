@@ -75,7 +75,7 @@ class main_sub2(object):
         self._create_threads()
         pass
 
-    def info(self, p_sText = False, p_sIcon = False):
+    def info(self, p_sText = False, p_sIcon = False, p_bPress = False):
         self.m_lLayer40[0] = None
         self.m_lLayer40[1] = None
         if not p_sText: return
@@ -86,12 +86,12 @@ class main_sub2(object):
             elif type(p_sText) is str:
                 if os.path.exists(p_sText):
                     self.m_lLayer40[0] = render_image(p_sText)
-                    press_back()
+                    if p_bPress: press_back()
                     return
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString):
+    def _launch_kbd(self, p_sString = ""):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
@@ -176,6 +176,8 @@ class main_sub2(object):
                 new = int(new.replace("%", ''))
                 vol = self.m_oSYSVOLClass.set_vol(new)
                 if vol == new:
+                    if vol > 86: self.m_lLines[p_iLine]['color_val'] = "type_color_6"
+                    else: self.m_lLines[p_iLine]['color_val'] = "type_color_1"
                     self.m_lLines[p_iLine]['value'] = str(new) + "%"
 
     def opt1_datas(self):
@@ -188,6 +190,8 @@ class main_sub2(object):
             for i in range(0, 101):
                 m_lOpt.append(str(i) + "%")
             p_lLines.update({'options': m_lOpt})
+            if self.m_oSYSVOLClass.get_vol() > 86:
+                p_lLines.update({'color_val': "type_color_6"})
             value = str(self.m_oSYSVOLClass.get_vol()) + "%"
         else:
             value = "--"

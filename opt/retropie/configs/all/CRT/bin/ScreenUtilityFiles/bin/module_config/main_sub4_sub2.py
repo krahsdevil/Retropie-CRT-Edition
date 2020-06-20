@@ -31,7 +31,9 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from config_utils import explore_list, find_submenus, load_submenu, \
-                         check_es_restart, check_sys_reboot, get_ip_address
+                         check_es_restart, check_sys_reboot
+from keyb.keyboard import keyboard
+from launcher_module.netplay import netplay
 from launcher_module.core_paths import *
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
@@ -43,7 +45,7 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
-class main_sub4(object):
+class main_sub4_sub2(object):
     m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
@@ -58,7 +60,7 @@ class main_sub4(object):
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = "04 Network"
+    m_sSection = "Retroarch Netplay"
 
     m_lLayer40 = [None, None] # text & icon label
     
@@ -107,7 +109,8 @@ class main_sub4(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt1, self.opt2, self.opt3]
+        p_lAutoL = [self.opt2, self.opt3, self.opt4,
+                    self.opt5]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -116,7 +119,8 @@ class main_sub4(object):
                 time.sleep(timer)
                 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2, self.opt3]
+        p_lOptFn = [self.opt1, self.opt2, self.opt3,
+                    self.opt4, self.opt5]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -159,38 +163,143 @@ class main_sub4(object):
             raise
 
     def opt1(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         if p_iJoy == None:
             return self.opt1_datas()
+        if p_iJoy & CRT_OK:
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value)
+            if new: cfg = self.m_oNETClass.enable()
+            else: cfg = self.m_oNETClass.disable()
+            self.m_lLines[p_iLine]['value'] = cfg
 
     def opt1_datas(self):
-        p_lLines = {'text': "Public IP", 'icon': None, 
-                    'color_val': "type_color_1"}
-        value = get_ip_address("public")
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Enable Netplay", 
+                    'icon': None}
+        value = self.m_oNETClass.status()
         p_lLines.update({'value': value})
         return p_lLines
-  
+
     def opt2(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            if not self.m_oNETClass.status(): return
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new and new == self.m_oNETClass.mode(new).title():
+                self.m_lLines[p_iLine]['value'] = new
+                if new.lower() == "host":
+                    self.info(["Check your router",
+                               "has configured port",
+                               "NAT to your raspberry"],
+                               "icon_info")
+                    time.sleep(2)
+                    self.info()
 
     def opt2_datas(self):
-        p_lLines = {'text': "LAN IP", 'icon': None, 
-                    'color_val': "type_color_1"}
-        value = get_ip_address("eth0")
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Connect Mode", 
+                    'color_val': "type_color_1",
+                    'icon': None}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        value = self.m_oNETClass.get_mode().title()
+        p_lLines.update({'options': ["Host", "Client"]})
         p_lLines.update({'value': value})
         return p_lLines
 
     def opt3(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
         if p_iJoy == None:
             return self.opt3_datas()
+        if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): return
+            value = self.m_lLines[p_iLine]['value']
+            new = self._launch_kbd(value).strip()
+            if new and new == self.m_oNETClass.nick(new):
+                self.m_lLines[p_iLine]['value'] = new
 
     def opt3_datas(self):
-        p_lLines = {'text': "WLAN IP", 'icon': None, 
-                    'color_val': "type_color_1"}
-        value = get_ip_address("wlan0")
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Nick", 
+                    'color_val': "type_color_1",
+                    'icon': "icon_edit"}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        value = self.m_oNETClass.get_nick()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt4(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        if p_iJoy == None:
+            return self.opt4_datas()
+        if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): return
+            if self.m_oNETClass.get_mode() == "host": return
+            value = self.m_lLines[p_iLine]['value']
+            new = self._launch_kbd(value)
+            if new and new == self.m_oNETClass.host(new):
+                self.m_lLines[p_iLine]['value'] = new
+            else:
+                self.info("Wrong IP", "icon_info")
+                time.sleep(2)
+                self.info()
+
+    def opt4_datas(self):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Remote Host", 
+                    'color_val': "type_color_1",
+                    'icon': "icon_edit"}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        if self.m_oNETClass.get_mode() == "host": value = "N/A"
+        else: value = self.m_oNETClass.get_host()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt5(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        if p_iJoy == None:
+            return self.opt5_datas()
+        if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): return
+            value = self.m_lLines[p_iLine]['value']
+            new = self._launch_kbd(value)
+            if new and new == self.m_oNETClass.port(new):
+                self.m_lLines[p_iLine]['value'] = new
+            else:
+                self.info("Wrong Port", "icon_info")
+                time.sleep(2)
+                self.info()
+
+    def opt5_datas(self):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Port", 
+                    'color_val': "type_color_1",
+                    'icon': "icon_edit"}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            return p_lLines
+        value = self.m_oNETClass.get_port()
         p_lLines.update({'value': value})
         return p_lLines
         

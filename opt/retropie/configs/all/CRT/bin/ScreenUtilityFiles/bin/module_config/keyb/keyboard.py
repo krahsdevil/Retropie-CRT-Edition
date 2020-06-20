@@ -227,7 +227,7 @@ class keyboard(object):
 
     def render_text(self, p_sText, p_bShadow = True):
         C_SHADOW = pygame.Color( 19, 14, 56)
-        C_TEXT = pygame.Color(18,207,94)
+        C_TEXT = pygame.Color(202,199,219)
 
         p_sText = str(p_sText)
         img = self.m_oFontText.render(p_sText, False, C_TEXT)

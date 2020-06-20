@@ -55,7 +55,11 @@ class render(core):
                 return None
         
     def _text_render(self, p_sText, p_lTextColor, p_lShadowColor = None, 
-                     p_iShadowDrop = 1):
+                     p_bCropText = False, p_iShadowDrop = 1):
+        p_sText = str(p_sText)
+        if p_bCropText == True:
+            # max length 16 chars for values
+            if len(p_sText) > 16: p_sText = (p_sText[:15] + "~")
         
         p_oTextColor = C_WHITE
         if p_lTextColor and "type" in p_lTextColor:
@@ -70,7 +74,6 @@ class render(core):
         else: 
             p_oShadowColor = p_lShadowColor
 
-        p_sText = str(p_sText)
         if self.dCFG['cap']: p_sText = p_sText.upper()
         img = self.m_oFontText.render(p_sText, False, p_oTextColor)
         rect = img.get_rect()
@@ -87,19 +90,22 @@ class render(core):
     def _render_line_menu(self, p_lLine):
         oLineSf = pygame.Surface((self.m_iText_rgt - self.m_iText_lft,
                   self.dCFG['font_line'] + 4), pygame.SRCALPHA)
+   
         oTextSf = None
         oValueSf = None
+
         spacer = 10                                         # space between text & value
         ltoffset = 0                                        # move left text if icon
         rtoffset = oLineSf.get_width()                      # move right text if rarrow
         rtoffset -= self.dCFG['rarrow_render'].get_width()
         rtoffset -= 1
+
         raoffset = oLineSf.get_width()                      # right arrow offset
         laoffset = 0                                        # left arrow offset
 
         # check/append left icon in line surface
         if p_lLine["icon"]:
-            if not p_lLine['icon_render']:
+            if not p_lLine['icon_render'] or p_lLine["icon"] != p_lLine["prev_icon"]:
                 p_lLine['icon_render'] = self._img_render(self.dCFG[p_lLine["icon"]])
             alignY = 0
             if p_lLine['icon_render'].get_height() > self.dCFG['font_size']:
@@ -109,6 +115,7 @@ class render(core):
             rect.midleft = (0, (oLineSf.get_height() / 2) + alignY)
             ltoffset = rect.width + 3
             oLineSf.blit(p_lLine['icon_render'], rect)
+        p_lLine["prev_icon"] = p_lLine["icon"]
 
         # check/append selected value in line surface
         if p_lLine['value'] or p_lLine['value'] == False: 
@@ -118,7 +125,12 @@ class render(core):
                 rect1 = oValueSf.get_rect()
                 rect1.midright = (rtoffset, oLineSf.get_height() / 2)
             else:
-                oValueSf = self._text_render(p_lLine['value'], p_lLine['color_val'], 'type_color_3')
+                if p_lLine["value"] != p_lLine["prev_value"] or not p_lLine["value_render"]:
+                    p_lLine["value_render"] = self._text_render(p_lLine['value'], 
+                                              p_lLine['color_val'], 'type_color_3', True)
+                    p_lLine["prev_value"] = p_lLine["value"]
+                oValueSf = p_lLine["value_render"]
+
                 rect1 = oValueSf.get_rect()
                 rect1.midright = (rtoffset, oLineSf.get_height() / 2)
                 # check if multiple values for draw arrow
@@ -138,18 +150,19 @@ class render(core):
                             oLineSf.blit(self.dCFG['larrow_render'], rect)
             oLineSf.blit(oValueSf, rect1)
         
-        # check/append right text on line surface
-        if self.m_lLines.index(p_lLine) == self.m_iLine:
-            text = self._text_render(p_lLine["text"], C_WHITE, 'type_color_3')
-        else:
-            text = self._text_render(p_lLine["text"], p_lLine['color_txt'], 'type_color_3')
+        # check/append left text on line surface
+        if p_lLine["text"] != p_lLine["prev_text"] or not p_lLine["text_render"]:
+            p_lLine["text_render"] = self._text_render(p_lLine["text"], C_WHITE, 'type_color_3')
+            p_lLine["prev_text"] = p_lLine["text"]
+        text = p_lLine["text_render"]
+
         TotSize = self.dCFG['rarrow_render'].get_rect().width
         TotSize += ltoffset
         TotSize += text.get_rect().width + spacer
         if oValueSf: TotSize += oValueSf.get_rect().width
         if laoffset: TotSize += self.dCFG['larrow_render'].get_rect().width + 3
         
-        # check if right text need scroll
+        # check if left text need scroll
         calc = TotSize - oLineSf.get_rect().width
         if calc > 4: # text needs scroll or crop
             crop = text.get_rect().width - calc

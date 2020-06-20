@@ -43,12 +43,6 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
-ROM_FILE = os.path.join(CRT_ADDN_PATH, "addon_credits/flappybird.gba")
-RA_GBA_CFG_FILE1 = os.path.join(RETROPIE_CFG_PATH, "gba/retroarch.cfg")
-RA_GBA_CFG_FILE2 = os.path.join(CRT_RA_MAIN_CFG_PATH, "credits.cfg")
-RA_GBA_CORE_FILE = os.path.join(CRT_ADDN_PATH,
-                  "addon_credits/mgba_libretro.so")
-
 class main_sub6(object):
     m_bPause = [False]
     m_oThreads = []
@@ -76,7 +70,7 @@ class main_sub6(object):
         self.m_bThreadsStop = False
         self._create_threads()
 
-    def info(self, p_sText = False, p_sIcon = False):
+    def info(self, p_sText = False, p_sIcon = False, p_bPress = False):
         self.m_lLayer40[0] = None
         self.m_lLayer40[1] = None
         if not p_sText: return
@@ -87,12 +81,12 @@ class main_sub6(object):
             elif type(p_sText) is str:
                 if os.path.exists(p_sText):
                     self.m_lLayer40[0] = render_image(p_sText)
-                    press_back()
+                    if p_bPress: press_back()
                     return
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString):
+    def _launch_kbd(self, p_sString = ""):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
@@ -309,7 +303,7 @@ class main_sub6(object):
         if p_iJoy == None:
             return self.opt10_datas()
         if p_iJoy & CRT_OK:
-            self.info(os.path.join(SCRIPT_DIR, "assets/credits.png"))
+            self.info(os.path.join(SCRIPT_DIR, "assets/credits.png"), False, True)
             self.info()
 
     def opt10_datas(self):

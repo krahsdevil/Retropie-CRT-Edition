@@ -71,7 +71,7 @@ class main_sub5(object):
         self.m_bThreadsStop = False
         self._create_threads()
 
-    def info(self, p_sText = False, p_sIcon = False):
+    def info(self, p_sText = False, p_sIcon = False, p_bPress = False):
         self.m_lLayer40[0] = None
         self.m_lLayer40[1] = None
         if not p_sText: return
@@ -82,12 +82,12 @@ class main_sub5(object):
             elif type(p_sText) is str:
                 if os.path.exists(p_sText):
                     self.m_lLayer40[0] = render_image(p_sText)
-                    press_back()
+                    if p_bPress: press_back()
                     return
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString):
+    def _launch_kbd(self, p_sString = ""):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
@@ -175,9 +175,13 @@ class main_sub5(object):
                 if new.lower() == "default": value = 'default'
                 ini_set(CRT_FIXMODES_FILE, "mode_default", value)
                 self.m_lLines[p_iLine].update({'value': new})
+                self.info("Wait, applying Mode", "icon_info")
+                self.m_bPause[0] = True
                 self.p_oRESClass.save()
                 self.p_oRESClass.apply()
-
+                self.m_bPause[0] = False
+                time.sleep(1.5)
+                self.info()
     def opt1_datas(self):
         p_lLines = {'text': "TV Modes", 
                     'es_restart': True,

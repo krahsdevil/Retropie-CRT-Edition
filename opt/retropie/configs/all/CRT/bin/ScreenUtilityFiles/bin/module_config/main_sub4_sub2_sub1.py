@@ -45,7 +45,7 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
-class main_sub4_sub1_sub1(object):
+class main_sub4_sub2_sub1(object):
     m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
@@ -72,7 +72,7 @@ class main_sub4_sub1_sub1(object):
         self.m_bThreadsStop = False
         self._create_threads()
 
-    def info(self, p_sText = False, p_sIcon = False):
+    def info(self, p_sText = False, p_sIcon = False, p_bPress = False):
         self.m_lLayer40[0] = None
         self.m_lLayer40[1] = None
         if not p_sText: return
@@ -83,12 +83,12 @@ class main_sub4_sub1_sub1(object):
             elif type(p_sText) is str:
                 if os.path.exists(p_sText):
                     self.m_lLayer40[0] = render_image(p_sText)
-                    press_back()
+                    if p_bPress: press_back()
                     return
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString):
+    def _launch_kbd(self, p_sString = ""):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:

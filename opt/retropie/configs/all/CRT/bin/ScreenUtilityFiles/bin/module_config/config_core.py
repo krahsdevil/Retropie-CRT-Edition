@@ -84,6 +84,7 @@ DEFAULT_CFG = {
     'type_color_3': pygame.Color( 19, 14, 56), # text shadow
     'type_color_4': pygame.Color( 62, 50,162), # text color selected line
     'type_color_5': pygame.Color(124,113,218), # frame color
+    'type_color_6': pygame.Color(255,180,  0), # for high vol
 }
 
 C_BLACK  = pygame.Color(  0,   0,   0)
@@ -147,6 +148,7 @@ class core(object):
         self._main_loop()
 
     def _draw_screen(self):
+        self._side_and_size()
         self._import_index()
         self._get_pages()
         self._prepare_datas()
@@ -177,7 +179,7 @@ class core(object):
                 if self.m_bPause[0]: self._pause()
                 if self.m_bExit: return
                 self._draw_screen()
-                self.m_oClock.tick(30)
+                self.m_oClock.tick(15)
                 pygame.time.wait(0)
         except: raise
 
@@ -198,7 +200,7 @@ class core(object):
 
     def _dmn_scroll(self):
         try:
-            freq = 20 #increse/decrease for speed animation (FPS)
+            freq = 15 #increse/decrease for speed animation (FPS)
             while True:
                 if self.m_bPause[0]: self._wait()
                 if self.m_bExit: return
@@ -234,7 +236,7 @@ class core(object):
         self.m_oScreen = pygame.display.set_mode(self.m_lResolutionXY, pygame.FULLSCREEN)
 
     def _init_pygame(self):
-        pygame.mixer.pre_init(44100, -16, 2, 2048)
+        pygame.mixer.pre_init(44100, -16, 2, 4096)
         pygame.display.init()
         pygame.mouse.set_visible(0)
         self.m_oJoyHandler = joystick()
@@ -289,8 +291,7 @@ class core(object):
             self.m_iMax_Lines = 15
 
         self.m_lScreenCenter = map(lambda x: x/2, self.m_lRES)
-
-        return p_iSide
+        self.m_iSide = p_iSide
 
     def _init_sounds(self):
         pygame.mixer.init()
@@ -302,7 +303,10 @@ class core(object):
 
     def _prepare_datas(self):
         p_lLines = ('icon', 'icon_render', 'value',
-                    'options', 'color_txt', 'color_val')
+                    'options', 'color_txt', 'color_val',
+                    'icon_prev', 'text', 'text_render',
+                    'prev_text', 'value_render', 
+                    'prev_value')
         p_lTheme = ('background_render', 'top_render',
                     'bottom_render', 'selector_render',
                     'icon_true_render', 'icon_false_render',
@@ -364,22 +368,27 @@ class core(object):
                     self.quit()
 
     def _render_layers(self):
-        p_bReload = self._update_graphics()
+        p_bCheck01 = self._check_side_change()
+        p_bCheck02 = self._check_pending_rest_reb()
+        p_bCheck03 = self._check_text_change()
+        p_bCheck04 = self._check_line_change()
+        p_bCheck05 = self.m_iScroll_dif
 
         # render Layer 0; Background and frames
-        if p_bReload: 
+        if p_bCheck01 or p_bCheck02:
             self._render_layer0()
 
         # render Layer 10; Selector
-        self._render_layer10(p_bReload)
+        if p_bCheck04 or p_bCheck01:
+            self._render_layer10(p_bCheck01)
 
-        # render Layer 20; Text
-        if self._update_text() or p_bReload: 
+        # render Layer 20 Text and 21
+        if p_bCheck03 or p_bCheck01: 
             self._render_layer20()
             self._render_layer21()
 
         # render Layer 21; 
-        if self.m_iScroll_dif:
+        if p_bCheck05:
             self._render_layer21()        
 
         # render Layer 30; Pointer
@@ -387,8 +396,6 @@ class core(object):
 
         # render Layer 40; Info
         self._render_layer40()
-        
-        p_bReload = False
 
     def _join_layers(self):
         self.m_oScreen.fill(C_BLACK)
@@ -427,7 +434,6 @@ class core(object):
     def _render_layer0(self):
         # Layer 0 surface, background + top frame + bottom frame
         self.m_oLayer0 = pygame.Surface(self.m_lRES, pygame.SRCALPHA)
-
         # append background to layer0
         img = "background"
         if self.m_iSide != 0: img = "vbackground"
@@ -641,42 +647,58 @@ class core(object):
             self.m_oLayer40 = None
             self.prev_L40Input = None
 
-    def _update_text(self):
+    def _check_text_change(self):
+        p_bCheck = False
         if not self.m_oLayer20:
-            return True
+            p_bCheck = True
         elif self.m_oIndex.check_new_sub():
             self.m_iLine = 0
-            return True
+            p_bCheck = True
         else:
             return self.m_oWach.check(self.m_lLines, self.m_iLine)
+        return p_bCheck
 
-    def _update_graphics(self):
+    def _check_line_change(self):
         p_bCheck = False
-        try: self.m_bRestart_Prev
-        except: self.m_bRestart_Prev = False
-        try: self.m_bReboot_Prev
-        except: self.m_bReboot_Prev = False
-        if not self.m_oLayer0: 
+        try: self.m_bLine_Check
+        except: self.m_bLine_Check = None 
+        if self.m_iLine != self.m_bLine_Check:
+            self.m_bLine_Check = self.m_iLine
             p_bCheck = True
-        if self.m_bRestart_Prev != self.m_lRestart['restart']:
-            self.m_bRestart_Prev = self.m_lRestart['restart']
-            p_bCheck = True
-        if self.m_bReboot_Prev != self.m_lReboot['reboot']:
-            self.m_bReboot_Prev = self.m_lReboot['reboot']
-            p_bCheck = True
-        if self._side_and_size() != self.m_iSide:
-            self.m_iSide = self._side_and_size()
+        return p_bCheck
+
+    def _check_side_change(self):
+        p_bCheck = False
+        try: self.m_bSide_Check
+        except: self.m_bSide_Check = None    
+        if self.m_iSide != self.m_bSide_Check:
             logging.info("cambio de orientacion")
+            self.m_bSide_Check = self.m_iSide
             p_bCheck = True
+        return p_bCheck
+
+    def _check_pending_rest_reb(self):
+        p_bCheck = False
+        try: self.m_bRest_Check
+        except: self.m_bRest_Check = None
+        try: self.m_bRebo_Check
+        except: self.m_bRebo_Check = None
+        if self.m_bRest_Check != self.m_lRestart['restart']:
+            self.m_bRest_Check = self.m_lRestart['restart']
+            p_bCheck = True
+        if self.m_bRebo_Check != self.m_lReboot['reboot']:
+            self.m_bRebo_Check = self.m_lReboot['reboot']
+            p_bCheck = True
+            logging.info("layer0 update %s" % p_bCheck)
         return p_bCheck
 
     def quit(self):
         if self.m_lReboot['reboot']:
             self.m_lLayer40_core = ["Restarting System", "icon_info"]
-            time.sleep(3)
+            time.sleep(2)
         elif self.m_lRestart['restart']:
             self.m_lLayer40_core = ["Restarting ES", "icon_info"]
-            time.sleep(3)
+            time.sleep(2)
         self.m_bExit = True
         self.m_oJoyHandler.quit()
         while pygame.mixer.get_busy(): pass
@@ -687,6 +709,6 @@ class core(object):
             os.system('sudo reboot')
         elif self.m_lRestart['restart']: 
             restart_ES()
-            #time.sleep(3)
+            time.sleep(2)
         sys.exit(0)
 

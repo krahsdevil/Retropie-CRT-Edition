@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, imp, math, re, time, shlex
-import logging, subprocess, commands
+import logging, subprocess, commands, traceback
 import socket, fcntl, struct
 import pygame
 
@@ -34,7 +34,7 @@ sys.path.append(MODULES_PATH)
 
 from launcher_module.screen import CRT
 from launcher_module.core_paths import *
-from launcher_module.utils import get_side, check_process
+from launcher_module.utils import get_side, check_process, touch_file
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
@@ -53,7 +53,7 @@ SYSTEMSDB =    {"amiga": "AMIGA",
                 "coleco": "ColecoVision",
                 "daphne": "Daphne",
                 "fba": "FinalBurn Neo",
-                "fds": "Nintendo FDS",
+                "fds": "FDS",
                 "gamegear": "SEGA GameGear",
                 "gb": "Gameboy",
                 "gba": "Gameboy Advance",
@@ -144,10 +144,17 @@ def get_ip_address(p_sIFname):
         addr = socket.inet_ntoa(fcntl.ioctl(s.fileno(),
               0x8915,  # SIOCGIFADDR
               struct.pack('256s', p_sIFname[:15]))[20:24])
-    except: addr = "Getting IP"
-    command = "sudo ethtool %s | grep \"Link detected\"" % p_sIFname
-    output = commands.getoutput(command).strip()
-    if not output or "no" in output.lower(): addr = "Disconnected"
+    except: addr = "Disconnected"
+
+    if p_sIFname == "wlan0" and addr == "Disconnected":
+        command = "iwgetid -r"
+        output = commands.getoutput(command).strip()
+        if output: addr = "Connected"
+
+    if p_sIFname == "eth0" and addr == "Disconnected":
+        command = "sudo ethtool %s | grep \"Link detected\"" % p_sIFname
+        output = commands.getoutput(command).strip()
+        if "yes" in output.lower(): addr = "Connected"
     return addr
     
 def get_modes():
@@ -250,6 +257,145 @@ def restart_ES():
         os.system(commandline)
         #os.system('clear')
 
+class wifi(object):
+    m_sMode = "Manual"
+    m_lModes = ["Manual", "Detect"]
+    m_lSSIDs = ["[A:SCAN]"]
+    m_sSSIDSel01 = "[Your SSID]" # manual selected ssid
+    m_sSSIDSel02 = m_lSSIDs[0] # scaned selected ssid
+    m_sPwd = ""
+    WPA_FILE = '/etc/wpa_supplicant/wpa_supplicant.conf'
+    TMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "wpa_supplicant.conf")    
+
+    def __init__(self):
+        pass
+
+    def detect(self, p_sValue):
+        if p_sValue != "[A:SCAN]": return
+        commandline = "sudo iw wlan0 scan | egrep 'SSID:|signal:'"
+        output = commands.getoutput(commandline).split('\n')
+        # clean output command
+        p_dSSIDs = {}
+        for line in output:
+            sig = line.replace('dBm', '').strip().split(': ')
+            if 'signal' in sig[0]:
+                idx = output.index(line) + 1
+                ssid = output[idx].strip().split(': ')
+                try:
+                    if 'SSID' in ssid[0] and not '\\x00' in ssid[1]:
+                        name = ssid[1]
+                        if name in p_dSSIDs:
+                            if float(p_dSSIDs[name]) < float(sig[1]):
+                                p_dSSIDs[name] = sig[1]
+                        else: p_dSSIDs[name] = sig[1]
+                except: pass
+        #clean list
+        p_lSSIDs = []
+        for ssid in p_dSSIDs:
+            p_lSSIDs.append(ssid)
+        p_lSSIDs.append("[A:SCAN]")
+        self.m_lSSIDs = p_lSSIDs
+        self.ssid(self.m_lSSIDs[0])
+        return self.m_lSSIDs
+
+    def connect(self):
+        if self.get_ssid() == "[A:SCAN]" or self.get_pwd == "": return False
+        touch_file(self.TMP_FILE)
+        p_sLine1 = 'country=GB'
+        p_sLine2 = 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev'
+        p_sLine3 = 'update_config=1'
+        p_sSSIDFix = self.get_ssid()
+        p_sSSIDFix = p_sSSIDFix.replace(' ', '\\ ')
+        p_sSSIDFix = p_sSSIDFix.replace("'", '\xe2\x80\x99')
+        p_sPWDFix = self.get_pwd()
+        p_sPWDFix = p_sPWDFix.replace(' ', '\\ ')
+        p_sPWDFix = p_sPWDFix.replace("'", '\xe2\x80\x99')
+        p = subprocess.Popen('wpa_passphrase ' + p_sSSIDFix + ' ' + p_sPWDFix, stdout=subprocess.PIPE, shell=True)
+        output, err = p.communicate()
+        p.wait()
+        if 'network={' in output:
+            with open(self.TMP_FILE, 'w') as f:
+                f.write(p_sLine1 + '\n')
+                f.write(p_sLine2 + '\n')
+                f.write(p_sLine3 + '\n')
+                f.write(output)
+        else:
+            with open(self.TMP_FILE, 'w') as f:
+                f.write(p_sLine1 + '\n')
+                f.write(p_sLine2 + '\n')
+                f.write(p_sLine3 + '\n')
+        os.system('sudo cp %s %s > /dev/null 2>&1' %(self.TMP_FILE, self.WPA_FILE))
+        os.system("rm %s > /dev/null 2>&1" % self.TMP_FILE)
+        p = subprocess.Popen('wpa_cli -i wlan0 reconfigure', stdout=subprocess.PIPE, shell=True)
+        output, err = p.communicate()
+        p.wait()
+        p_iTime = time.time()
+        p_bCheck = False
+        while True:
+            if time.time() - p_iTime > 60: return p_bCheck
+            if self.status(): 
+                p_bCheck = True
+                return p_bCheck
+            time.sleep(0.2)
+
+    def clear(self):
+        self.m_sMode = "Manual"
+        self.m_sPwd = ""
+        self.m_lSSIDs = ["[A:SCAN]"]
+        self.m_sSSIDSel01 = "[Your SSID]"    # manual selected ssid
+        self.m_sSSIDSel02 = self.m_lSSIDs[0] # scaned selected ssid
+
+        p_sLine2 = 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev'
+        p_sLine3 = 'update_config=1'
+        touch_file(self.TMP_FILE)
+        with open(self.TMP_FILE, 'w') as f:
+            f.write(p_sLine2 + '\n')
+            f.write(p_sLine3 + '\n')
+        os.system('sudo cp %s %s > /dev/null 2>&1' %(self.TMP_FILE, self.WPA_FILE))
+        os.system("rm %s > /dev/null 2>&1" % self.TMP_FILE)
+        p = subprocess.Popen('wpa_cli -i wlan0 reconfigure', stdout=subprocess.PIPE, shell=True)
+        output, err = p.communicate()
+        p.wait()
+
+    def status(self):
+        commandline = "iwgetid -r"
+        output = commands.getoutput(commandline).strip()
+        if output: return output
+        return False
+        
+    def get_mode_list(self):
+        return self.m_lModes
+        
+    def get_mode(self):
+        return self.m_sMode
+        
+    def mode(self, p_sMode):
+        self.m_sMode = p_sMode
+
+    def ssid(self, p_sSSID):
+        if self.m_sMode.lower() == "manual":
+            self.m_sSSIDSel01 = p_sSSID
+        elif self.m_sMode.lower() == "detect":
+            self.m_sSSIDSel02 = p_sSSID
+
+    def get_ssid(self):
+        if self.m_sMode.lower() == "manual":
+            return self.m_sSSIDSel01
+        elif self.m_sMode.lower() == "detect":
+            return self.m_sSSIDSel02
+        
+    def get_ssid_list(self):
+        return self.m_lSSIDs
+
+    def get_pwd(self):
+        if len(self.m_sPwd) < 8: return ""
+        return self.m_sPwd
+
+    def pwd(self, p_sPWD):
+        if len(p_sPWD) < 8: return False
+        self.m_sPwd = p_sPWD
+        return True
+    
 class watcher(object):
     p_lList1 = []
     p_lList2 = []
@@ -285,10 +431,10 @@ class watcher(object):
     def _get_values(self, p_VarList):
         val = []
         for value in p_VarList:
-            try:
-                val.append(value['value'])
-            except:
-                val.append(None)
+            try: val.append(value['value'])
+            except: val.append(None)
+            try: val.append(value['icon'])
+            except: val.append(None)
         return val
         
     def _is_same_page(self, p_iPos, p_iCurLine):
