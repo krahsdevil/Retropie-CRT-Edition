@@ -127,9 +127,6 @@ class netplay(object):
             self._add_miss_ini(self.ini_nick)
             value = ini_getlist(CRT_NETPLAY_FILE, self.ini_nick)
         value = " ".join(value).replace("'", '')
-        if " " in value: 
-            value = value.replace(" ", '')
-            modify_line(CRT_NETPLAY_FILE, self.ini_nick, value)
         return value
 
     def host(self, p_sHost):
