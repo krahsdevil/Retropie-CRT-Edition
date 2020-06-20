@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <gameList>
 	<game>
-		<path>./1. Configuration Utility.py</path>
-		<name>1. Configuration Utility</name>
-		<image>./icons/1. Configuration Utility.png</image>
+		<path>./Configuration Utility.py</path>
+		<name>Configuration Utility</name>
+		<image>./icons/Configuration Utility.png</image>
 	</game>
 </gameList>
