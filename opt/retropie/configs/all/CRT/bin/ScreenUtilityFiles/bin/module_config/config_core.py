@@ -36,7 +36,7 @@ from config_utils import watcher, restart_ES
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import modify_line, ini_get, remove_file
 from launcher_module.utils import get_screen_resolution, something_is_bad, \
-                                  get_side, set_procname
+                                  get_side
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -95,8 +95,6 @@ C_GREY   = pygame.Color(125, 125, 125)
 
 CURSOR_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_cursor_01.ogg")
 CLICK_SOUND_FILE = os.path.join(CRT_SOUNDS_PATH, "sys_click_01.ogg")
-
-set_procname(PNAME_CONFIG)
 
 class core(object):
     m_sSkinPath = ""
@@ -704,11 +702,10 @@ class core(object):
         while pygame.mixer.get_busy(): pass
         pygame.display.quit()
         pygame.mixer.quit()
-        time.sleep(1)
         if self.m_lReboot['reboot']:
             os.system('sudo reboot')
         elif self.m_lRestart['restart']: 
             restart_ES()
-            time.sleep(2)
+            time.sleep(6)
         sys.exit(0)
 

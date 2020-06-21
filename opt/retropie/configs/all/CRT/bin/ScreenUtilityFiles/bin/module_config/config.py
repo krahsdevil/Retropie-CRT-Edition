@@ -31,6 +31,7 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
+from launcher_module.utils import set_procname
 from launcher_module.file_helpers import modify_line, ini_get, remove_file, \
                                          touch_file, add_line
 from config_render import render
@@ -43,6 +44,7 @@ __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
 
 os.system("clear")
+set_procname(PNAME_CONFIG)
 
 ES_LAUNCHER_DST_FILE = os.path.join(RETROPIE_PATH,
                        "supplementary/emulationstation/emulationstation.sh")
