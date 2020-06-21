@@ -48,7 +48,7 @@ CLEAN_LOG_ONSTART = False
 set_procname(PNAME_EXTSTRG)
 
 class USBAutoService(object):
-    m_lProcesses = PROCESSES
+    m_lProcesses = []
     m_bPRestart = False
 
     m_lMountUSBsPrev = []  # Previous scan: disk ID + mnt Path
@@ -56,6 +56,7 @@ class USBAutoService(object):
     m_lMountUSBs = []      # Current scan: disk ID + mnt Path
     m_lMountPaths = []     # Current scan: disk ID + mnt Path
     m_lMountCtrl = []      # For control the valid usb path
+    m_bChanges = False
     m_bUSBMounted = False  # To avoid to mount a second device
 
     m_dWrongFolderName = { "fba_libretro": "fba", "mame": "mame-libretro",
@@ -84,7 +85,7 @@ class USBAutoService(object):
         self.__temp()
         self.__clean()
         self.m_lProcesses.append(PNAME_CONFIG)
-        self.m_lProcesses.remove("omxplayer.bin")
+        self.m_lProcesses.append(PNAME_LAUNCHER)
         logging.info("INFO: Initializating USB Automount Service")
         
     def run(self):
@@ -102,20 +103,29 @@ class USBAutoService(object):
         self.m_lMountPathsPrev = self.m_lMountPaths #Save current scan as Prev to compare
         self.m_lMountUSBs = []  #Reset variable with disk and paths info
         self.m_lMountPaths = [] #Reset variable with paths info
-
-        p_sCMDString = "find /dev/disk -ls | grep /%s"
-        p_sOutputMNT = [(item.split()[0].replace("├─", "").replace("└─", ""),
-                         item[item.find("/"):]) for item in subprocess.check_output(
-                         ["lsblk"]).split("\n") if "/" in item]
         
-        for item in p_sOutputMNT:
-            try:
-                p_sOutputUSB = subprocess.check_output(["/bin/bash", "-c", p_sCMDString % item[0]])
-            except:
-                p_sOutputUSB = ""
-            if 'usb' in p_sOutputUSB:
-                self.m_lMountUSBs.append(item)
-                self.m_lMountPaths.append(item[1])
+        try: self.prev_scan
+        except: self.prev_scan = None
+
+        scan = commands.getoutput("lsblk")
+        if scan != self.prev_scan:
+            self.m_bChanges = True
+            p_sCMDString = "find /dev/disk -ls | grep /%s"
+            p_sOutputMNT = [(item.split()[0].replace("├─", "").replace("└─", ""),
+                             item[item.find("/"):]) for item in subprocess.check_output(
+                             ["lsblk"]).split("\n") if "/" in item]
+            
+            for item in p_sOutputMNT:
+                try:
+                    p_sOutputUSB = subprocess.check_output(["/bin/bash", "-c", p_sCMDString % item[0]])
+                except:
+                    p_sOutputUSB = ""
+                if 'usb' in p_sOutputUSB:
+                    self.m_lMountUSBs.append(item)
+                    self.m_lMountPaths.append(item[1])
+        else:
+            self.m_bChanges = False
+        self.prev_scan = scan
 
     def _mount(self, p_sMount = None):
         for device in self.m_lMountUSBs:
@@ -313,20 +323,23 @@ class USBAutoService(object):
                             os.system('cp "%s" "%s" > /dev/null 2>&1' % \
                                      (p_sScriptSRC, p_sScriptDST))
 
-    def _loop(self, p_iTime = 1):
+    def _loop(self, p_iTime = 0.5):
         while True:
             if self.m_bPRestart: self._restart_ES()
-            time.sleep(p_iTime)
             self._get_mounted_list()
-            if self._check_umount(): self._restart_ES()
-            elif self._check_mount(): self._restart_ES()
+            if self.m_bChanges:
+                logging.info("INFO: Changes detected")
+                if self._check_umount(): self._restart_ES()
+                elif self._check_mount(): self._restart_ES()
+            time.sleep(p_iTime)
 
     def _restart_ES(self):
         """ Restart ES if it's running """
         if check_process("emulationstatio"):
             self.m_bPRestart = True
             if check_process(self.m_lProcesses):
-                logging.info("INFO: Pending Reboot...")
+                time.sleep(0.5)
+                #logging.info("INFO: Pending Reboot...")
                 return
             if self.mounted_time():
                 logging.info("INFO: Restarting EmulationStation...")
@@ -339,9 +352,9 @@ class USBAutoService(object):
 
     def mounted_time(self):
         if self.m_bUSBMounted:
-            p_iTime = int(time.time() - self.m_iMntTime)
+            p_iTime = time.time() - self.m_iMntTime
         else:
-            p_iTime = int(time.time() - self.m_iUMntTime)
+            p_iTime = time.time() - self.m_iUMntTime
         uptime = self._get_es_uptime()
         logging.info("INFO: emulationstation uptime: %ssecs, " % uptime \
                      + "device mount/umounted since %ssecs" % p_iTime)
