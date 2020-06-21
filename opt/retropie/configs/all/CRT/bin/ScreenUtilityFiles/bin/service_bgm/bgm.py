@@ -51,7 +51,7 @@ CLEAN_LOG_ONSTART = True
 set_procname(PNAME_BGM)
 
 class BGM(object):
-    m_lProcesses = PROCESSES
+    m_lProcesses = []
     m_iStartDelay = 0           # Value (in seconds) to delay audio start.  If
                                 # you have a splash screen with audio and the 
                                 # script is playing music over the top of it, 
@@ -84,6 +84,8 @@ class BGM(object):
     def __init__(self):
         self.__temp()
         self.__clean()
+        self.m_lProcesses.append(PNAME_LAUNCHER)
+        self.m_lProcesses.append("omxplayer")        
         logging.info("INFO: Initializating BGM service")
 
     def prepare(self):
@@ -172,11 +174,11 @@ class BGM(object):
             else:
                 self.m_sMusicState = 'stop'
                 self.m_iSongPos = 0
-            self._quit_pygame()
             logging.info("INFO: halted music as {%s}" % self.m_sMusicState)
         else:
             self.m_iSongPos = 0
             self.m_sMusicState = 'stop'
+        self._quit_pygame()
 
     def _seek_track(self):
         """ If music is stopped will seek for the next song """
@@ -272,7 +274,7 @@ class BGM(object):
                 self.music_stop()
                 wait_process(self.m_lProcesses, 'stop')
             self.music_start()
-            time.sleep(1)
+            time.sleep(2)
 
     def cleanup(self):
         os.system('clear')
