@@ -110,32 +110,27 @@ def menu_options(p_sMessage, p_sTitle = None):
 def check_process(p_sProcess, p_iTimes = 1):
     """ 
     Look for a process.
-    Only a name can be passed or a list of them.
+    A name can be passed or a list of them.
     If list is passed will break as soon as one of them is found.
     For a single process is possible to pass the number of times 
     that is found to be identified as 'found'; This is interesting 
-    for emulationstation because application in retropie generates
-    three 'emulationstatio' processes.
+    for emulationstation since it generates three 'emulationstatio'
+    processes.
     """
-    p_bCheck = 0
     if p_sProcess == "emulationstatio": p_iTimes = 3
-    
-    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-    for pid in pids:
-        try:
-            procname = open(os.path.join('/proc', pid, 'comm'), 'rb').read()
-            if type(p_sProcess) is list:
-                if procname[:-1] in p_sProcess:
-                    p_bCheck = p_iTimes
-                    break
-            elif type(p_sProcess) is str:
-                if procname[:-1] == p_sProcess:
-                    p_bCheck += 1
-        except IOError:
-            pass
-    # p_iTimes >= 1 process was found
-    p_bCheck = True if p_bCheck >= p_iTimes else False 
-    return p_bCheck
+    commandline = "ps -Ao comm | grep -i "
+    if type(p_sProcess) is list:
+        for proc in p_sProcess:
+            line = commandline + proc
+            output = commands.getoutput(line)
+            output = re.sub(r' +', " ", output).strip().split('\n')
+            if proc in output and len(output) >= p_iTimes: return True
+    elif type(p_sProcess) is str:
+        line = commandline + p_sProcess
+        output = commands.getoutput(line)
+        output = re.sub(r' +', " ", output).strip().split('\n')
+        if p_sProcess in output and len(output) >= p_iTimes: return True
+    return False
    
 def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
     """
