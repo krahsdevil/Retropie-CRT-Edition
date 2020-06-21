@@ -26,13 +26,16 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, sys, traceback
-from launcher_module.core_paths import TMP_LAUNCHER_PATH
-from launcher_module.utils import something_is_bad, plugin_list, plugin_load, show_info
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, PNAME_LAUNCHER
+from launcher_module.utils import something_is_bad, plugin_list, plugin_load, \
+                                  show_info, set_procname
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODULES_PATH = os.path.join(BASE_DIR, "launcher_module/plugins")
 
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
+
+set_procname(PNAME_LAUNCHER)
 
 if __name__ == '__main__':
     try:
