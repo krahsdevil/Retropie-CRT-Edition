@@ -166,9 +166,6 @@ class emulator(launcher):
             else:
                 self.panic("NOT FOUND emulators masks [%s]" % str(self.m_lBinaryMasks))
 
-    def _emulatorcfg_die(self):
-        self.runcommand_kill()
-
     def emulatorcfg_check_or_die(self):
         """
         After runcommand-config is closed we check if emulator still be valid or die!
@@ -179,13 +176,13 @@ class emulator(launcher):
             if user change screen resolution config.
         """
         if not self.emulatorcfg_default_check():
-            self._emulatorcfg_die()
+            self.runcommand_kill()
             self.panic("No valid emulator selected", "Please, try again!")
         if not self.emulatorcfg_per_game():
-            self._emulatorcfg_die()
+            self.runcommand_kill()
             self.panic("No valid emulator for this game", "Please, try again!")
         if self.clean_videomodes():
-            self._emulatorcfg_die()
+            self.runcommand_kill()
             self.panic("Don't change emulator resolution", "Please, try again!")
 
     def is_valid_binary(self, p_sCore):
