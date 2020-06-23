@@ -60,6 +60,7 @@ RETROPIE_VIDEOMODES_FILE = os.path.join(RETROPIE_CFG_PATH, "all/videomodes.cfg")
 RETROPIE_CUSTEMU_FILE = os.path.join(RETROPIE_CFG_PATH, "all/emulators.cfg")
 RETROPIE_RUNCOMMAND_CFG_FILE = os.path.join(RETROPIE_CFG_PATH, "all/runcommand.cfg")
 RETROPIE_RUNCOMMAND_FILE = os.path.join(RETROPIE_PATH, "supplementary/runcommand/runcommand.sh")
+RETROPIE_CFGRAAPP_FILE = os.path.join(TMP_LAUNCHER_PATH, "retroarch.cfg")
 
 # EMULATIONSTATION
 ES_PATH = "/etc/emulationstation"
