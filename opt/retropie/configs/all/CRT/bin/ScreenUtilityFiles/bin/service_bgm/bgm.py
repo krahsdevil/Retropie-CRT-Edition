@@ -85,7 +85,7 @@ class BGM(object):
         self.__temp()
         self.__clean()
         self.m_lProcesses.append(PNAME_LAUNCHER)
-        self.m_lProcesses.append("omxplayer")        
+        self.m_lProcesses.append("omxplayer.bin")        
         logging.info("INFO: Initializating BGM service")
 
     def prepare(self):
@@ -163,19 +163,20 @@ class BGM(object):
         instead of pause on ES exiting.
 
         """
-        if mixer.music.get_busy():
-            self._fade_out()
-            #we aren't going to resume the audio, so stop it outright.
-            mixer.music.stop()
-            if p_bRestart:
-                self.m_sMusicState = 'pause'
-                self.m_iSongPos += mixer.music.get_pos()/1000
-                logging.info("INFO: pausing music time at {%ss}" % self.m_iSongPos)
-            else:
-                self.m_sMusicState = 'stop'
-                self.m_iSongPos = 0
-            logging.info("INFO: halted music as {%s}" % self.m_sMusicState)
-        else:
+        try:
+            if mixer.music.get_busy():
+                self._fade_out()
+                #we aren't going to resume the audio, so stop it outright.
+                mixer.music.stop()
+                if p_bRestart:
+                    self.m_sMusicState = 'pause'
+                    self.m_iSongPos += mixer.music.get_pos()/1000
+                    logging.info("INFO: pausing music time at {%ss}" % self.m_iSongPos)
+                else:
+                    self.m_sMusicState = 'stop'
+                    self.m_iSongPos = 0
+                logging.info("INFO: halted music as {%s}" % self.m_sMusicState)
+        except:
             self.m_iSongPos = 0
             self.m_sMusicState = 'stop'
         self._quit_pygame()
@@ -274,7 +275,7 @@ class BGM(object):
                 self.music_stop()
                 wait_process(self.m_lProcesses, 'stop')
             self.music_start()
-            time.sleep(2)
+            time.sleep(0.5)
 
     def cleanup(self):
         os.system('clear')
