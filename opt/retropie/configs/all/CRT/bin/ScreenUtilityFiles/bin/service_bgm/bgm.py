@@ -151,6 +151,7 @@ class BGM(object):
             if self.m_sMusicState == 'play':
                 self.m_iSongPos = 0
             self._seek_track()
+            mixer.music.set_volume(self.m_iVolStep)
             mixer.music.play(0, int(self.m_iSongPos))
             logging.info("INFO: resuming music time at {%ss}" % self.m_iSongPos)
             self._fade_in()
