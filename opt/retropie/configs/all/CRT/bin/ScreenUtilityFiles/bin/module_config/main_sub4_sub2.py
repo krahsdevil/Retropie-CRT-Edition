@@ -88,11 +88,11 @@ class main_sub4_sub2(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -189,6 +189,12 @@ class main_sub4_sub2(object):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
+        if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+            return
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
             if not self.m_oNETClass.status(): return
             list = self.m_lLines[p_iLine]['options']
@@ -212,6 +218,7 @@ class main_sub4_sub2(object):
                     'icon': None}
         if not self.m_oNETClass.status():
             p_lLines.update({'value': "--"})
+            p_lLines.update({'color_val': "type_color_7"})
             return p_lLines
         value = self.m_oNETClass.get_mode().title()
         p_lLines.update({'options': ["Host", "Client"]})
@@ -224,7 +231,11 @@ class main_sub4_sub2(object):
         if p_iJoy == None:
             return self.opt3_datas()
         if p_iJoy & CRT_OK:
-            if not self.m_oNETClass.status(): return
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
             value = self.m_lLines[p_iLine]['value']
             new = self._launch_kbd(value).strip()
             if new and new == self.m_oNETClass.nick(new):
@@ -238,6 +249,7 @@ class main_sub4_sub2(object):
                     'icon': "icon_edit"}
         if not self.m_oNETClass.status():
             p_lLines.update({'value': "--"})
+            p_lLines.update({'color_val': "type_color_7"})
             return p_lLines
         value = self.m_oNETClass.get_nick()
         p_lLines.update({'value': value})
@@ -249,8 +261,16 @@ class main_sub4_sub2(object):
         if p_iJoy == None:
             return self.opt4_datas()
         if p_iJoy & CRT_OK:
-            if not self.m_oNETClass.status(): return
-            if self.m_oNETClass.get_mode() == "host": return
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
+            elif self.m_oNETClass.get_mode() == "host": 
+                self.info("You are in HOST mode", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
             value = self.m_lLines[p_iLine]['value']
             new = self._launch_kbd(value)
             if new and new == self.m_oNETClass.host(new):
@@ -267,9 +287,11 @@ class main_sub4_sub2(object):
                     'color_val': "type_color_1",
                     'icon': "icon_edit"}
         if not self.m_oNETClass.status():
-            p_lLines.update({'value': "--"})
-            return p_lLines
-        if self.m_oNETClass.get_mode() == "host": value = "N/A"
+            value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
+        elif self.m_oNETClass.get_mode() == "host": 
+            value = "N/A"
+            p_lLines.update({'color_val': "type_color_7"})
         else: value = self.m_oNETClass.get_host()
         p_lLines.update({'value': value})
         return p_lLines
@@ -280,7 +302,11 @@ class main_sub4_sub2(object):
         if p_iJoy == None:
             return self.opt5_datas()
         if p_iJoy & CRT_OK:
-            if not self.m_oNETClass.status(): return
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
             value = self.m_lLines[p_iLine]['value']
             new = self._launch_kbd(value)
             if new and new == self.m_oNETClass.port(new):
@@ -298,6 +324,7 @@ class main_sub4_sub2(object):
                     'icon': "icon_edit"}
         if not self.m_oNETClass.status():
             p_lLines.update({'value': "--"})
+            p_lLines.update({'color_val': "type_color_7"})
             return p_lLines
         value = self.m_oNETClass.get_port()
         p_lLines.update({'value': value})

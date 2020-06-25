@@ -87,11 +87,11 @@ class main_sub5(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -175,7 +175,7 @@ class main_sub5(object):
                 if new.lower() == "default": value = 'default'
                 ini_set(CRT_FIXMODES_FILE, "mode_default", value)
                 self.m_lLines[p_iLine].update({'value': new})
-                self.info("Wait, applying Mode", "icon_info")
+                self.info("Applying Mode", "icon_info")
                 self.m_bPause[0] = True
                 self.p_oRESClass.save()
                 self.p_oRESClass.apply()

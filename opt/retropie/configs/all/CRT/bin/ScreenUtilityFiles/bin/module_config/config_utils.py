@@ -36,53 +36,30 @@ from launcher_module.screen import CRT
 from launcher_module.core_paths import *
 from launcher_module.utils import get_side, check_process, touch_file
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
-                                         ini_set
+                                         ini_set, remove_line
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
 
-SYSTEMSDB =    {"amiga": "AMIGA",
-                "amstradcpc": "AMSTRAD CPC",
-                "arcade": "ARCADE",
-                "atari800": "ATARI 800",
-                "atari2600": "ATARI 2600",
-                "atari7800": "ATARI 7800",
-                "atarilynx": "ATARI Lynx",
-                "atarist": "ATARI ST",
-                "c64": "COMMODORE 64",
-                "coleco": "ColecoVision",
-                "daphne": "Daphne",
-                "fba": "FinalBurn Neo",
-                "fds": "FDS",
-                "gamegear": "SEGA GameGear",
-                "gb": "Gameboy",
-                "gba": "Gameboy Advance",
-                "gbc": "Gameboy Color",
-                "mame-advmame": "Advance MAME",
-                "mame-libretro": "MAME",
-                "mastersystem": "Master System",
-                "megadrive": "Megadrive",
-                "msx": "MSX",
-                "n64": "Nintendo 64",
-                "neogeo": "NEOGEO",
-                "neogeocd": "NEOGEO CD",
-                "nes": "NES",
-                "ngp": "NEOGEO Pocket",
-                "ngpc": "NEOGEO Pocket C.",
-                "pcengine": "PC Engine",
-                "pcenginecd": "PC Engine CD",
-                "psx": "Play Station",
-                "sega32x": "SEGA 32X",
-                "segacd": "SEGA CD",
-                "sg-1000": "SEGA SG-1000",
-                "snes": "Super Nintendo",
-                "vectrex": "Vectrex",
-                "videopac": "Videopac",
-                "wonderswan": "WonderSwan",
-                "wonderswancolor": "WonderSwan C.",
-                "zx81": "SINCLAIR ZX81",
-                "zxspectrum": "ZX Expectrum",
-                }
+SYSTEMSDB =    {
+                "amiga": "AMIGA", "amstradcpc": "AMSTRAD CPC", "arcade": "ARCADE",
+                "atari800": "ATARI 800", "atari2600": "ATARI 2600",
+                "atari7800": "ATARI 7800", "atarilynx": "ATARI Lynx",
+                "atarist": "ATARI ST", "c64": "COMMODORE 64", "coleco": "ColecoVision",
+                "daphne": "Daphne", "fba": "FinalBurn Neo", "fds": "FDS",
+                "gamegear": "SEGA GameGear", "gb": "Gameboy", "gba": "Gameboy Advance",
+                "gbc": "Gameboy Color", "mame-advmame": "Advance MAME",
+                "mame-libretro": "MAME", "mastersystem": "Master System",
+                "megadrive": "Megadrive", "msx": "MSX", "n64": "Nintendo 64",
+                "neogeo": "NEOGEO", "neogeocd": "NEOGEO CD", "nes": "NES",
+                "ngp": "NEOGEO Pocket", "ngpc": "NEOGEO Pocket C.",
+                "pcengine": "PC Engine", "pcenginecd": "PC Engine CD",
+                "psx": "Play Station", "sega32x": "SEGA 32X", "segacd": "SEGA CD",
+                "sg-1000": "SEGA SG-1000", "snes": "Super Nintendo",
+                "vectrex": "Vectrex", "videopac": "Videopac",
+                "wonderswan": "WonderSwan", "wonderswancolor": "WonderSwan C.",
+                "zx81": "SINCLAIR ZX81", "zxspectrum": "ZX Expectrum",
+               }
 
 def run(sCommandline, sDBSys = None):
     oCRT = None
@@ -151,10 +128,13 @@ def get_ip_address(p_sIFname):
         output = commands.getoutput(command).strip()
         if output: addr = "Connected"
 
-    if p_sIFname == "eth0" and addr == "Disconnected":
+    if p_sIFname == "eth0":
         command = "sudo ethtool %s | grep \"Link detected\"" % p_sIFname
-        output = commands.getoutput(command).strip()
-        if "yes" in output.lower(): addr = "Connected"
+        output = commands.getoutput(command).strip()        
+        if addr != "Disconnected":
+            if "no" in output.lower(): addr = "Disconnected"
+        elif addr == "Disconnected":
+            if "yes" in output.lower(): addr = "Trying to get IP..."
     return addr
     
 def get_modes():
@@ -258,12 +238,27 @@ def restart_ES():
         #os.system('clear')
 
 class wifi(object):
+    COUNTRY = {
+               'Austria': 'AT', 'Australia': 'AU', 'Belgium': 'BE', 'Brazil': 'BR',
+               'Canada': 'CA', 'Switzerland': 'CH', 'China': 'CN', 
+               'Cyprus': 'CY', 'Czech Republic': 'CZ', 'Germany': 'DE', 'Denmark': 'DK', 
+               'Estonia': 'EE', 'Spain': 'ES', 'Finland': 'FI', 'France': 'FR', 
+               'United Kingdom': 'GB', 'Greece': 'GR', 'Hong Kong': 'HK', 'Hungary': 'HU',
+               'Indonesia': 'ID', 'Ireland': 'IE', 'Israel': 'IL', 'India': 'IN', 
+               'Iceland': 'IS', 'Italy': 'IT', 'Japan': 'JP', 'Korea': 'KR',
+               'Lithuania': 'LT', 'Luxembourg': 'LU', 'Latvia': 'LV', 'Malaysia': 'MY',
+               'Netherlands': 'NL', 'Norway': 'NO', 'New Zealand': 'NZ', 'Philippines': 'PH',
+               'Poland': 'PL', 'Portugal': 'PT', 'Sweden': 'SE', 'Singapore': 'SG', 
+               'Slovenia': 'SI', 'Slovak Republic': 'SK', 'Thailand': 'TH', 'Taiwan': 'TW', 
+               'USA': 'US', 'South Africa': 'ZA'
+              }
     m_sMode = "Manual"
     m_lModes = ["Manual", "Detect"]
     m_lSSIDs = ["[A:SCAN]"]
     m_sSSIDSel01 = "[Your SSID]" # manual selected ssid
     m_sSSIDSel02 = m_lSSIDs[0] # scaned selected ssid
     m_sPwd = ""
+    m_sCountry = ""
     WPA_FILE = '/etc/wpa_supplicant/wpa_supplicant.conf'
     TMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "wpa_supplicant.conf")    
 
@@ -298,10 +293,40 @@ class wifi(object):
         self.ssid(self.m_lSSIDs[0])
         return self.m_lSSIDs
 
+    def country(self, p_sCountry):
+        ini_set(CRT_UTILITY_FILE, "wifi_country", self.COUNTRY[p_sCountry])
+        self.m_sCountry = p_sCountry
+
+    def get_country(self):
+        if not self.m_sCountry:
+            os.system('cp %s %s > /dev/null 2>&1' % (self.WPA_FILE, self.TMP_FILE))
+            ctry = ini_get(self.TMP_FILE, "country")
+            os.system("sudo rm %s > /dev/null 2>&1" % self.TMP_FILE)
+            if not ctry:
+                ctry = ini_get(CRT_UTILITY_FILE, "wifi_country")
+                if not ctry: ctry = "ES"
+            for item in self.COUNTRY:
+                if self.COUNTRY[item] == ctry:
+                    self.m_sCountry = item
+                    break
+            if not self.m_sCountry:
+                self.m_sCountry = "Spain"
+            self.country(self.m_sCountry)
+        return self.m_sCountry
+            
+    def get_country_list(self):
+        if not self.status():
+            list = []
+            for item in self.COUNTRY:
+                list.append(item)
+            list.sort()
+            return list
+        return None 
+
     def connect(self):
         if self.get_ssid() == "[A:SCAN]" or self.get_pwd == "": return False
         touch_file(self.TMP_FILE)
-        p_sLine1 = 'country=GB'
+        p_sLine1 = 'country=%s' % self.COUNTRY[self.get_country()]
         p_sLine2 = 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev'
         p_sLine3 = 'update_config=1'
         p_sSSIDFix = self.get_ssid()
@@ -324,8 +349,9 @@ class wifi(object):
                 f.write(p_sLine1 + '\n')
                 f.write(p_sLine2 + '\n')
                 f.write(p_sLine3 + '\n')
+        remove_line(self.TMP_FILE, '#psk="')
         os.system('sudo cp %s %s > /dev/null 2>&1' %(self.TMP_FILE, self.WPA_FILE))
-        os.system("rm %s > /dev/null 2>&1" % self.TMP_FILE)
+        os.system("sudo rm %s > /dev/null 2>&1" % self.TMP_FILE)
         p = subprocess.Popen('wpa_cli -i wlan0 reconfigure', stdout=subprocess.PIPE, shell=True)
         output, err = p.communicate()
         p.wait()
@@ -341,6 +367,7 @@ class wifi(object):
     def clear(self):
         self.m_sMode = "Manual"
         self.m_sPwd = ""
+        self.m_sCountry = ""
         self.m_lSSIDs = ["[A:SCAN]"]
         self.m_sSSIDSel01 = "[Your SSID]"    # manual selected ssid
         self.m_sSSIDSel02 = self.m_lSSIDs[0] # scaned selected ssid
@@ -352,7 +379,7 @@ class wifi(object):
             f.write(p_sLine2 + '\n')
             f.write(p_sLine3 + '\n')
         os.system('sudo cp %s %s > /dev/null 2>&1' %(self.TMP_FILE, self.WPA_FILE))
-        os.system("rm %s > /dev/null 2>&1" % self.TMP_FILE)
+        os.system("sudo rm %s > /dev/null 2>&1" % self.TMP_FILE)
         p = subprocess.Popen('wpa_cli -i wlan0 reconfigure', stdout=subprocess.PIPE, shell=True)
         output, err = p.communicate()
         p.wait()

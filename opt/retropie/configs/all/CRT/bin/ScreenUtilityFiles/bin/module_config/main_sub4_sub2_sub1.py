@@ -88,11 +88,11 @@ class main_sub4_sub2_sub1(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -109,7 +109,8 @@ class main_sub4_sub2_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt3]
+        p_lAutoL = [self.opt1, self.opt2, self.opt3,
+                    self.opt4]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -167,7 +168,14 @@ class main_sub4_sub2_sub1(object):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt1_datas()
+        if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+            return
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            if not self.m_oNETClass.status(): return
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
@@ -181,11 +189,16 @@ class main_sub4_sub2_sub1(object):
         p_lLines = {'text': "Latency Frames", 
                     'color_val': "type_color_1",
                     'icon': None}
-        p_lOpt = []
-        for i in range(1, 16):
-            p_lOpt.append(i)
-        p_lLines.update({'options': p_lOpt})        
-        value = self.m_oNETClass.get_lframes()
+        if not self.m_oNETClass.status(): 
+            value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
+            options = None
+        else:
+            p_lOpt = []
+            for i in range(1, 16): p_lOpt.append(i)
+            options = p_lOpt
+            value = self.m_oNETClass.get_lframes()
+        p_lLines.update({'options': options})      
         p_lLines.update({'value': value})
         return p_lLines
 
@@ -195,6 +208,11 @@ class main_sub4_sub2_sub1(object):
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value)
             if new: cfg = self.m_oNETClass.spectator_enable()
@@ -205,8 +223,13 @@ class main_sub4_sub2_sub1(object):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         p_lLines = {'text': "Spectator Mode", 
+                    'color_val': "type_color_1",
                     'icon': None}
-        value = self.m_oNETClass.get_spectator()
+        if not self.m_oNETClass.status(): 
+            value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
+        else:
+            value = self.m_oNETClass.get_spectator()
         p_lLines.update({'value': value})
         return p_lLines
 
@@ -216,6 +239,11 @@ class main_sub4_sub2_sub1(object):
         if p_iJoy == None:
             return self.opt3_datas()
         if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
             if self.m_oNETClass.get_mode().lower() == "client": return
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value)
@@ -226,12 +254,16 @@ class main_sub4_sub2_sub1(object):
     def opt3_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {'text': "Netplay Public Announce", 
+        p_lLines = {'text': "Netplay Public Announce",
+                    'color_val': "type_color_1",
                     'icon': None}
-        if self.m_oNETClass.get_mode().lower() == "client":
-            p_lLines.update({'value': "N/A"})
-            return p_lLines
-        value = self.m_oNETClass.get_lobby()
+        if not self.m_oNETClass.status(): 
+            value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
+        elif self.m_oNETClass.get_mode().lower() == "client":
+            value = "N/A"
+            p_lLines.update({'color_val': "type_color_7"})
+        else: value = self.m_oNETClass.get_lobby()
         p_lLines.update({'value': value})
         return p_lLines
 
@@ -241,6 +273,11 @@ class main_sub4_sub2_sub1(object):
         if p_iJoy == None:
             return self.opt4_datas()
         if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status(): 
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value)
             if new: cfg = self.m_oNETClass.stateless_enable()
@@ -250,9 +287,14 @@ class main_sub4_sub2_sub1(object):
     def opt4_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {'text': "Stateless Mode", 
+        p_lLines = {'text': "Stateless Mode",
+                    'color_val': "type_color_1",
                     'icon': None}
-        value = self.m_oNETClass.get_stateless()
+        if not self.m_oNETClass.status(): 
+            value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
+        else:
+            value = self.m_oNETClass.get_stateless()
         p_lLines.update({'value': value})
         return p_lLines
         

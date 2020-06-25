@@ -86,11 +86,11 @@ class main_sub4(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -167,6 +167,8 @@ class main_sub4(object):
         p_lLines = {'text': "Public IP", 'icon': None, 
                     'color_val': "type_color_1"}
         value = get_ip_address("public")
+        if value.lower() == "not available":
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
         return p_lLines
   
@@ -179,6 +181,8 @@ class main_sub4(object):
         p_lLines = {'text': "LAN IP", 'icon': None, 
                     'color_val': "type_color_1"}
         value = get_ip_address("eth0")
+        if value.lower() == "disconnected":
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
         return p_lLines
 
@@ -191,6 +195,8 @@ class main_sub4(object):
         p_lLines = {'text': "WLAN IP", 'icon': None, 
                     'color_val': "type_color_1"}
         value = get_ip_address("wlan0")
+        if value.lower() == "disconnected":
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
         return p_lLines
         

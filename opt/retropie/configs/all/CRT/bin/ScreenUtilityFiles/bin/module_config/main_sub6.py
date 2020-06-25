@@ -86,11 +86,11 @@ class main_sub6(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -107,7 +107,7 @@ class main_sub6(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt4, self.opt5]
+        p_lAutoL = [self.opt4, self.opt5, self.opt6]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -118,7 +118,8 @@ class main_sub6(object):
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
                     self.opt4, self.opt5, self.opt6,
-                    self.opt7, self.opt8, self.opt10]
+                    self.opt7, self.opt8, self.opt9,
+                    self.opt10]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -208,19 +209,17 @@ class main_sub6(object):
             return self.opt4_datas()
 
     def opt4_datas(self):
-        p_lLines = {'text': "Storage",
+        p_lLines = {'text': "Storage SD",
                     'color_val': "type_color_1"}
         disk = "/dev/root"
-        if os.path.exists (CRT_EXTSTRG_TRIG_MNT_PATH):
-            with open(CRT_EXTSTRG_TRIG_MNT_PATH, "r+") as f:
-                new_file = f.readlines()
-                line = new_file[0]
-                disk = line.strip().split(" ")[0]
-
         tmp = commands.getoutput('df -h | grep %s' % disk)
         tmp = re.sub(r' +', " ", tmp).strip().split(" ")
-        try: space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
+        try: 
+            space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
+            if not '%' in tmp[4]: space = "CALCULATING..."
         except: space = "CALCULATING..."
+        if space == "CALCULATING...":
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': space})
         return p_lLines
 
@@ -230,11 +229,25 @@ class main_sub6(object):
             return self.opt5_datas()
 
     def opt5_datas(self):
-        p_lLines = {'color_val': "type_color_1"}
-        temp = commands.getoutput('vcgencmd measure_temp')
-        temp = temp.strip().split("=")[1]
-        p_lLines.update({'text': "Temperature"})
-        p_lLines.update({'value': temp})
+        p_lLines = {'text': "Storage USB",
+                    'color_val': "type_color_1"}
+        disk = None
+        if os.path.exists (CRT_EXTSTRG_TRIG_MNT_PATH):
+            with open(CRT_EXTSTRG_TRIG_MNT_PATH, "r+") as f:
+                new_file = f.readlines()
+                line = new_file[0]
+                disk = line.strip().split(" ")[0]
+        if disk:
+            tmp = commands.getoutput('df -h | grep %s' % disk)
+            tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+            try: 
+                space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
+                if not '%' in tmp[4]: space = "CALCULATING..."
+            except: space = "CALCULATING..."
+        else: space = "N/A"
+        if space == "CALCULATING..." or space == "N/A":
+            p_lLines.update({'color_val': "type_color_7"})
+        p_lLines.update({'value': space})
         return p_lLines
 
     def opt6(self, p_iJoy = None, p_iLine = None):
@@ -243,6 +256,20 @@ class main_sub6(object):
             return self.opt6_datas()
 
     def opt6_datas(self):
+        p_lLines = {'color_val': "type_color_1"}
+        temp = commands.getoutput('vcgencmd measure_temp')
+        temp = temp.strip().split("=")[1]
+        temp = temp.replace("'", "\xb0")
+        p_lLines.update({'text': "Temperature"})
+        p_lLines.update({'value': temp})
+        return p_lLines
+
+    def opt7(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt7_datas()
+
+    def opt7_datas(self):
         p_lLines = {'color_val': "type_color_1"}
         p_lLines.update({'text': "Games Played"})
         value = 0
@@ -256,12 +283,12 @@ class main_sub6(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt7(self, p_iJoy = None, p_iLine = None):
+    def opt8(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
-            return self.opt7_datas()
+            return self.opt8_datas()
 
-    def opt7_datas(self):
+    def opt8_datas(self):
         p_lLines = {'color_val': "type_color_1"}
         p_lLines.update({'text': "Time Played"})
         value = 0
@@ -274,12 +301,12 @@ class main_sub6(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt8(self, p_iJoy = None, p_iLine = None):
+    def opt9(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
-            return self.opt8_datas()
+            return self.opt9_datas()
 
-    def opt8_datas(self):
+    def opt9_datas(self):
         p_lLines = {'color_val': "type_color_1"}
         p_lLines.update({'text': "TOP System"})
         value = "Not Played"
@@ -294,7 +321,8 @@ class main_sub6(object):
                             counter = play
                             value = system.split("=")[0].replace("timer_", '')
                             value = value.upper()
-        if value.lower() in SYSTEMSDB: value = SYSTEMSDB[value.lower()]
+        if value.lower() in SYSTEMSDB: 
+            value = SYSTEMSDB[value.lower()]
         p_lLines.update({'value': value})
         return p_lLines
 

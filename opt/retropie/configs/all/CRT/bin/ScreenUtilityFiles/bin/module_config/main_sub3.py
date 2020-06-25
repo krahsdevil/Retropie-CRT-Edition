@@ -33,6 +33,8 @@ sys.path.append(MODULES_PATH)
 from config_utils import explore_list, find_submenus, load_submenu, \
                          check_es_restart, check_sys_reboot
 from keyb.keyboard import keyboard
+from module_cable.controls_mapping import CTRLSMgmt
+from module_cable.cable_selector import CableSelector
 from launcher_module.core_paths import *
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
@@ -87,11 +89,11 @@ class main_sub3(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -108,7 +110,7 @@ class main_sub3(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = []
+        p_lAutoL = [self.opt1, self.opt2]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -161,37 +163,74 @@ class main_sub3(object):
   
     def opt1(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
+        try: self.m_oKeybCTRLClass
+        except: self.m_oKeybCTRLClass = CTRLSMgmt()
         if p_iJoy == None:
             return self.opt1_datas()
         if p_iJoy & CRT_OK:
+            if self.m_lLines[p_iLine]['value'] == "[FORCED]":
+                self.info("PI2JAMMA is enabled", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
+            list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
-            value = self._launch_kbd(value)
+            new = explore_list(p_iJoy, value, list)
+            self.info("Please wait", "icon_clock")
+            if new: self.m_oKeybCTRLClass.pi2jamma_enable_controls()
+            else: self.m_oKeybCTRLClass.pi2jamma_disable_controls()
+            value = self.m_oKeybCTRLClass.check_keyboard_enabled()
             self.m_lLines[p_iLine]['value'] = value
+            if value:
+                self.info(["Enabled IPAC/Keyboard",
+                           "MAME Layout for 2 Players",
+                           "in Retroarch and ES.", " ",
+                           "Enable only if you are not",
+                           "going to use a joystick!"],
+                           "icon_info")
+                time.sleep(6)
+            self.info()
 
     def opt1_datas(self):
-        p_lLines = {'text': "Keyboard Test", 'icon': None, 
-                    'value': "test"}
+        p_lLines = {'text': "IPAC/KBD Support",
+                    'color_val': "type_color_1",
+                    'icon': None}
+        try: self.m_oKeybCTRLClass
+        except: self.m_oKeybCTRLClass = CTRLSMgmt()
+        try: self.m_oCABLEClass
+        except: self.m_oCABLEClass = CableSelector()
+        if self.m_oCABLEClass.get_cable() == "pi2jamma": 
+            value = "[FORCED]"
+            p_lLines.update({'color_val': "type_color_7"})
+        else: 
+            value = self.m_oKeybCTRLClass.check_keyboard_enabled()
+        p_lLines.update({'value': value})
         return p_lLines
 
     def opt2(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
-        list = self.m_lLines[p_iLine]['options']
-        value = self.m_lLines[p_iLine]['value']
-        new = explore_list(p_iJoy, value, list)
-        if not new: return
-        #TAKE ANY ACTION
-        
-        self.m_lLines[p_iLine]['value'] = new
+        if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            self.info("Please wait", "icon_clock")
+            if new: self.m_oKeybCTRLClass.xinmo_usb_driver_enable()
+            else: self.m_oKeybCTRLClass.xinmo_usb_driver_disable()
+            value = self.m_oKeybCTRLClass.check_xinmo()
+            self.m_lLines[p_iLine]['value'] = new
+            self.info()
 
     def opt2_datas(self):
-        p_lLines = {}
-        temp = commands.getoutput('vcgencmd measure_temp')
-        temp = temp.strip().split("=")[1]
-        #temp = unicode(temp.replace('\'', 'º'), "utf-8")
-        p_lLines.update({'text': "Temperature"})
-        p_lLines.update({'value': temp})
+        p_lLines = {'text': "XIN-MO USB 2PLAYERS FIX",
+                    'color_val': "type_color_1",
+                    'sys_reboot': True,
+                    'icon': None}
+        try: self.m_oKeybCTRLClass
+        except: self.m_oKeybCTRLClass = CTRLSMgmt()
+        value = self.m_oKeybCTRLClass.check_xinmo()
+        p_lLines.update({'value': value})
         return p_lLines
         
     def input(self, p_iLine, p_iJoy):

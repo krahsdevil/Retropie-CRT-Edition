@@ -85,6 +85,7 @@ DEFAULT_CFG = {
     'type_color_4': pygame.Color( 62, 50,162), # text color selected line
     'type_color_5': pygame.Color(124,113,218), # frame color
     'type_color_6': pygame.Color(255,180,  0), # for high vol
+    'type_color_7': pygame.Color(202,199,219), # disabled color
 }
 
 C_BLACK  = pygame.Color(  0,   0,   0)

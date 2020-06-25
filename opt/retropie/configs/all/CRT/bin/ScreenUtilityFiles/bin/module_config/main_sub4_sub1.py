@@ -87,11 +87,11 @@ class main_sub4_sub1(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else:
@@ -109,7 +109,7 @@ class main_sub4_sub1(object):
 
     def _auto_load_datas(self):
         p_lAutoL = [self.opt1, self.opt2, self.opt3,
-                    self.opt6]
+                    self.opt4, self.opt7]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -119,7 +119,8 @@ class main_sub4_sub1(object):
 
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
-                    self.opt4, self.opt5, self.opt6]
+                    self.opt4, self.opt5, self.opt6,
+                    self.opt7]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -179,6 +180,7 @@ class main_sub4_sub1(object):
         else:
             text = "Disconnected"
             value = "SSID:N/A"
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'text': text})
         p_lLines.update({'value': value})
         return p_lLines
@@ -192,10 +194,38 @@ class main_sub4_sub1(object):
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
+            if new:
+                self.info("Please Wait", "icon_info")
+                self.m_oWIFIClass.country(new)
+                value = self.m_oWIFIClass.get_country()
+                self.m_lLines[p_iLine]['value'] = value
+                self.info()
+
+    def opt2_datas(self):
+        try: self.m_oWIFIClass
+        except: self.m_oWIFIClass = wifi()
+        p_lLines = {'text': "WIFI Country",
+                    'color_val': "type_color_1",
+                    'icon': None}
+        value = self.m_oWIFIClass.get_country()
+        list = self.m_oWIFIClass.get_country_list()
+        p_lLines.update({'value': value})
+        p_lLines.update({'options': list})
+        return p_lLines
+
+    def opt3(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oWIFIClass
+        except: self.m_oWIFIClass = wifi()
+        if p_iJoy == None:
+            return self.opt3_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
             self.m_oWIFIClass.mode(new)
             self.m_lLines[p_iLine]['value'] = new
 
-    def opt2_datas(self):
+    def opt3_datas(self):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         p_lLines = {'text': "SSID Input Mode",
@@ -207,11 +237,11 @@ class main_sub4_sub1(object):
         p_lLines.update({'options': list})
         return p_lLines
 
-    def opt3(self, p_iJoy = None, p_iLine = None):
+    def opt4(self, p_iJoy = None, p_iLine = None):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         if p_iJoy == None:
-            return self.opt3_datas()
+            return self.opt4_datas()
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
             if self.m_oWIFIClass.get_mode().lower() == "manual":
                 return
@@ -237,7 +267,7 @@ class main_sub4_sub1(object):
                     self.m_lLines[p_iLine]['value'] = self.m_oWIFIClass.get_ssid()
                 self.info()
 
-    def opt3_datas(self):
+    def opt4_datas(self):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         p_lLines = {'text': "SSID",
@@ -256,11 +286,11 @@ class main_sub4_sub1(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt4(self, p_iJoy = None, p_iLine = None):
+    def opt5(self, p_iJoy = None, p_iLine = None):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         if p_iJoy == None:
-            return self.opt4_datas()
+            return self.opt5_datas()
         if p_iJoy & CRT_OK:
             new = self._launch_kbd(self.m_oWIFIClass.get_pwd())
             if new:
@@ -272,7 +302,7 @@ class main_sub4_sub1(object):
                     time.sleep(2)
                     self.info()
 
-    def opt4_datas(self):
+    def opt5_datas(self):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         p_lLines = {'text': "Password",
@@ -282,11 +312,11 @@ class main_sub4_sub1(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt5(self, p_iJoy = None, p_iLine = None):
+    def opt6(self, p_iJoy = None, p_iLine = None):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         if p_iJoy == None:
-            return self.opt5_datas()
+            return self.opt6_datas()
         if p_iJoy & CRT_OK:
             value = self.m_oWIFIClass.get_ssid()
             if value == "[A:SCAN]":
@@ -306,11 +336,11 @@ class main_sub4_sub1(object):
                     self.info("Connected", "icon_info")
                 else:
                     self.info("Could not connect", "icon_info")
-                    self.m_oWIFIClass.clear()
+                    #self.m_oWIFIClass.clear()
             time.sleep(2)
             self.info()
 
-    def opt5_datas(self):
+    def opt6_datas(self):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         p_lLines = {'text': "Connect to WIFI",
@@ -318,11 +348,11 @@ class main_sub4_sub1(object):
                     'icon': "icon_bin"}
         return p_lLines
 
-    def opt6(self, p_iJoy = None, p_iLine = None):
+    def opt7(self, p_iJoy = None, p_iLine = None):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         if p_iJoy == None:
-            return self.opt6_datas()
+            return self.opt7_datas()
         if p_iJoy & CRT_OK:
             self.info("Please Wait", "icon_clock")
             self.m_oWIFIClass.clear()
@@ -330,7 +360,7 @@ class main_sub4_sub1(object):
             time.sleep(2)
             self.info()
 
-    def opt6_datas(self):
+    def opt7_datas(self):
         try: self.m_oWIFIClass
         except: self.m_oWIFIClass = wifi()
         p_lLines = {'color_val': "type_color_1",

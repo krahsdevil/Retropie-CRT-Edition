@@ -86,11 +86,11 @@ class main_sub5_sub1(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -225,8 +225,12 @@ class main_sub5_sub1(object):
         if value: disk = value
         tmp = commands.getoutput('df -h | grep %s' % disk)
         tmp = re.sub(r' +', " ", tmp).strip().split(" ")
-        try: space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
+        try: 
+            space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
+            if not '%' in tmp[4]: space = "CALCULATING..."
         except: space = "CALCULATING..."
+        if space == "CALCULATING...": 
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': space})
         return p_lLines
 
@@ -244,7 +248,8 @@ class main_sub5_sub1(object):
                 self.info()
 
     def opt4_datas(self):
-        p_lLines = {'text': "Device", 'icon': None,
+        p_lLines = {'text': "Device", 
+                    'icon': None,
                     'color_val': "type_color_1"}
         try: self.m_oEXTSTGClass
         except: self.m_oEXTSTGClass = external_storage()
@@ -253,12 +258,14 @@ class main_sub5_sub1(object):
             value = self.m_oEXTSTGClass.check_connected()
             logging.info("estado usb %s" % value)
             if not value:
-                value = "Waiting"
+                value = "Waiting..."
+                p_lLines.update({'color_val': "type_color_7"})
             else:
                 p_lLines.update({'text': "Eject"})
                 p_lLines.update({'icon': "icon_eject"})
         else:
             value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
         
         return p_lLines

@@ -34,7 +34,8 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.utils import set_procname
+from launcher_module.utils import set_procname, check_process, \
+                                  wait_process
 from launcher_module.file_helpers import modify_line, ini_set
 from module_config.config_utils import saveboot
 
@@ -185,7 +186,7 @@ class CRTDaemon(object):
         This function will try to launch software for
         pi2jamma cable.
         """
-        if not self._check_process(PI2JAMMA_BIN):
+        if not check_process(PI2JAMMA_BIN):
             logging.info("INFO: Subprocess for pi2jamma NOT found, " + \
                          "try to start...")
             if not self._check_pi2jamma_files():
@@ -200,7 +201,7 @@ class CRTDaemon(object):
 
             logging.info("INFO: Subproc launched: %s, " % PI2JAMMA_BIN + \
                          "PID: %s" % self.m_oRunBinary.pid)
-            if self._check_process(PI2JAMMA_BIN):
+            if check_process(PI2JAMMA_BIN):
                 self.m_iLoadedCable = 1
                 logging.info("INFO: Process %s seems " % PI2JAMMA_BIN +  \
                              "to be loaded")
@@ -259,7 +260,7 @@ class CRTDaemon(object):
                 
     def _kill_pi2jamma(self):
         """ This function will close pi2jamma software """
-        if self._check_process(PI2JAMMA_BIN):
+        if check_process(PI2JAMMA_BIN):
             logging.info("INFO: Terminating subprocess with " + \
                          "PID: %s" % self.m_oRunBinary.pid)
             os.system('sudo chmod a+rwx /dev/uinput')
@@ -388,6 +389,8 @@ class CRTDaemon(object):
                      '{%s loops}x{%s seconds}' % (p_iLoops, p_iTime))
         iCounter = 0
         while iCounter < p_iLoops:
+            if check_process(PNAME_CONFIG):
+                wait_process(PNAME_CONFIG)
             self._get_ini_base_config()  # Get datas from /boot/config.txt
             self._halt_daemon()          # Check if daemon shall wait or end
             self._recovery_mode()        # If recovery is found, apply and reboot
@@ -412,9 +415,9 @@ class CRTDaemon(object):
             logging.info("WARNING: Closing daemon: disabled or " + \
                          "commented in /boot/config.txt")
             self._exit_daemon()
-        if self._check_process('resize2fs'):
+        if check_process('resize2fs'):
             logging.info("WARNING: Wait until resize2fs finish")
-            self._wait_process('resize2fs', 'stop')
+            wait_process('resize2fs')
 
     def _recovery_mode(self):
         """
@@ -454,7 +457,7 @@ class CRTDaemon(object):
 
     def _restart_system(self):
         """ Restart system and close ES if it's running """
-        if self._check_process("emulationstatio"):
+        if check_process("emulationstatio"):
             commandline = 'sudo killall emulationstation && clear'
             os.system(commandline)
         print "CRT DAEMON WILL REBOOT THE SYSTEM NOW..."
@@ -462,47 +465,6 @@ class CRTDaemon(object):
         commandline = 'sudo reboot now'
         os.system(commandline)
         sys.exit()
-
-    def _wait_process(self, p_sProcess, p_sState = 'stop',
-                     p_iTimes = 1, p_iWaitScs = 1):
-        """
-        This function will wait to start or stop for only one process or a 
-        list of them like emulators. By default will wait to start with
-        p_sState parameter, but you can change it on call to 'stop'.
-        If a list is passed, function will validate that at least one of
-        them started or all are stopped.
-        
-        """
-        bProcessFound = None
-        bCondition = True
-        logging.info("INFO: waiting to %s processes: %s"%(p_sState, p_sProcess))
-        if p_sState == 'stop':
-            bCondition = False
-        while bProcessFound != bCondition:
-            bProcessFound = self._check_process(p_sProcess, p_iTimes)
-            time.sleep(p_iWaitScs)
-        logging.info("INFO: wait finished")
-
-    def _check_process(self, p_sProcess, p_iTimes = 1):
-        p_bCheck = 0
-        if p_sProcess == "emulationstatio": p_iTimes = 3
-        
-        pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
-        for pid in pids:
-            try:
-                procname = open(os.path.join('/proc',pid,'comm'),'rb').read()
-                if type(p_sProcess) is list:
-                    if procname[:-1] in p_sProcess:
-                        p_bCheck = p_iTimes
-                        break
-                elif type(p_sProcess) is str:
-                    if procname[:-1] == p_sProcess:
-                        p_bCheck += 1
-            except IOError:
-                pass
-        # p_iTimes >= 1 process was found
-        p_bCheck = True if p_bCheck >= p_iTimes else False 
-        return p_bCheck
 
     def _generate_random_config_temp(self):
         self.__clean()

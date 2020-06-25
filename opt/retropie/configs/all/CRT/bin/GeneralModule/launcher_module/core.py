@@ -42,7 +42,7 @@ CLEAN_LOG_ONSTART = True
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 
-CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 0.4 && "
+CRT_RUNCOMMAND_FORMAT = "touch %s && sleep 0.6 && "
 
 class launcher(object):
     """ virtual class for crt launcher """

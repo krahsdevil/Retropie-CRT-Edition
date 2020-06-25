@@ -91,11 +91,11 @@ class main_sub2(object):
         self.m_lLayer40[0] = p_sText
         self.m_lLayer40[1] = p_sIcon
 
-    def _launch_kbd(self, p_sString = ""):
+    def _launch_kbd(self, p_sString = "", p_iChars = 15):
         try: self.m_oKBDClass
         except: self.m_oKBDClass = keyboard()
         while True:
-            value = self.m_oKBDClass.write(p_sString)
+            value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
             else: 
@@ -200,6 +200,8 @@ class main_sub2(object):
 
     def opt2(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
+        try: self.m_oSYSVOLClass
+        except: self.m_oSYSVOLClass = sys_volume()
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
@@ -207,10 +209,12 @@ class main_sub2(object):
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
             if new != None:
+                self.info("Please wait", "icon_clock")
                 preset = self.m_oSYSVOLClass.preset(new.lower())
                 preset = preset.title()
                 if preset == new:
                     self.m_lLines[p_iLine]['value'] = new
+                self.info()
 
     def opt2_datas(self):
         try: self.m_oSYSVOLClass
@@ -280,9 +284,9 @@ class main_sub2(object):
             p_lLines.update({'options': m_lOpt})
             value = int(ini_get(CRT_UTILITY_FILE, "music_volume"))
             value = str(int(math.ceil(value / 10.0)) * 10) + "%"
-            
         else:
             value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
         return p_lLines
 

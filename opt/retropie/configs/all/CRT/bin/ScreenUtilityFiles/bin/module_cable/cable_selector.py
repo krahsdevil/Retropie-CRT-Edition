@@ -271,11 +271,6 @@ class CableSelector(object):
             self.m_bRebootES = self.m_oControls.pi2jamma_enable_controls()
         else:
             self.m_bRebootES = self.m_oControls.pi2jamma_disable_controls()
-            
-        # Xin Mo Joystick USB drivers
-        if self.m_oControls.xinmo_usb_driver_enable():
-            self.m_bUploadCFG = True
-            self.m_lInfoReboot.append(("[Xin Mo USB drivers were enabled]", "OK"))
 
     def _detect_cable_model(self):
         p_iJamma = self.get_config_line_value('jamma')
@@ -399,15 +394,8 @@ class CableSelector(object):
             wait_process(self.m_sFstBootApp, 'stop', 1, 5)
 
     def _check_crtdaemon(self):
-        if self._check_service(CRT_RGB_SRV_FILE, 'load'):
-            if not self._check_service(CRT_RGB_SRV_FILE, 'run'):
-                #show_info('INITIALIZING CRT DAEMON...')
-                os.system('sudo systemctl start %s > /dev/null 2>&1' \
-                          % CRT_RGB_SRV_FILE)
-            if not self._check_service(CRT_RGB_SRV_FILE, 'run'):
-                self._remove_crtdaemon()
-                self._install_crtdaemon()
-        else:
+        if not self._check_service(CRT_RGB_SRV_FILE, 'load'):
+            self._remove_crtdaemon()
             self._install_crtdaemon()
 
     def _check_crtdaemon_files(self):
@@ -431,8 +419,8 @@ class CableSelector(object):
                       % CRT_RGB_SRV_FILE)
             os.system('sudo systemctl enable %s > /dev/null 2>&1' \
                       % CRT_RGB_SRV_FILE)
-            os.system('sudo systemctl start %s > /dev/null 2>&1' \
-                      % CRT_RGB_SRV_FILE)
+            #os.system('sudo systemctl start %s > /dev/null 2>&1' \
+            #          % CRT_RGB_SRV_FILE)
 
     def _remove_crtdaemon(self):
         if self._check_crtdaemon_files:
@@ -458,10 +446,8 @@ class CableSelector(object):
             p_bLoaded = True
             if 'running' in p_sOutput:
                 p_bRunning = True
-        if p_sState == 'load':
-            return p_bLoaded
-        elif p_sState == 'run':
-            return p_bRunning
+        if p_sState == 'load': return p_bLoaded
+        elif p_sState == 'run': return p_bRunning
 
     def _restart(self):
         """ Restart system or reboot ES if needed """
