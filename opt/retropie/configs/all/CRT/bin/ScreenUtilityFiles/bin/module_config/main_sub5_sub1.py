@@ -31,8 +31,10 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from config_utils import explore_list, find_submenus, load_submenu, external_storage, \
-                         check_es_restart, check_sys_reboot
-from launcher_module.core_paths import *
+                         check_es_restart, check_sys_reboot, render_image, \
+                         press_back
+from keyb.keyboard import keyboard
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -52,7 +54,7 @@ class main_sub5_sub1(object):
     m_lMainOpts = []
     m_lSubMenus = []
     m_lOptFn = []
-    
+
     m_lCtrl = []
     m_lRestart = [__name__, False]
     m_lReboot = [__name__, False]
@@ -61,7 +63,7 @@ class main_sub5_sub1(object):
     m_sSection = "External Storage"
 
     m_lLayer40 = [None, None] # text & icon label
-    
+
     def __init__(self):
         self._load_options()
         self._load_sub_menus()
@@ -93,7 +95,7 @@ class main_sub5_sub1(object):
             value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
-            else: 
+            else:
                 self.info(value)
         self.info()
         return value
@@ -101,7 +103,7 @@ class main_sub5_sub1(object):
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
         self.m_oThreads = []
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.start()
             self.m_oThreads.append(t)
@@ -115,7 +117,7 @@ class main_sub5_sub1(object):
                 for opt in p_lAutoL:
                     self._reload_opt_datas(opt)
                 time.sleep(timer)
-                
+
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2,
                     self.opt3, self.opt4]
@@ -148,8 +150,8 @@ class main_sub5_sub1(object):
                 for i in range (0, len(self.m_lLines)):
                     self.m_lSubMenus.append(None)
             for sub in submenus:
-                self.m_lSubMenus.append(sub)                
-            
+                self.m_lSubMenus.append(sub)
+
             for sbm in self.m_lSubMenus:
                 if sbm:
                     temp = {}
@@ -159,7 +161,7 @@ class main_sub5_sub1(object):
                     self.m_lLines.append(temp)
         except:
             raise
-  
+
     def opt1(self, p_iJoy = None, p_iLine = None):
         try: self.m_oEXTSTGClass
         except: self.m_oEXTSTGClass = external_storage()
@@ -175,7 +177,7 @@ class main_sub5_sub1(object):
                 self.m_lCtrl[p_iLine].update({'es_restart': True})
             else:
                 self.m_lCtrl[p_iLine].update({'es_restart': False})
-            
+
             self.info("Please Wait", "icon_clock")
             if new == False: self.m_oEXTSTGClass.stop()
             elif new == True: self.m_oEXTSTGClass.init()
@@ -225,11 +227,11 @@ class main_sub5_sub1(object):
         if value: disk = value
         tmp = commands.getoutput('df -h | grep %s' % disk)
         tmp = re.sub(r' +', " ", tmp).strip().split(" ")
-        try: 
+        try:
             space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
             if not '%' in tmp[4]: space = "CALCULATING..."
         except: space = "CALCULATING..."
-        if space == "CALCULATING...": 
+        if space == "CALCULATING...":
             p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': space})
         return p_lLines
@@ -248,7 +250,7 @@ class main_sub5_sub1(object):
                 self.info()
 
     def opt4_datas(self):
-        p_lLines = {'text': "Device", 
+        p_lLines = {'text': "Device",
                     'icon': None,
                     'color_val': "type_color_1"}
         try: self.m_oEXTSTGClass
@@ -267,10 +269,10 @@ class main_sub5_sub1(object):
             value = "--"
             p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
-        
+
         return p_lLines
 
-        
+
     def input(self, p_iLine, p_iJoy):
         if p_iJoy & CRT_CANCEL:
             self.quit()

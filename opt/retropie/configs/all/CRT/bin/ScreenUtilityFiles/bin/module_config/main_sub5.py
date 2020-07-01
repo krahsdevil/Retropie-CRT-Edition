@@ -30,10 +30,15 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import *
-from module_cable.cable_selector import CableSelector
+from config_utils import explore_list, find_submenus, load_submenu, \
+                         check_es_restart, check_sys_reboot, \
+                         get_modes, check_retropie_menu, hide_retropie_menu, \
+                         saveboot, render_image, press_back
+from keyb.keyboard import keyboard
+from module_cable.cable_manager import CableMNGR
 from launcher_module.file_helpers import ini_get, ini_set
-from launcher_module.core_paths import *
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_FIXMODES_FILE, \
+                                       RETROPIE_RUNCOMMAND_CFG_FILE, RA_CFG_FILE
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -62,7 +67,7 @@ class main_sub5(object):
     m_sSection = "05 System"
 
     m_lLayer40 = [None, None] # text & icon label
-    
+
     def __init__(self):
         self._load_options()
         self._load_sub_menus()
@@ -94,7 +99,7 @@ class main_sub5(object):
             value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
-            else: 
+            else:
                 self.info(value)
         self.info()
         return value
@@ -102,7 +107,7 @@ class main_sub5(object):
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
         self.m_oThreads = []
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.start()
             self.m_oThreads.append(t)
@@ -115,10 +120,10 @@ class main_sub5(object):
                 for opt in p_lAutoL:
                     self._reload_opt_datas(opt)
                 time.sleep(timer)
-                
+
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
-                    self.opt4, self.opt5]
+                    self.opt4, self.opt5, self.opt6]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -148,8 +153,8 @@ class main_sub5(object):
                 for i in range (0, len(self.m_lLines)):
                     self.m_lSubMenus.append(None)
             for sub in submenus:
-                self.m_lSubMenus.append(sub)                
-            
+                self.m_lSubMenus.append(sub)
+
             for sbm in self.m_lSubMenus:
                 if sbm:
                     temp = {}
@@ -159,7 +164,7 @@ class main_sub5(object):
                     self.m_lLines.append(temp)
         except:
             raise
-  
+
     def opt1(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
@@ -183,19 +188,19 @@ class main_sub5(object):
                 time.sleep(1.5)
                 self.info()
     def opt1_datas(self):
-        p_lLines = {'text': "TV Modes", 
+        p_lLines = {'text': "TV Modes",
                     'es_restart': True,
                     'color_val': "type_color_1"}
         value = ini_get(CRT_FIXMODES_FILE, "mode_default")
         if value.lower() == "default": value = 'Default'
         p_lLines.update({'value': value})
-        p_lLines.update({'options': get_modes()}) 
+        p_lLines.update({'options': get_modes()})
         return p_lLines
 
     def opt2(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         try: self.m_oCABLEClass
-        except: self.m_oCABLEClass = CableSelector()
+        except: self.m_oCABLEClass = CableMNGR()
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
@@ -204,7 +209,9 @@ class main_sub5(object):
             new = explore_list(p_iJoy, value, list)
             if new:
                 self.info("Please Wait", "icon_clock")
-                value = self.m_oCABLEClass.change_cable(new)
+                self.m_oCABLEClass.change_cable(new)
+                value = self.m_oCABLEClass.get_current_cable_id()
+                value = value = self.m_oCABLEClass.get_cable_desc(value)
                 if value == new:
                     self.m_lLines[p_iLine].update({'value': new})
                     if "NEED FIX" in self.m_lLines[p_iLine]['options']:
@@ -216,17 +223,17 @@ class main_sub5(object):
                     'sys_reboot': True,
                     'color_val': "type_color_1"}
         try: self.m_oCABLEClass
-        except: self.m_oCABLEClass = CableSelector()
-        list = self.m_oCABLEClass.get_cable_list()
+        except: self.m_oCABLEClass = CableMNGR()
+        list = self.m_oCABLEClass.get_cable_list_desc()
         p_lLines.update({'options': list})
-        value = self.m_oCABLEClass.get_cable()
-        if not value:
-            if not "NEED FIX" in p_lLines['options']:
-                p_lLines['options'].insert(0, "NEED FIX")
+        value = self.m_oCABLEClass.get_current_cable_id()
+        value = self.m_oCABLEClass.get_cable_desc(value)
+        fix = self.m_oCABLEClass.fix()
+        if fix:
+            p_lLines['options'].insert(0, "NEED FIX")
             p_lLines.update({'value': "NEED FIX"})
         else:
             p_lLines.update({'value': value})
-        logging.info("values %s" % p_lLines)
         return p_lLines
 
     def opt3(self, p_iJoy = None, p_iLine = None):
@@ -245,10 +252,10 @@ class main_sub5(object):
                 self.m_lLines[p_iLine].update({'value': new})
 
     def opt3_datas(self):
-        p_lLines = {'text': "CPU Governor", 
-                    'options': ["Default", "Conservative", 
+        p_lLines = {'text': "CPU Governor",
+                    'options': ["Default", "Conservative",
                                 "Ondemand", "Userspace",
-                                "Powersave", "Performance", 
+                                "Powersave", "Performance",
                                 "Schedutil"],
                     'color_val': "type_color_1"}
         options = []
@@ -277,7 +284,7 @@ class main_sub5(object):
                     'color_val': "type_color_1"}
         value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu")
         if value == "0": value = True
-        else: value = False 
+        else: value = False
         p_lLines.update({'value': value})
         return p_lLines
 
@@ -289,19 +296,41 @@ class main_sub5(object):
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            if new == False: ini_set(RA_CFG_FILE, "menu_driver", "Null")
-            elif new == True: ini_set(RA_CFG_FILE, "menu_driver", "rgui")
+            if new: hide_retropie_menu(False)
+            elif not new: hide_retropie_menu(True)
+            value = check_retropie_menu()
             self.m_lLines[p_iLine].update({'value': new})
 
     def opt5_datas(self):
-        p_lLines = {'text': "Retroarch Menu",
+        p_lLines = {'text': "Retropie ES Menu",
+                    'color_val': "type_color_1",
+                    'es_restart': True}
+        if check_retropie_menu(): value = True
+        else: value = False
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt6(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt6_datas()
+        if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new: ini_set(RA_CFG_FILE, "menu_driver", "rgui")
+            elif not new: ini_set(RA_CFG_FILE, "menu_driver", 'nul')
+            self.m_lLines[p_iLine].update({'value': new})
+
+    def opt6_datas(self):
+        p_lLines = {'text': "Retroarch Config Menu",
                     'color_val': "type_color_1"}
         value = ini_get(RA_CFG_FILE, "menu_driver")
-        if value == "Null": value = False
+        if value == "nul": value = False
         else: value = True
         p_lLines.update({'value': value})
         return p_lLines
-        
+
     def input(self, p_iLine, p_iJoy):
         if p_iJoy & CRT_CANCEL:
             self.quit()

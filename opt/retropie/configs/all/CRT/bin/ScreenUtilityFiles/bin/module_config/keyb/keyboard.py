@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pygame, os, sys, logging, traceback
+import pygame, os, sys, logging
 import time, math
 
 sys.dont_write_bytecode = True
@@ -30,7 +30,7 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from launcher_module.core_paths import *
+from launcher_module.core_paths import CRT_SOUNDS_PATH
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -43,7 +43,7 @@ class keyboard(object):
     m_sCursor     = os.path.join(SCRIPT_DIR, "cursor.png")
     m_sFont       = os.path.join(SCRIPT_DIR, "font.ttf")
     m_iFontSize   = 8
-    
+
     m_sText       = ""
     m_sText_Bck   = ""
     m_iText_Max   = 0  # max chars in the string
@@ -58,7 +58,7 @@ class keyboard(object):
     m_iFstChar    = 10 # first left character
     m_iSpcChar    = 14 # space between character
     m_iCharsLine  = 13 # chars per line
-    
+
     m_iChar       = 1  # char of the list
 
     m_oSfKBD      = None
@@ -89,16 +89,16 @@ class keyboard(object):
             logging.error(e)
 
     def write(self, p_sText = "your text", p_iMax = 15):
-        if not self.m_oJoyHandler: 
+        if not self.m_oJoyHandler:
             self.m_oJoyHandler = joystick()
             self.m_iChar = 1
             self.m_sText = p_sText
             self.m_iText_Max = p_iMax
             self.m_sText_Bck = p_sText
-            
+
         if not pygame.mixer.get_init():
             self._init_sounds()
-            
+
         if not self.m_oSfKBD:
             self._render_keyboard()
             return self.m_oSfKBD
@@ -129,15 +129,15 @@ class keyboard(object):
                 value = self.m_lKeyb[self.m_iChar - 1]
                 if value == False: return False
                 elif value == "del": self.m_sText = self.m_sText[:-1]
-                else: 
-                    if len(self.m_sText) <= self.m_iText_Max: 
+                else:
+                    if len(self.m_sText) <= self.m_iText_Max:
                         self.m_sText += value
             if event & CRT_CANCEL:
                 self.m_PGSndLoad.play()
                 return None
             self._render_keyboard()
             return True
-            
+
     def _get_coord(self, p_bPos = False):
         if self.m_iChar < 1: self.m_iChar = 1
         elif self.m_iChar > len(self.m_lKeyb): self.m_iChar = len(self.m_lKeyb)
@@ -168,35 +168,35 @@ class keyboard(object):
         else:
             pos = self._get_coord(True)
             self.m_iChar = len(self.m_lKeyb) - (self.m_iCharsLine - pos)
-            
+
     def _move_down(self):
         if (self.m_iChar + self.m_iCharsLine) <= len(self.m_lKeyb):
             self.m_iChar = self.m_iChar + self.m_iCharsLine
         else:
             pos = self._get_coord(True)
             self.m_iChar = 0 + pos
-    
+
     def _render_keyboard(self):
         if not self.m_oRndLayout:
             self.m_oRndLayout = self.render_image(self.m_sLayout)
         if not self.m_oRndCursor:
             self.m_oRndCursor = self.render_image(self.m_sCursor)
-        
+
         self.m_oRndText = self._line_text()
 
         self.m_oSfKBD = pygame.Surface((self.m_oRndLayout.get_width(),
                                         self.m_oRndLayout.get_height()),
-                                        pygame.SRCALPHA)        
+                                        pygame.SRCALPHA)
 
         rect = self.m_oRndLayout.get_rect()
         rect.topleft = (0, 0)
         self.m_oSfKBD.blit(self.m_oRndLayout, rect)
-        
+
         rect = self.m_oRndCursor.get_rect()
         pos = self._get_coord()
         rect.midtop = (pos[0], pos[1])
         self.m_oSfKBD.blit(self.m_oRndCursor, rect)
-        
+
         rect = self.m_oRndText.get_rect()
         rect.midleft = (self.m_iTextLft, self.m_iTextLine)
         self.m_oSfKBD.blit(self.m_oRndText, rect)
@@ -205,7 +205,7 @@ class keyboard(object):
         max_width = self.m_iTextRgt - self.m_iTextLft
         text = self.render_text(self.m_sText)
         sf = pygame.Surface((max_width, text.get_height()), pygame.SRCALPHA)
-        
+
         LnWidth = text.get_width() + self.m_oRndCursor.get_width()
         textSf = pygame.Surface((LnWidth, text.get_height()), pygame.SRCALPHA)
         rect = text.get_rect()
@@ -214,7 +214,7 @@ class keyboard(object):
         rect = self.m_oRndCursor.get_rect()
         rect.bottomright = (LnWidth, textSf.get_height())
         textSf.blit(self.m_oRndCursor, rect)
-        
+
         if LnWidth < max_width:
             rect = textSf.get_rect()
             rect.midbottom = (max_width / 2, sf.get_height())
@@ -243,7 +243,7 @@ class keyboard(object):
         return sf
 
     def render_image(self, p_sImg):
-        if not os.path.exists(p_sImg): 
+        if not os.path.exists(p_sImg):
             logging.info("INFO: image not found")
             return None
         try:
@@ -255,7 +255,7 @@ class keyboard(object):
             return sf
         except:
             raise
-        
+
     def _clean(self):
         self.m_oSfKBD = None
         self.m_oRndLayout = None
@@ -266,4 +266,4 @@ class keyboard(object):
         self.m_oJoyHandler.quit()
         self.m_oJoyHandler = None
         self._clean()
-    
+

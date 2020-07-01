@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands
+import sys, os, threading, time
 import logging, rpyc, math, pygame
 
 sys.dont_write_bytecode = False
@@ -30,12 +30,13 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import explore_list, find_submenus, \
-                         load_submenu, check_es_restart, \
-                         background_music, sys_volume, \
-                         check_sys_reboot
-from launcher_module.file_helpers import ini_get, ini_set
-from launcher_module.core_paths import *
+from config_utils import explore_list, find_submenus, load_submenu, \
+                         check_es_restart, check_sys_reboot, \
+                         background_music, sys_volume, render_image, \
+                         press_back
+from keyb.keyboard import keyboard
+from launcher_module.file_helpers import ini_get
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -55,7 +56,7 @@ class main_sub2(object):
     m_lMainOpts = []
     m_lSubMenus = []
     m_lOptFn = []
-    
+
     m_lCtrl = []
     m_lRestart = [__name__, False]
     m_lReboot = [__name__, False]
@@ -64,11 +65,11 @@ class main_sub2(object):
     m_sSection = "02 Sound"
 
     m_lLayer40 = [None, None] # text & icon label
-    
+
     def __init__(self):
         self._load_options()
         self._load_sub_menus()
-      
+
 
     def load(self):
         self.m_bThreadsStop = False
@@ -98,7 +99,7 @@ class main_sub2(object):
             value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
-            else: 
+            else:
                 self.info(value)
         self.info()
         return value
@@ -106,7 +107,7 @@ class main_sub2(object):
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
         self.m_oThreads = []
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.start()
             self.m_oThreads.append(t)
@@ -119,7 +120,7 @@ class main_sub2(object):
                 for opt in p_lAutoL:
                     self._reload_opt_datas(opt)
                 time.sleep(timer)
-                
+
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2,
                     self.opt3, self.opt4]
@@ -152,8 +153,8 @@ class main_sub2(object):
                 for i in range (0, len(self.m_lLines)):
                     self.m_lSubMenus.append(None)
             for sub in submenus:
-                self.m_lSubMenus.append(sub)                
-            
+                self.m_lSubMenus.append(sub)
+
             for sbm in self.m_lSubMenus:
                 if sbm:
                     temp = {}
@@ -227,7 +228,7 @@ class main_sub2(object):
         value = (ini_get(CRT_UTILITY_FILE, "audio_presets")).title()
         p_lLines.update({'value': value})
         return p_lLines
-  
+
     def opt3(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
@@ -236,7 +237,7 @@ class main_sub2(object):
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            
+
             self.info("Please Wait", "icon_clock")
             if new == False: self.m_oBGMClass.stop()
             elif new == True: self.m_oBGMClass.init()

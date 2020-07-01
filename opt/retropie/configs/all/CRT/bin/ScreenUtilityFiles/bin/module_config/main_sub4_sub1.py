@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands
+import sys, os, threading, time
 import logging, pygame
 
 sys.dont_write_bytecode = False
@@ -31,9 +31,10 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from config_utils import explore_list, find_submenus, load_submenu, \
-                         check_es_restart, check_sys_reboot, wifi
+                         check_es_restart, check_sys_reboot, wifi, render_image, \
+                         press_back
 from keyb.keyboard import keyboard
-from launcher_module.core_paths import *
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -254,7 +255,7 @@ class main_sub4_sub1(object):
         elif p_iJoy & CRT_OK:
             if self.m_oWIFIClass.get_mode().lower() == "manual":
                 value = self.m_lLines[p_iLine]['value']
-                new = self._launch_kbd().strip()
+                new = self._launch_kbd("", 30).strip()
                 if new:
                     self.m_oWIFIClass.ssid(new)
                     self.m_lLines[p_iLine]['value'] = new
@@ -292,7 +293,7 @@ class main_sub4_sub1(object):
         if p_iJoy == None:
             return self.opt5_datas()
         if p_iJoy & CRT_OK:
-            new = self._launch_kbd(self.m_oWIFIClass.get_pwd())
+            new = self._launch_kbd(self.m_oWIFIClass.get_pwd(), 30)
             if new:
                 if not self.m_oWIFIClass.pwd(new):
                     self.info(["Password length",

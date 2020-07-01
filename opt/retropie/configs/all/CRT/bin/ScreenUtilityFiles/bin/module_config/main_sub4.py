@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands
+import sys, os, threading, time
 import logging, pygame
 
 sys.dont_write_bytecode = False
@@ -31,8 +31,10 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from config_utils import explore_list, find_submenus, load_submenu, \
-                         check_es_restart, check_sys_reboot, get_ip_address
-from launcher_module.core_paths import *
+                         check_es_restart, check_sys_reboot, get_ip_address, \
+                         render_image, press_back
+from keyb.keyboard import keyboard
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -52,7 +54,7 @@ class main_sub4(object):
     m_lMainOpts = []
     m_lSubMenus = []
     m_lOptFn = []
-    
+
     m_lCtrl = []
     m_lRestart = [__name__, False]
     m_lReboot = [__name__, False]
@@ -61,7 +63,7 @@ class main_sub4(object):
     m_sSection = "04 Network"
 
     m_lLayer40 = [None, None] # text & icon label
-    
+
     def __init__(self):
         self._load_options()
         self._load_sub_menus()
@@ -93,7 +95,7 @@ class main_sub4(object):
             value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
-            else: 
+            else:
                 self.info(value)
         self.info()
         return value
@@ -101,7 +103,7 @@ class main_sub4(object):
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
         self.m_oThreads = []
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.start()
             self.m_oThreads.append(t)
@@ -114,7 +116,7 @@ class main_sub4(object):
                 for opt in p_lAutoL:
                     self._reload_opt_datas(opt)
                 time.sleep(timer)
-                
+
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3]
         self.m_lOptFn = p_lOptFn
@@ -146,8 +148,8 @@ class main_sub4(object):
                 for i in range (0, len(self.m_lLines)):
                     self.m_lSubMenus.append(None)
             for sub in submenus:
-                self.m_lSubMenus.append(sub)                
-            
+                self.m_lSubMenus.append(sub)
+
             for sbm in self.m_lSubMenus:
                 if sbm:
                     temp = {}
@@ -164,21 +166,21 @@ class main_sub4(object):
             return self.opt1_datas()
 
     def opt1_datas(self):
-        p_lLines = {'text': "Public IP", 'icon': None, 
+        p_lLines = {'text': "Public IP", 'icon': None,
                     'color_val': "type_color_1"}
         value = get_ip_address("public")
         if value.lower() == "not available":
             p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
         return p_lLines
-  
+
     def opt2(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
 
     def opt2_datas(self):
-        p_lLines = {'text': "LAN IP", 'icon': None, 
+        p_lLines = {'text': "LAN IP", 'icon': None,
                     'color_val': "type_color_1"}
         value = get_ip_address("eth0")
         if value.lower() == "disconnected":
@@ -192,14 +194,14 @@ class main_sub4(object):
             return self.opt3_datas()
 
     def opt3_datas(self):
-        p_lLines = {'text': "WLAN IP", 'icon': None, 
+        p_lLines = {'text': "WLAN IP", 'icon': None,
                     'color_val': "type_color_1"}
         value = get_ip_address("wlan0")
         if value.lower() == "disconnected":
             p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
         return p_lLines
-        
+
     def input(self, p_iLine, p_iJoy):
         if p_iJoy & CRT_CANCEL:
             self.quit()

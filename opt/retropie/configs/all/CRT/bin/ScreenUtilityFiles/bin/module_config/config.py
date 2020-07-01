@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pygame, os, sys, logging, traceback, time
+import os, sys, logging, traceback, time
 import filecmp
 
 sys.dont_write_bytecode = False
@@ -32,8 +32,7 @@ sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
 from launcher_module.utils import set_procname
-from launcher_module.file_helpers import modify_line, ini_get, remove_file, \
-                                         touch_file, add_line
+from launcher_module.file_helpers import remove_file, touch_file, add_line
 from config_render import render
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Configuration_Utility.log")
@@ -76,8 +75,8 @@ class config(render):
         if p_bFixed:
             os.system('sudo chmod +x %s >> /dev/null 2>&1' % \
                       ES_LAUNCHER_DST_FILE)
-            self.m_lLayer40_core = [["Please Wait", 
-                                     "Fixed ES Launcher", 
+            self.m_lLayer40_core = [["Please Wait",
+                                     "Fixed ES Launcher",
                                      "System Will Reboot Now"],
                                      "icon_info"]
             time.sleep(6)
@@ -95,11 +94,13 @@ class config(render):
                "test60_offsetY = \"0\"",
                "test60_width = \"0\"",
                "test60_height = \"0\"",
+               "keyb_ipac = \"false\"",
                "netplay = \"false\"",
                "netplay_stateless = \"false\"",
                "netplay_lframes = \"2\"",
                "netplay_spectator = \"false\"",
                "netplay_lobby = \"true\"",
+               "wifi_country = \"ES\"",
                "music_volume = \"50\"",
                "audio_presets = \"flat\"",
                "handheld_bezel = \"false\"",

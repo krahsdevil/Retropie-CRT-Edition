@@ -28,7 +28,12 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from launcher_module.core_paths import *
+from launcher_module.core_paths import ES_CFG_PATH, ES_PATH, CRT_ES_CONFIGS_PATH, \
+                                       CRT_ES_RES_PATH, ROTMODES_TATE1_FILE, \
+                                       ROTMODES_TATE3_FILE, RETROPIE_SPLASH_PATH, \
+                                       RETROPIE_CFG_PATH, CRT_UTILITY_FILE, \
+                                       ES_THEMES_SEC_PATH, ES_THEMES_PRI_PATH, \
+                                       CRT_LNCH_IMG_ROT_PATH
 from launcher_module.file_helpers import ini_get, touch_file, \
                                          get_xml_value_esconfig, \
                                          set_xml_value_esconfig, \
@@ -52,7 +57,7 @@ class frontend_rotation():
     sSystem60 = "system60"
     iCurSide = 0
     RES_Y = 0
-    
+
     def __init__(self):
         self._pre_configure()
 
@@ -79,7 +84,7 @@ class frontend_rotation():
         logging.info("INFO: Rotate Emulationstation %s" % p_iToMode)
         self.iToMode = p_iToMode
         return True
-        
+
     def _prepare_theme_configuration(self):
         self._save_current_theme()
         self._set_new_theme()
@@ -94,11 +99,11 @@ class frontend_rotation():
         p_sCurTheme = get_xml_value_esconfig("ThemeSet")
         if p_sTheme != p_sCurTheme:
             ini_set(CRT_UTILITY_FILE, p_sIni, p_sCurTheme)
-       
+
     def _set_new_theme(self):
-        """ 
+        """
         Identify saved theme for next orientation in utility.cfg
-        If theme not found, default ones will be applied.        
+        If theme not found, default ones will be applied.
         """
         #p_sTheme = None
 
@@ -111,7 +116,7 @@ class frontend_rotation():
         # by default vertical theme
         if self.iToMode != 0 and not p_sTheme:
             p_sTheme = "VCRT-UniFlyered-Dark"
-        # by default horizontal theme        
+        # by default horizontal theme
         elif self.iToMode == 0 and not p_sTheme:
             p_sTheme = "CRT-UniFlyered-Color"
         # no change if current configuration is the same
@@ -167,7 +172,7 @@ class frontend_rotation():
             for theme in THEME_LIST:
                 VTHEMES_SRC_PATH = os.path.join(CRT_ES_RES_PATH, theme)
                 os.system('cp -R %s %s >> /dev/null 2>&1' % (VTHEMES_SRC_PATH, ES_THEMES_SEC_PATH))
-            
+
             if self.iToMode == 90:
                 p_sFileTail = "_1"
                 p_sIntro = INTRO_VID1_FILE
@@ -176,13 +181,13 @@ class frontend_rotation():
                 p_sFileTail = "_3"
                 p_sIntro = INTRO_VID3_FILE
                 p_sTrMode = ROTMODES_TATE3_FILE
-        
+
         self._set_side_mode(p_sTrMode)
         # change video intro
         os.system('sudo cp %s %s >> /dev/null 2>&1' % (p_sIntro, INTRO_VID_DEF_FILE))
         # change launching images
         self._rotate_launching_images(p_sFileTail)
-    
+
     def _set_side_mode(self, p_sTrMode):
         """ Clean all side file triggers and create new """
         os.system('rm %s >> /dev/null 2>&1' % ROTMODES_TATE1_FILE)

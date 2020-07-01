@@ -20,9 +20,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pygame, time, imp, copy
-import sys, os, commands, subprocess, math
-import filecmp, time, threading, logging
+import pygame, time
+import sys, os, math
+import threading, logging
 
 sys.dont_write_bytecode = False
 
@@ -32,16 +32,12 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from index import index
-from config_utils import watcher, restart_ES
-from launcher_module.core_paths import *
-from launcher_module.file_helpers import modify_line, ini_get, remove_file
-from launcher_module.utils import get_screen_resolution, something_is_bad, \
-                                  get_side
+from config_utils import change_watcher, restart_ES
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_SOUNDS_PATH
+from launcher_module.utils import get_screen_resolution, get_side
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
-
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "utility.log")
 
 DEFAULT_CFG = {
     'style': "default",
@@ -58,11 +54,11 @@ DEFAULT_CFG = {
 
     'larrow': "larrow.png",
     'rarrow': "rarrow.png",
-    
+
     'font': "font.ttf",
     'font_size': 8,
     'cap': True,
-    
+
     'icon_true': "icon_true.png",
     'icon_false': "icon_false.png",
     'icon_clock': "icon_clock.png",
@@ -76,9 +72,9 @@ DEFAULT_CFG = {
     'icon_power': "icon_power.png",
     'icon_folder': "icon_folder.png",
     'icon_foldero': "icon_foldero.png",
-    
+
     'pointer': ["pointerf1.png", "pointerf2.png"],
-    
+
     'type_color_1': pygame.Color(244,217, 48), # info values
     'type_color_2': pygame.Color(124,113,218), # menu access color
     'type_color_3': pygame.Color( 19, 14, 56), # text shadow
@@ -107,7 +103,7 @@ class core(object):
     m_lReboot       = {'reboot': False, 'icon_render': None}
 
     m_iSide         = 0
-    
+
     m_oLayer0       = None # background
     m_oLayer10      = None # selector
     m_oLayer20      = None # all menu text except selected line
@@ -120,10 +116,10 @@ class core(object):
 
     m_iScroll_dif   = 0 # part of text out of assigned space
     m_iScroll_mov   = 0 # current displacement of scroll
-    
+
     m_iLine         = 0    # Current menu line
     m_lPointer      = {'frame': 0, 'pointer_render': []}
-    
+
     m_oIndex        = None # for import current submenu/section
     m_lLines        = []
 
@@ -138,7 +134,7 @@ class core(object):
         self.m_sSkinPath = os.path.join(SCRIPT_DIR, self.dCFG['style'])
         self.m_oIndex = index()
         self._init_pygame()
-        self.m_oWach = watcher(self.m_lLines, self.m_iLine, self.m_iMax_Lines)
+        self.m_oWach = change_watcher(self.m_lLines, self.m_iLine)
         self._create_threads()
         self.run()
 
@@ -166,7 +162,7 @@ class core(object):
 
     def _create_threads(self):
         p_oDmns = [self._dmn_rfrsh_scr, self._dmn_pnt_anim, self._dmn_scroll]
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.setDaemon(True)
             t.start()
@@ -246,8 +242,8 @@ class core(object):
     def _init_screen(self):
         pygame.display.init()
         pygame.font.init()
-        pygame.mouse.set_visible(0)        
-        
+        pygame.mouse.set_visible(0)
+
         # gfx
         self.m_oFontText = pygame.font.Font(os.path.join(self.m_sSkinPath,
                            self.dCFG['font']), self.dCFG['font_size'])
@@ -304,12 +300,12 @@ class core(object):
         p_lLines = ('icon', 'icon_render', 'value',
                     'options', 'color_txt', 'color_val',
                     'icon_prev', 'text', 'text_render',
-                    'prev_text', 'value_render', 
+                    'prev_text', 'value_render',
                     'prev_value')
         p_lTheme = ('background_render', 'top_render',
                     'bottom_render', 'selector_render',
                     'icon_true_render', 'icon_false_render',
-                    'larrow_render', 'rarrow_render')        
+                    'larrow_render', 'rarrow_render')
         p_lPointer = ()
 
         for line in self.m_lLines:
@@ -349,13 +345,13 @@ class core(object):
             event = self.m_oJoyHandler.event_wait()
             if event & CRT_UP:
                 self.m_PGSndCursor.play()
-                if self.m_iLine == 0: 
+                if self.m_iLine == 0:
                     self.m_iLine = int(len(self.m_lLines) - 1)
                 else:
                     self.m_iLine -= 1
             elif event & CRT_DOWN:
                 self.m_PGSndCursor.play()
-                if self.m_iLine == int(len(self.m_lLines) - 1): 
+                if self.m_iLine == int(len(self.m_lLines) - 1):
                     self.m_iLine = 0
                 else:
                     self.m_iLine += 1
@@ -382,13 +378,13 @@ class core(object):
             self._render_layer10(p_bCheck01)
 
         # render Layer 20 Text and 21
-        if p_bCheck03 or p_bCheck01: 
+        if p_bCheck03 or p_bCheck01:
             self._render_layer20()
             self._render_layer21()
 
-        # render Layer 21; 
+        # render Layer 21;
         if p_bCheck05:
-            self._render_layer21()        
+            self._render_layer21()
 
         # render Layer 30; Pointer
         self._render_layer30()
@@ -398,7 +394,7 @@ class core(object):
 
     def _join_layers(self):
         self.m_oScreen.fill(C_BLACK)
-        
+
         # append Layer 0 on main screen surface
         rect = self.m_oLayer0.get_rect()
         rect.topleft = (0, 0)
@@ -408,22 +404,22 @@ class core(object):
         rect = self.m_oLayer10.get_rect()
         rect.topleft = (0, 0)
         self.m_oScreen.blit(self.m_oLayer10, rect)
-        
+
         # append Layer 20 on main screen surface
         rect = self.m_oLayer20.get_rect()
         rect.topleft = (0, 0)
         self.m_oScreen.blit(self.m_oLayer20, rect)
-        
+
         # append Layer 21 on main screen surface
         rect = self.m_oLayer21.get_rect()
         rect.topleft = (0, 0)
         self.m_oScreen.blit(self.m_oLayer21, rect)
-        
+
         # append Layer 30 on main screen surface
         rect = self.m_oLayer30.get_rect()
         rect.topleft = (0, 0)
         self.m_oScreen.blit(self.m_oLayer30, rect)
-        
+
         # append Layer 40 on main screen surface
         if self.m_oLayer40:
             rect = self.m_oLayer40.get_rect()
@@ -440,7 +436,7 @@ class core(object):
         rect = self.dCFG['background_render'].get_rect()
         rect.topleft = (0, 0)
         self.m_oLayer0.blit(self.dCFG['background_render'], rect)
-        
+
         # append top to layer0
         img = "top"
         if self.m_iSide != 0: img = "vtop"
@@ -456,13 +452,13 @@ class core(object):
             img = 'icon_es'
             self.m_lRestart['icon_render'] = self._img_render(self.dCFG[img])
         if not self.m_lReboot['icon_render']:
-            img = 'icon_sys'            
+            img = 'icon_sys'
             self.m_lReboot['icon_render'] = self._img_render(self.dCFG[img])
 
         if self.m_lReboot['reboot']:
             rect = self.m_lReboot['icon_render'].get_rect()
             rect.center = (self.m_lRES[0] / 2, self.m_iInfo_pos)
-            self.m_oLayer0.blit(self.m_lReboot['icon_render'], rect)            
+            self.m_oLayer0.blit(self.m_lReboot['icon_render'], rect)
         elif self.m_lRestart['restart']:
             rect = self.m_lRestart['icon_render'].get_rect()
             rect.center = (self.m_lRES[0] / 2, self.m_iInfo_pos)
@@ -477,11 +473,11 @@ class core(object):
             rect.bottomleft = (0, self.m_lRES[1])
             self.m_oLayer0.blit(self.dCFG['bottom_render'], rect)
         except: logging.info("INFO: bottom image not found")
-        
+
         # Rotate if vertical mode
-        if self.m_iSide == 1: 
+        if self.m_iSide == 1:
             self.m_oLayer0 = pygame.transform.rotate(self.m_oLayer0, -90)
-        elif self.m_iSide == 3: 
+        elif self.m_iSide == 3:
             self.m_oLayer0 = pygame.transform.rotate(self.m_oLayer0, 90)
 
     def _render_layer10(self, p_bReload = False):
@@ -496,29 +492,29 @@ class core(object):
             if self.m_iSide != 0: img = "vselector"
             self.dCFG['selector_render'] = self._img_render(self.dCFG[img])
         rect = self.dCFG['selector_render'].get_rect()
-        
+
         rect.midleft = (0, Y_POS)
         self.m_oLayer10.blit(self.dCFG['selector_render'], rect)
-        
+
         # Rotate if vertical mode
-        if self.m_iSide == 1: 
+        if self.m_iSide == 1:
             self.m_oLayer10 = pygame.transform.rotate(self.m_oLayer10, -90)
-        elif self.m_iSide == 3: 
+        elif self.m_iSide == 3:
             self.m_oLayer10 = pygame.transform.rotate(self.m_oLayer10, 90)
 
     def _render_layer20(self):
         Y_POS = self.m_iMenu_pos
         # create layer20 surface
         self.m_oLayer20 = pygame.Surface(self.m_lRES, pygame.SRCALPHA)
-       
+
         # render left arrow/right arrow/true/false icons
         if not self.dCFG['icon_true_render']:
             self.dCFG['icon_true_render'] = self._img_render(self.dCFG['icon_true'])
         if not self.dCFG['icon_false_render']:
             self.dCFG['icon_false_render'] = self._img_render(self.dCFG['icon_false'])
-        if not self.dCFG['larrow_render']: 
+        if not self.dCFG['larrow_render']:
             self.dCFG['larrow_render'] = self._img_render(self.dCFG['larrow'])
-        if not self.dCFG['rarrow_render']: 
+        if not self.dCFG['rarrow_render']:
             self.dCFG['rarrow_render'] = self._img_render(self.dCFG['rarrow'])
 
         count = 0
@@ -533,7 +529,7 @@ class core(object):
                     self.m_oLayer20.blit(oLine, rect)
                 Y_POS += self.m_iText_spc
             count += 1
-        
+
         # check/append info text on line surface
         oInfoSf = pygame.Surface((self.m_iInfo_rgt - self.m_iInfo_lft,
                                   self.dCFG['font_line']), pygame.SRCALPHA)
@@ -549,14 +545,14 @@ class core(object):
             rect.midleft = (ltoffset, oInfoSf.get_height() / 2)
             oInfoSf.blit(line, rect)
             ltoffset += (line.get_width() + 4)
-        
+
         # info text: pages info
         txt = "PAGE %s/%s" % (self.m_iPageCur, self.m_iPageTot)
         pages = self._text_render(txt, 'type_color_1', 'type_color_3')
         rect = pages.get_rect()
         rect.midright = (oInfoSf.get_width(), oInfoSf.get_height() / 2)
         oInfoSf.blit(pages, rect)
-        
+
         # render/append text info line to layer20
         rect = oInfoSf.get_rect()
         rect.midleft = (self.m_iInfo_lft, self.m_iInfo_pos)
@@ -573,11 +569,11 @@ class core(object):
         rect = oSectSf.get_rect()
         rect.center = (self.m_lRES[0] / 2, self.m_iSect_pos)
         self.m_oLayer20.blit(oSectSf, rect)
-        
+
         # Rotate if vertical mode
-        if self.m_iSide == 1: 
+        if self.m_iSide == 1:
             self.m_oLayer20 = pygame.transform.rotate(self.m_oLayer20, -90)
-        elif self.m_iSide == 3: 
+        elif self.m_iSide == 3:
             self.m_oLayer20 = pygame.transform.rotate(self.m_oLayer20, 90)
 
     def _render_layer21(self):
@@ -587,16 +583,16 @@ class core(object):
         Y_POS = self.m_iMenu_pos + (line * self.m_iText_spc)
 
         oLine = self._render_line_menu(self.m_lLines[self.m_iLine])
-        
+
         # append line surface to layer21 surface
         rect = oLine.get_rect()
         rect.midleft = (self.m_iText_lft, Y_POS)
         self.m_oLayer21.blit(oLine, rect)
-        
+
         # Rotate if vertical mode
-        if self.m_iSide == 1: 
+        if self.m_iSide == 1:
             self.m_oLayer21 = pygame.transform.rotate(self.m_oLayer21, -90)
-        elif self.m_iSide == 3: 
+        elif self.m_iSide == 3:
             self.m_oLayer21 = pygame.transform.rotate(self.m_oLayer21, 90)
 
 
@@ -615,14 +611,14 @@ class core(object):
                 self.m_lPointer['pointer_render'].append(ptr)
 
         ptr = self.m_lPointer['pointer_render'][self.m_lPointer['frame']]
-        rect = ptr.get_rect()            
+        rect = ptr.get_rect()
         rect.midright = (self.m_iText_lft - 2, Y_POS)
         self.m_oLayer30.blit(ptr, rect)
-        
+
         # Rotate if vertical mode
-        if self.m_iSide == 1: 
+        if self.m_iSide == 1:
             self.m_oLayer30 = pygame.transform.rotate(self.m_oLayer30, -90)
-        elif self.m_iSide == 3: 
+        elif self.m_iSide == 3:
             self.m_oLayer30 = pygame.transform.rotate(self.m_oLayer30, 90)
 
     def _render_layer40(self):
@@ -631,10 +627,10 @@ class core(object):
             p_lList = self.m_lLayer40_core
         elif self.m_lLayer40[0]:
             p_lList = self.m_lLayer40
-        
+
         try: self.prev_L40Input
         except: self.prev_L40Input = None
-        
+
         if p_lList:
             if not self.m_oLayer40 or (self.prev_L40Input != p_lList[0]):
                 if type(p_lList[0]) is str or type(p_lList[0]) is list:
@@ -654,13 +650,13 @@ class core(object):
             self.m_iLine = 0
             p_bCheck = True
         else:
-            return self.m_oWach.check(self.m_lLines, self.m_iLine)
+            return self.m_oWach.check(self.m_lLines, self.m_iLine, self.m_iMax_Lines)
         return p_bCheck
 
     def _check_line_change(self):
         p_bCheck = False
         try: self.m_bLine_Check
-        except: self.m_bLine_Check = None 
+        except: self.m_bLine_Check = None
         if self.m_iLine != self.m_bLine_Check:
             self.m_bLine_Check = self.m_iLine
             p_bCheck = True
@@ -669,7 +665,7 @@ class core(object):
     def _check_side_change(self):
         p_bCheck = False
         try: self.m_bSide_Check
-        except: self.m_bSide_Check = None    
+        except: self.m_bSide_Check = None
         if self.m_iSide != self.m_bSide_Check:
             logging.info("cambio de orientacion")
             self.m_bSide_Check = self.m_iSide
@@ -705,7 +701,7 @@ class core(object):
         pygame.mixer.quit()
         if self.m_lReboot['reboot']:
             os.system('sudo reboot')
-        elif self.m_lRestart['restart']: 
+        elif self.m_lRestart['restart']:
             restart_ES()
             time.sleep(6)
         sys.exit(0)

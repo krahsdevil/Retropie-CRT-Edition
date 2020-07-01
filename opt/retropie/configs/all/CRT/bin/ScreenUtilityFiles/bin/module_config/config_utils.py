@@ -21,7 +21,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, imp, math, re, time, shlex
-import logging, subprocess, commands, traceback
+import logging, subprocess, commands
+import xml.etree.ElementTree as ET
 import socket, fcntl, struct
 import pygame
 
@@ -33,8 +34,14 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from launcher_module.screen import CRT
-from launcher_module.core_paths import *
-from launcher_module.utils import get_side, check_process, touch_file
+from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
+                                       CRT_EXTSTRG_SRV_PATH, CRT_EXTSTRG_CORE_PATH, \
+                                       CRT_EXTSTRG_SRV_FILE, CRT_BGM_SRV_FILE, \
+                                       CRT_EXTSTRG_TRIG_MNT_PATH, CRT_EXTSTRG_TRIG_UMNT_PATH, \
+                                       CRT_BGM_SRV_PATH, CRT_BGM_CORE_PATH, TMP_LAUNCHER_PATH, \
+                                       ES_SYSTEMS_PRI_FILE, RETROPIE_MENU, RETROPIE_HOME_PATH, \
+                                       RASP_BOOTCFG_FILE
+from launcher_module.utils import check_process, touch_file
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set, remove_line
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
@@ -130,13 +137,13 @@ def get_ip_address(p_sIFname):
 
     if p_sIFname == "eth0":
         command = "sudo ethtool %s | grep \"Link detected\"" % p_sIFname
-        output = commands.getoutput(command).strip()        
+        output = commands.getoutput(command).strip()
         if addr != "Disconnected":
             if "no" in output.lower(): addr = "Disconnected"
         elif addr == "Disconnected":
             if "yes" in output.lower(): addr = "Trying to get IP..."
     return addr
-    
+
 def get_modes():
     p_lList = []
     p_lList.append("Default")
@@ -148,12 +155,44 @@ def get_modes():
                 p_lList.append(line[1])
     return p_lList
 
+def hide_retropie_menu(p_bEnable = True):
+    p_bCheck = False
+    TMP = os.path.join(TMP_LAUNCHER_PATH, "myfile.cfg")
+    os.system('cp %s %s > /dev/null 2>&1' % (ES_SYSTEMS_PRI_FILE, TMP))
+    if p_bEnable: p_sPath = os.path.join(RETROPIE_HOME_PATH, "disabled.retropiemenu")
+    else: p_sPath = RETROPIE_MENU
+    oTree = ET.parse(TMP)
+    oRoot = oTree.getroot()
+    try:
+        for sys in oRoot.iter('system'):
+            if sys.find('name').text == "retropie":
+                sys.find('path').text = p_sPath
+                p_bCheck = True
+                break
+        if p_bCheck: oTree.write(TMP)
+        os.system('sudo cp %s %s > /dev/null 2>&1' %(TMP, ES_SYSTEMS_PRI_FILE))
+        os.system("sudo rm %s > /dev/null 2>&1" % TMP)
+    except: return False
+    return p_bCheck
+
+def check_retropie_menu():
+    oTree = ET.parse(ES_SYSTEMS_PRI_FILE)
+    oRoot = oTree.getroot()
+    try:
+        for sys in oRoot.iter('system'):
+            if sys.find('name').text == "retropie":
+                if sys.find('path').text == RETROPIE_MENU:
+                    return True
+                break
+        return False
+    except: return False
+
 def check_es_restart(p_lList, p_lCtrl):
     p_bCheck = False
     count = 0
     for opt in p_lCtrl:
         try:
-            # if 'es_restart' is present and True, implies 
+            # if 'es_restart' is present and True, implies
             # emulationstation needs restart if value change
             if opt['es_restart']:
                 if opt['value'] != p_lList[count]['value']: p_bCheck = True
@@ -167,7 +206,7 @@ def check_sys_reboot(p_lList, p_lCtrl):
     count = 0
     for opt in p_lCtrl:
         try:
-            # if 'es_restart' is present and True, implies 
+            # if 'es_restart' is present and True, implies
             # emulationstation needs restart if value change
             if opt['sys_reboot']:
                 if opt['value'] != p_lList[count]['value']: p_bCheck = True
@@ -177,7 +216,7 @@ def check_sys_reboot(p_lList, p_lCtrl):
     return p_bCheck
 
 def launching_images(p_bShow):
-    for (root,dirs,files) in os.walk(RETROPIE_CFG_PATH, topdown=True): 
+    for (root,dirs,files) in os.walk(RETROPIE_CFG_PATH, topdown=True):
             for f in files:
                 if not "/all" in root:
                     if f[-4:] in (".png", ".jpg"):
@@ -189,7 +228,7 @@ def rename_image(p_sImage, p_bShow):
     img_ena = "launching"
     img_src = img_ena
     img_dst = img_dis
-    if p_bShow: 
+    if p_bShow:
         img_src = img_dis
         img_dst = img_ena
 
@@ -208,12 +247,12 @@ def press_back():
     m_oJoyHandler = joystick()
     while True:
         event = m_oJoyHandler.event_wait()
-        if event & CRT_CANCEL: 
+        if event & CRT_CANCEL:
             m_oJoyHandler.quit()
             break
 
 def render_image(p_sImg):
-    if not os.path.exists(p_sImg): 
+    if not os.path.exists(p_sImg):
         logging.info("INFO: image not found")
         return None
     try:
@@ -226,7 +265,7 @@ def render_image(p_sImg):
     except:
         raise
         #return None
-    
+
 def restart_ES():
     """ Restart ES if it's running """
     if check_process("emulationstatio"):
@@ -240,16 +279,16 @@ def restart_ES():
 class wifi(object):
     COUNTRY = {
                'Austria': 'AT', 'Australia': 'AU', 'Belgium': 'BE', 'Brazil': 'BR',
-               'Canada': 'CA', 'Switzerland': 'CH', 'China': 'CN', 
-               'Cyprus': 'CY', 'Czech Republic': 'CZ', 'Germany': 'DE', 'Denmark': 'DK', 
-               'Estonia': 'EE', 'Spain': 'ES', 'Finland': 'FI', 'France': 'FR', 
+               'Canada': 'CA', 'Switzerland': 'CH', 'China': 'CN',
+               'Cyprus': 'CY', 'Czech Republic': 'CZ', 'Germany': 'DE', 'Denmark': 'DK',
+               'Estonia': 'EE', 'Spain': 'ES', 'Finland': 'FI', 'France': 'FR',
                'United Kingdom': 'GB', 'Greece': 'GR', 'Hong Kong': 'HK', 'Hungary': 'HU',
-               'Indonesia': 'ID', 'Ireland': 'IE', 'Israel': 'IL', 'India': 'IN', 
+               'Indonesia': 'ID', 'Ireland': 'IE', 'Israel': 'IL', 'India': 'IN',
                'Iceland': 'IS', 'Italy': 'IT', 'Japan': 'JP', 'Korea': 'KR',
                'Lithuania': 'LT', 'Luxembourg': 'LU', 'Latvia': 'LV', 'Malaysia': 'MY',
                'Netherlands': 'NL', 'Norway': 'NO', 'New Zealand': 'NZ', 'Philippines': 'PH',
-               'Poland': 'PL', 'Portugal': 'PT', 'Sweden': 'SE', 'Singapore': 'SG', 
-               'Slovenia': 'SI', 'Slovak Republic': 'SK', 'Thailand': 'TH', 'Taiwan': 'TW', 
+               'Poland': 'PL', 'Portugal': 'PT', 'Sweden': 'SE', 'Singapore': 'SG',
+               'Slovenia': 'SI', 'Slovak Republic': 'SK', 'Thailand': 'TH', 'Taiwan': 'TW',
                'USA': 'US', 'South Africa': 'ZA'
               }
     m_sMode = "Manual"
@@ -260,7 +299,7 @@ class wifi(object):
     m_sPwd = ""
     m_sCountry = ""
     WPA_FILE = '/etc/wpa_supplicant/wpa_supplicant.conf'
-    TMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "wpa_supplicant.conf")    
+    TMP_FILE = os.path.join(TMP_LAUNCHER_PATH, "wpa_supplicant.conf")
 
     def __init__(self):
         pass
@@ -269,6 +308,9 @@ class wifi(object):
         if p_sValue != "[A:SCAN]": return
         commandline = "sudo iw wlan0 scan | egrep 'SSID:|signal:'"
         output = commands.getoutput(commandline).split('\n')
+        if "command failed: Network is down (-100)" in output:
+            os.system('sudo rfkill unblock wifi; sudo rfkill unblock all')
+            output = commands.getoutput(commandline).split('\n')
         # clean output command
         p_dSSIDs = {}
         for line in output:
@@ -313,7 +355,7 @@ class wifi(object):
                 self.m_sCountry = "Spain"
             self.country(self.m_sCountry)
         return self.m_sCountry
-            
+
     def get_country_list(self):
         if not self.status():
             list = []
@@ -321,7 +363,7 @@ class wifi(object):
                 list.append(item)
             list.sort()
             return list
-        return None 
+        return None
 
     def connect(self):
         if self.get_ssid() == "[A:SCAN]" or self.get_pwd == "": return False
@@ -359,7 +401,7 @@ class wifi(object):
         p_bCheck = False
         while True:
             if time.time() - p_iTime > 60: return p_bCheck
-            if self.status(): 
+            if self.status():
                 p_bCheck = True
                 return p_bCheck
             time.sleep(0.2)
@@ -389,13 +431,13 @@ class wifi(object):
         output = commands.getoutput(commandline).strip()
         if output: return output
         return False
-        
+
     def get_mode_list(self):
         return self.m_lModes
-        
+
     def get_mode(self):
         return self.m_sMode
-        
+
     def mode(self, p_sMode):
         self.m_sMode = p_sMode
 
@@ -410,7 +452,7 @@ class wifi(object):
             return self.m_sSSIDSel01
         elif self.m_sMode.lower() == "detect":
             return self.m_sSSIDSel02
-        
+
     def get_ssid_list(self):
         return self.m_lSSIDs
 
@@ -422,65 +464,100 @@ class wifi(object):
         if len(p_sPWD) < 8: return False
         self.m_sPwd = p_sPWD
         return True
-    
-class watcher(object):
-    p_lList1 = []
-    p_lList2 = []
-    p_iLine1 = 0
-    p_iMaxLines = 0
-    
-    def __init__(self, p_VarList, p_VarLine, p_MaxLines):
-        self.p_lList1 = self._get_values(p_VarList)
-        self.p_iLine1 = p_VarLine
-        self.p_iMaxLines = p_MaxLines
 
-    def check(self, p_VarList, p_VarLine):
-        p_bCheck01 = True
-        p_bCheck02 = True
-        self.p_lList2 = self._get_values(p_VarList)
-        if len(self.p_lList1) != len(self.p_lList2):
-            self.p_lList1 = self._get_values(p_VarList)
-            return True
+class change_watcher(object):
+    m_iPrevLine = 0
+    m_iMaxLines = 0
 
-        for a, b in zip(self.p_lList1, self.p_lList2):
+    m_lPrevIconList = []
+    m_lPrevTextList = []
+    m_lPrevValueList = []
+    m_lCurIconList = []
+    m_lCurTextList = []
+    m_lCurValueList = []
+
+    def __init__(self, p_lInitList, p_iInitLine):
+        self._get_values(p_lInitList)
+        self.m_lPrevIconList = self.m_lCurIconList[:]
+        self.m_lPrevTextList = self.m_lCurTextList[:]
+        self.m_lPrevValueList = self.m_lCurValueList[:]
+        self.m_iPrevLine = p_iInitLine
+
+    def check(self, p_lCurList, p_iCurLine, p_MaxLines):
+        p_bCheck = False
+        self.m_iMaxLines = p_MaxLines
+        self._get_values(p_lCurList)
+
+        # if there is a line change
+        if self.m_iPrevLine != p_iCurLine:
+            p_bCheck = True
+        # if not same number of lines
+        elif len(self.m_lPrevTextList) != len(self.m_lCurTextList):
+            p_bCheck = True
+        # if any icon, value, text change
+        elif not self._comp_list(p_iCurLine):
+            p_bCheck = True
+
+        self.m_iPrevLine = p_iCurLine
+        self.m_lPrevIconList = self.m_lCurIconList[:]
+        self.m_lPrevTextList = self.m_lCurTextList[:]
+        self.m_lPrevValueList = self.m_lCurValueList[:]
+        return p_bCheck
+
+    def _get_values(self, p_lList):
+        self.m_lCurIconList = []
+        self.m_lCurTextList = []
+        self.m_lCurValueList = []
+        for item in p_lList:
+            try: self.m_lCurIconList.append(item['icon'])
+            except: self.m_lCurIconList.append(None)
+            try: self.m_lCurTextList.append(item['text'])
+            except: self.m_lCurTextList.append(None)
+            try: self.m_lCurValueList.append(item['value'])
+            except: self.m_lCurValueList.append(None)
+
+    def _comp_list(self, p_iCurLine):
+        """
+        Compare icons, values and texts from previous and current lists
+        Return True if are equal, False if are different
+        """
+        for a, b in zip(self.m_lPrevValueList, self.m_lCurValueList):
             if a != b:
-                if self._is_same_page(self.p_lList1.index(a), self.p_iLine1):
-                    p_bCheck01 = False
-                self.p_lList1 = self._get_values(p_VarList)
-                break
+                # only set as a change if changed value is in the current page
+                if self._is_same_page(self.m_lCurValueList.index(b), p_iCurLine):
+                    return False
 
-        if p_VarLine != self.p_iLine1:
-                self.p_iLine1 = p_VarLine
-                p_bCheck02 = False
-        if p_bCheck01 and p_bCheck02: return False
+        for a, b in zip(self.m_lPrevTextList, self.m_lCurTextList):
+            if a != b:
+                # only set as a change if changed text is in the current page
+                if self._is_same_page(self.m_lCurTextList.index(b), p_iCurLine):
+                    return False
+
+        for a, b in zip(self.m_lPrevIconList, self.m_lCurIconList):
+            if a != b:
+                # only set as a change if changed icon is in the current page
+                if self._is_same_page(self.m_lCurIconList.index(b), p_iCurLine):
+                    return False
+
         return True
-        
-    def _get_values(self, p_VarList):
-        val = []
-        for value in p_VarList:
-            try: val.append(value['value'])
-            except: val.append(None)
-            try: val.append(value['icon'])
-            except: val.append(None)
-        return val
-        
-    def _is_same_page(self, p_iPos, p_iCurLine):
+
+    def _is_same_page(self, p_iChangedLine, p_iCurLine):
         p_iPageCur = int(math.ceil((p_iCurLine + 1) \
-                          * 1.0 / self.p_iMaxLines * 1.0))
-        p_iPagePos = int(math.ceil((p_iPos + 1) \
-                          * 1.0 / self.p_iMaxLines * 1.0))
+                          * 1.0 / self.m_iMaxLines * 1.0))
+        p_iPagePos = int(math.ceil((p_iChangedLine + 1) \
+                          * 1.0 / self.m_iMaxLines * 1.0))
         if p_iPageCur == p_iPagePos: return True
         return False
 
 class sys_volume(object):
     m_iSysVol = 0
     m_lFreqs = ('00. 31 Hz', '01. 63 Hz', '02. 125 Hz',
-                '03. 250 Hz', '04. 500 Hz', '05. 1 kHz', 
-                '06. 2 kHz', '07. 4 kHz', '08. 8 kHz', 
+                '03. 250 Hz', '04. 500 Hz', '05. 1 kHz',
+                '06. 2 kHz', '07. 4 kHz', '08. 8 kHz',
                 '09. 16 kHz')
     m_lPresets = {'flat': (66, 66, 66, 66, 66, 66, 66, 66, 66, 66),
                   'live': (66, 66, 66, 66, 70, 70, 70, 85, 80, 75),
-                  'clean': (66, 66, 66, 70, 70, 70, 70, 85, 90, 85)}    
+                  'clean': (66, 66, 66, 70, 70, 70, 70, 85, 90, 85)}
     def __init__(self):
         self.get_vol()
 
@@ -519,7 +596,7 @@ class sys_volume(object):
             vol = str(vol) + '%'
             os.system('amixer -q -M sset PCM %s' % vol)
             return self.get_vol()
-        
+
 class external_storage(object):
     """ virtual class for USB Automount enable/disable/eject """
     m_sService = ""
@@ -535,7 +612,7 @@ class external_storage(object):
         if bCheck01 and bCheck02:
             return True
         return False
-        
+
     def check(self):
         self.m_bSrvExist = False
         self.m_bSrvRun = False
@@ -547,7 +624,7 @@ class external_storage(object):
         if 'running' in sCheckService:
             self.m_bSrvRun = True
         return self.m_bSrvRun
-                
+
     def init(self):
         if self._check_files and not self.check():
             os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' % \
@@ -621,7 +698,7 @@ class background_music(object):
         if bCheck01 and bCheck02:
             return True
         return False
-        
+
     def check(self):
         self.m_bSrvExist = False
         self.m_bSrvRun = False
@@ -633,7 +710,7 @@ class background_music(object):
         if 'running' in sCheckService:
             self.m_bSrvRun = True
         return self.m_bSrvRun
-                
+
     def init(self):
         if self._check_files and not self.check():
             os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' % \
@@ -697,7 +774,7 @@ class saveboot(object):
         sSelected = ini_get(CRT_FIXMODES_FILE, "mode_default")
         if not sSelected or sSelected.lower() == "default":
             return False
-        DiffTimings = ini_getlist(CRT_FIXMODES_FILE, 
+        DiffTimings = ini_getlist(CRT_FIXMODES_FILE,
                                   "%s_%s"%(sSelected, self.m_sEnv))
         DiffTimings = map(int, DiffTimings)
         if len(DiffTimings) != 17: #If not 17 timings, not valid
@@ -800,7 +877,7 @@ class saveboot(object):
                      p_sBootTimings)
 
         os.system('cp %s %s' %(RASP_BOOTCFG_FILE, self.BOOTCFG_TEMP_FILE))
-        modify_line(self.BOOTCFG_TEMP_FILE, "hdmi_timings=", 
+        modify_line(self.BOOTCFG_TEMP_FILE, "hdmi_timings=",
                     "hdmi_timings=%s" % p_sBootTimings)
         os.system('sudo cp %s %s' %(self.BOOTCFG_TEMP_FILE, RASP_BOOTCFG_FILE))
         logging.info("INFO: boot resolution saved at %s"%RASP_BOOTCFG_FILE)

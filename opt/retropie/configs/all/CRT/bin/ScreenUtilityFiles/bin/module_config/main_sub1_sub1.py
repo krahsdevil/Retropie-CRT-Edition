@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands
+import sys, os, threading, time
 import logging, pygame
 
 sys.dont_write_bytecode = False
@@ -30,10 +30,15 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import *
-from launcher_module.file_helpers import ini_get, ini_set
-from launcher_module.core_paths import *
-from launcher_module.screen import CRT
+from config_utils import find_submenus, load_submenu, explore_list, run, \
+                         check_es_restart, check_sys_reboot, render_image, \
+                         press_back
+from keyb.keyboard import keyboard
+from es_rotation import frontend_rotation
+from launcher_module.file_helpers import get_xml_value_esconfig, \
+                                         set_xml_value_esconfig
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
+from launcher_module.utils import get_side
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -43,15 +48,6 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
-
-TEST_SUITE_FILE = os.path.join(CRT_ADDN_PATH, "addon_240p_suite/240pSuite.bin")
-RA_MD_CFG_FILE1 = os.path.join(RETROPIE_CFG_PATH, "megadrive/retroarch.cfg")
-RA_MD_CFG_FILE2 = os.path.join(CRT_ROOT_PATH, "Retroarch/configs/megadrive.cfg")
-RA_MD_CORE_FILE = os.path.join(CRT_ADDN_PATH,
-                  "addon_240p_suite/genesis_plus_gx_libretro.so")
-
-PATTERN_LAUNCHER_FILE = os.path.join(CRT_MODULES_PATH,
-                        "module_center/pattern_launcher.py")
 
 class main_sub1_sub1(object):
     m_bPause = [False]
@@ -68,10 +64,10 @@ class main_sub1_sub1(object):
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = "Image Utilities"
+    m_sSection = "User Interface"
 
     m_lLayer40 = [None, None] # text & icon label
-    
+
     def __init__(self):
         self._load_options()
         self._load_sub_menus()
@@ -103,7 +99,7 @@ class main_sub1_sub1(object):
             value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
-            else: 
+            else:
                 self.info(value)
         self.info()
         return value
@@ -111,22 +107,23 @@ class main_sub1_sub1(object):
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
         self.m_oThreads = []
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.start()
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = []
+        p_lAutoL = [self.opt4]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
                 for opt in p_lAutoL:
                     self._reload_opt_datas(opt)
                 time.sleep(timer)
-                
+
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2, self.opt3]
+        p_lOptFn = [self.opt3, self.opt4, self.opt5,
+                    self.opt6]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -143,7 +140,7 @@ class main_sub1_sub1(object):
         run(p_sCommand, p_sDBSys)
         self.m_bPause[0] = False
         self.m_bThreadsStop = False
-        
+
     def _load_sub_menus(self):
         submenus = []
         try:
@@ -156,8 +153,8 @@ class main_sub1_sub1(object):
                 for i in range (0, len(self.m_lLines)):
                     self.m_lSubMenus.append(None)
             for sub in submenus:
-                self.m_lSubMenus.append(sub)                
-            
+                self.m_lSubMenus.append(sub)
+
             for sbm in self.m_lSubMenus:
                 if sbm:
                     temp = {}
@@ -168,50 +165,116 @@ class main_sub1_sub1(object):
         except:
             raise
 
-    def opt1(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
-        if p_iJoy == None:
-            return self.opt1_datas()
-        if p_iJoy & CRT_OK:
-            commandline = "/usr/bin/python %s system60" % PATTERN_LAUNCHER_FILE
-            self._launch_app(commandline)
-
-    def opt1_datas(self):
-        p_lLines = {'text': "Frontend Centering",
-                    'color_txt': "type_color_2",
-                    'icon': "icon_bin"}
-        return p_lLines
-
-    def opt2(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
-        if p_iJoy == None:
-            return self.opt2_datas()
-        if p_iJoy & CRT_OK:
-            commandline = "/usr/bin/python %s test60" % PATTERN_LAUNCHER_FILE
-            self._launch_app(commandline)
-
-    def opt2_datas(self):
-        p_lLines = {'text': "In-game Centering",
-                    'color_txt': "type_color_2",
-                    'icon': "icon_bin"}
-        return p_lLines
-
     def opt3(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt3_datas()
-        if p_iJoy & CRT_OK:
-            commandline = "%s -L %s " % (RA_BIN_FILE, RA_MD_CORE_FILE)
-            commandline += "--config %s " % RA_MD_CFG_FILE1
-            commandline += "--appendconfig %s " % RA_MD_CFG_FILE2
-            commandline += "\"%s\" " % TEST_SUITE_FILE
-            commandline += "> /dev/null 2>&1"
-            self._launch_app(commandline, "megadrive")
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new:
+                value = new.lower()
+                set_xml_value_esconfig("ScreenSaverBehavior", value)
+                self.m_lLines[p_iLine].update({'value': new})
 
     def opt3_datas(self):
-        p_lLines = {'text': "240p Test Suite",
-                    'color_txt': "type_color_2",
-                    'icon': "icon_bin"}
+        p_lLines = {'text': "ES ScreenSaver",
+                    'options': ["Black", "Dim", "Random Video", "Slideshow"],
+                    'color_val': "type_color_1",
+                    'es_restart': True}
+        value = get_xml_value_esconfig("ScreenSaverBehavior").title()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt4(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt4_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            try: self.m_oROTClass
+            except: self.m_oROTClass = frontend_rotation()
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new:
+                if new == "Horizontal":
+                    value = 0
+                elif new == "90 Degrees":
+                    value = 90
+                elif new == "-90 Degrees":
+                    value = -90
+                if self.m_oROTClass.rotate(value):
+                    self.m_lLines[p_iLine].update({'value': new})
+
+    def opt4_datas(self):
+        p_lLines = {'text': "ES Rotation",
+                    'options': ["-90 Degrees", "Horizontal", "90 Degrees"],
+                    'color_val': "type_color_1",
+                    'es_restart': True}
+        value = get_side()
+
+        if value == 1:
+            p_lLines.update({'value': "90 Degrees"})
+        elif value == 3:
+            p_lLines.update({'value': "-90 Degrees"})
+        else:
+            p_lLines.update({'value': "Horizontal"})
+        return p_lLines
+
+    def opt5(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt5_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new:
+                value = new.replace('m', '')
+                value = str(int(value) * 60000)
+                set_xml_value_esconfig("ScreenSaverTime", value)
+                self.m_lLines[p_iLine].update({'value': new})
+                if int(value) == 0:
+                    self.info(["Long exposure to a",
+                               "static image could",
+                               "damage your CRT"],
+                               "icon_info")
+                    time.sleep(2)
+                    self.info()
+
+    def opt5_datas(self):
+        p_lLines = {'text': "ES ScreenSaver After",
+                    'es_restart': True,
+                    'color_val': "type_color_1"}
+        options = []
+        for i in range (0, 31):
+            options.append(str(i) + "m")
+        p_lLines.update({'options': options})
+        value = get_xml_value_esconfig("ScreenSaverTime")
+        p_lLines.update({'value': str(int(value) / 60000) + "m"})
+        return p_lLines
+
+    def opt6(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt6_datas()
+        if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new == False: set_xml_value_esconfig("VideoOmxPlayer", "false")
+            elif new == True: set_xml_value_esconfig("VideoOmxPlayer", "true")
+            self.m_lLines[p_iLine].update({'value': new})
+
+    def opt6_datas(self):
+        p_lLines = {'text': "ES Use OMX Player",
+                    'color_val': "type_color_1",
+                    'es_restart': True}
+        value = get_xml_value_esconfig("VideoOmxPlayer")
+        if value.lower() == "true": value = True
+        else: value = False
+        p_lLines.update({'value': value})
         return p_lLines
 
     def input(self, p_iLine, p_iJoy):

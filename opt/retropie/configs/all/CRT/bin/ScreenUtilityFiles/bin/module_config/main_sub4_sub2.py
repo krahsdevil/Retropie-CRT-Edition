@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands
+import sys, os, threading, time
 import logging, pygame
 
 sys.dont_write_bytecode = False
@@ -31,10 +31,11 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from config_utils import explore_list, find_submenus, load_submenu, \
-                         check_es_restart, check_sys_reboot
+                         check_es_restart, check_sys_reboot, render_image, \
+                         press_back
 from keyb.keyboard import keyboard
 from launcher_module.netplay import netplay
-from launcher_module.core_paths import *
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -54,7 +55,7 @@ class main_sub4_sub2(object):
     m_lMainOpts = []
     m_lSubMenus = []
     m_lOptFn = []
-    
+
     m_lCtrl = []
     m_lRestart = [__name__, False]
     m_lReboot = [__name__, False]
@@ -63,7 +64,7 @@ class main_sub4_sub2(object):
     m_sSection = "Retroarch Netplay"
 
     m_lLayer40 = [None, None] # text & icon label
-    
+
     def __init__(self):
         self._load_options()
         self._load_sub_menus()
@@ -95,7 +96,7 @@ class main_sub4_sub2(object):
             value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
-            else: 
+            else:
                 self.info(value)
         self.info()
         return value
@@ -103,7 +104,7 @@ class main_sub4_sub2(object):
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
         self.m_oThreads = []
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.start()
             self.m_oThreads.append(t)
@@ -117,7 +118,7 @@ class main_sub4_sub2(object):
                 for opt in p_lAutoL:
                     self._reload_opt_datas(opt)
                 time.sleep(timer)
-                
+
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
                     self.opt4, self.opt5]
@@ -150,8 +151,8 @@ class main_sub4_sub2(object):
                 for i in range (0, len(self.m_lLines)):
                     self.m_lSubMenus.append(None)
             for sub in submenus:
-                self.m_lSubMenus.append(sub)                
-            
+                self.m_lSubMenus.append(sub)
+
             for sbm in self.m_lSubMenus:
                 if sbm:
                     temp = {}
@@ -177,7 +178,7 @@ class main_sub4_sub2(object):
     def opt1_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {'text': "Enable Netplay", 
+        p_lLines = {'text': "Enable Netplay",
                     'icon': None}
         value = self.m_oNETClass.status()
         p_lLines.update({'value': value})
@@ -190,7 +191,7 @@ class main_sub4_sub2(object):
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_OK:
-            if not self.m_oNETClass.status(): 
+            if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
                 time.sleep(2)
                 self.info()
@@ -213,7 +214,7 @@ class main_sub4_sub2(object):
     def opt2_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {'text': "Connect Mode", 
+        p_lLines = {'text': "Connect Mode",
                     'color_val': "type_color_1",
                     'icon': None}
         if not self.m_oNETClass.status():
@@ -231,7 +232,7 @@ class main_sub4_sub2(object):
         if p_iJoy == None:
             return self.opt3_datas()
         if p_iJoy & CRT_OK:
-            if not self.m_oNETClass.status(): 
+            if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
                 time.sleep(2)
                 self.info()
@@ -244,7 +245,7 @@ class main_sub4_sub2(object):
     def opt3_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {'text': "Nick", 
+        p_lLines = {'text': "Nick",
                     'color_val': "type_color_1",
                     'icon': "icon_edit"}
         if not self.m_oNETClass.status():
@@ -261,12 +262,12 @@ class main_sub4_sub2(object):
         if p_iJoy == None:
             return self.opt4_datas()
         if p_iJoy & CRT_OK:
-            if not self.m_oNETClass.status(): 
+            if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
                 time.sleep(2)
                 self.info()
                 return
-            elif self.m_oNETClass.get_mode() == "host": 
+            elif self.m_oNETClass.get_mode() == "host":
                 self.info("You are in HOST mode", "icon_info")
                 time.sleep(2)
                 self.info()
@@ -283,13 +284,13 @@ class main_sub4_sub2(object):
     def opt4_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {'text': "Remote Host", 
+        p_lLines = {'text': "Remote Host",
                     'color_val': "type_color_1",
                     'icon': "icon_edit"}
         if not self.m_oNETClass.status():
             value = "--"
             p_lLines.update({'color_val': "type_color_7"})
-        elif self.m_oNETClass.get_mode() == "host": 
+        elif self.m_oNETClass.get_mode() == "host":
             value = "N/A"
             p_lLines.update({'color_val': "type_color_7"})
         else: value = self.m_oNETClass.get_host()
@@ -302,7 +303,7 @@ class main_sub4_sub2(object):
         if p_iJoy == None:
             return self.opt5_datas()
         if p_iJoy & CRT_OK:
-            if not self.m_oNETClass.status(): 
+            if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
                 time.sleep(2)
                 self.info()
@@ -319,7 +320,7 @@ class main_sub4_sub2(object):
     def opt5_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {'text': "Port", 
+        p_lLines = {'text': "Port",
                     'color_val': "type_color_1",
                     'icon': "icon_edit"}
         if not self.m_oNETClass.status():
@@ -329,7 +330,7 @@ class main_sub4_sub2(object):
         value = self.m_oNETClass.get_port()
         p_lLines.update({'value': value})
         return p_lLines
-        
+
     def input(self, p_iLine, p_iJoy):
         if p_iJoy & CRT_CANCEL:
             self.quit()

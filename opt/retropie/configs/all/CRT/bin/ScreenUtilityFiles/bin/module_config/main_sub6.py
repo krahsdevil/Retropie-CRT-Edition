@@ -30,9 +30,13 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import *                         
-from launcher_module.core_paths import *
-from launcher_module.file_helpers import *
+from config_utils import explore_list, find_submenus, load_submenu, external_storage, \
+                         check_es_restart, check_sys_reboot, SYSTEMSDB, render_image, \
+                         press_back
+from keyb.keyboard import keyboard
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE, \
+                                       CRT_EXTSTRG_TRIG_MNT_PATH, CRT_STATS_FILE
+from launcher_module.file_helpers import ini_get, ini_getlist
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -52,7 +56,7 @@ class main_sub6(object):
     m_lMainOpts = []
     m_lSubMenus = []
     m_lOptFn = []
-    
+
     m_lCtrl = []
     m_lRestart = [__name__, False]
     m_lReboot = [__name__, False]
@@ -61,7 +65,7 @@ class main_sub6(object):
     m_sSection = "06 Information"
 
     m_lLayer40 = [None, None] # text & icon label
-    
+
     def __init__(self):
         self._load_options()
         self._load_sub_menus()
@@ -93,7 +97,7 @@ class main_sub6(object):
             value = self.m_oKBDClass.write(p_sString, p_iChars)
             if type(value) is str:
                 break
-            else: 
+            else:
                 self.info(value)
         self.info()
         return value
@@ -101,7 +105,7 @@ class main_sub6(object):
     def _create_threads(self):
         p_oDmns = [self._auto_load_datas]
         self.m_oThreads = []
-        for dmn in p_oDmns:    
+        for dmn in p_oDmns:
             t = threading.Thread(target=dmn)
             t.start()
             self.m_oThreads.append(t)
@@ -114,7 +118,7 @@ class main_sub6(object):
                 for opt in p_lAutoL:
                     self._reload_opt_datas(opt)
                 time.sleep(timer)
-                
+
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
                     self.opt4, self.opt5, self.opt6,
@@ -149,8 +153,8 @@ class main_sub6(object):
                 for i in range (0, len(self.m_lLines)):
                     self.m_lSubMenus.append(None)
             for sub in submenus:
-                self.m_lSubMenus.append(sub)                
-            
+                self.m_lSubMenus.append(sub)
+
             for sbm in self.m_lSubMenus:
                 if sbm:
                     temp = {}
@@ -167,7 +171,7 @@ class main_sub6(object):
             return self.opt1_datas()
 
     def opt1_datas(self):
-        p_lLines = {'text': "System", 
+        p_lLines = {'text': "System",
                     'value': "CRT Edition",
                     'color_val': "type_color_1"}
         return p_lLines
@@ -214,7 +218,7 @@ class main_sub6(object):
         disk = "/dev/root"
         tmp = commands.getoutput('df -h | grep %s' % disk)
         tmp = re.sub(r' +', " ", tmp).strip().split(" ")
-        try: 
+        try:
             space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
             if not '%' in tmp[4]: space = "CALCULATING..."
         except: space = "CALCULATING..."
@@ -240,7 +244,7 @@ class main_sub6(object):
         if disk:
             tmp = commands.getoutput('df -h | grep %s' % disk)
             tmp = re.sub(r' +', " ", tmp).strip().split(" ")
-            try: 
+            try:
                 space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
                 if not '%' in tmp[4]: space = "CALCULATING..."
             except: space = "CALCULATING..."
@@ -296,8 +300,8 @@ class main_sub6(object):
             value = int(ini_get(CRT_STATS_FILE, 'timer'))
         m, s = divmod(value, 60)
         h, m = divmod(m, 60)
-        
-        value = "%sh %sm" % (h, m)        
+
+        value = "%sh %sm" % (h, m)
         p_lLines.update({'value': value})
         return p_lLines
 
@@ -317,11 +321,11 @@ class main_sub6(object):
                     if "timer_" in line:
                         system = line.replace(' ', '').replace('"', '').strip()
                         play = int(system.split("=")[1])
-                        if play > counter: 
+                        if play > counter:
                             counter = play
                             value = system.split("=")[0].replace("timer_", '')
                             value = value.upper()
-        if value.lower() in SYSTEMSDB: 
+        if value.lower() in SYSTEMSDB:
             value = SYSTEMSDB[value.lower()]
         p_lLines.update({'value': value})
         return p_lLines
@@ -339,7 +343,7 @@ class main_sub6(object):
                     'color_txt': "type_color_2",
                     'icon': "icon_bin"}
         return p_lLines
-        
+
     def input(self, p_iLine, p_iJoy):
         if p_iJoy & CRT_CANCEL:
             self.quit()

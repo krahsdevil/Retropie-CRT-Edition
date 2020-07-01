@@ -34,9 +34,8 @@ from config_utils import find_submenus, load_submenu, explore_list, run, \
                          check_es_restart, check_sys_reboot, render_image, \
                          press_back
 from keyb.keyboard import keyboard
-from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_ADDN_PATH, \
-                                       RETROPIE_CFG_PATH, CRT_ROOT_PATH, \
-                                       CRT_MODULES_PATH, RA_BIN_FILE
+from launcher_module.file_helpers import ini_get, ini_set
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -47,16 +46,7 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
-TEST_SUITE_FILE = os.path.join(CRT_ADDN_PATH, "addon_240p_suite/240pSuite.bin")
-RA_MD_CFG_FILE1 = os.path.join(RETROPIE_CFG_PATH, "megadrive/retroarch.cfg")
-RA_MD_CFG_FILE2 = os.path.join(CRT_ROOT_PATH, "Retroarch/configs/megadrive.cfg")
-RA_MD_CORE_FILE = os.path.join(CRT_ADDN_PATH,
-                  "addon_240p_suite/genesis_plus_gx_libretro.so")
-
-PATTERN_LAUNCHER_FILE = os.path.join(CRT_MODULES_PATH,
-                        "module_center/pattern_launcher.py")
-
-class main_sub1_sub2(object):
+class main_sub1_sub3(object):
     m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
@@ -71,7 +61,7 @@ class main_sub1_sub2(object):
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = "Image Utilities"
+    m_sSection = "Emulators Extra"
 
     m_lLayer40 = [None, None] # text & icon label
 
@@ -129,7 +119,8 @@ class main_sub1_sub2(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2, self.opt3]
+        p_lOptFn = [self.opt2, self.opt3,
+                    self.opt11]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -171,32 +162,24 @@ class main_sub1_sub2(object):
         except:
             raise
 
-    def opt1(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
-        if p_iJoy == None:
-            return self.opt1_datas()
-        if p_iJoy & CRT_OK:
-            commandline = "/usr/bin/python %s system60" % PATTERN_LAUNCHER_FILE
-            self._launch_app(commandline)
-
-    def opt1_datas(self):
-        p_lLines = {'text': "Frontend Centering",
-                    'color_txt': "type_color_2",
-                    'icon': "icon_bin"}
-        return p_lLines
-
     def opt2(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_OK:
-            commandline = "/usr/bin/python %s test60" % PATTERN_LAUNCHER_FILE
-            self._launch_app(commandline)
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if not new: ini_set(CRT_UTILITY_FILE, "integer_scale", "false")
+            elif new: ini_set(CRT_UTILITY_FILE, "integer_scale", "true")
+            self.m_lLines[p_iLine].update({'value': new})
 
     def opt2_datas(self):
-        p_lLines = {'text': "In-game Centering",
-                    'color_txt': "type_color_2",
-                    'icon': "icon_bin"}
+        p_lLines = {'text': "RA Integer Scale"}
+        value = ini_get(CRT_UTILITY_FILE, "integer_scale")
+        if value.lower() == "true": value = True
+        else: value = False
+        p_lLines.update({'value': value})
         return p_lLines
 
     def opt3(self, p_iJoy = None, p_iLine = None):
@@ -204,17 +187,46 @@ class main_sub1_sub2(object):
         if p_iJoy == None:
             return self.opt3_datas()
         if p_iJoy & CRT_OK:
-            commandline = "%s -L %s " % (RA_BIN_FILE, RA_MD_CORE_FILE)
-            commandline += "--config %s " % RA_MD_CFG_FILE1
-            commandline += "--appendconfig %s " % RA_MD_CFG_FILE2
-            commandline += "\"%s\" " % TEST_SUITE_FILE
-            commandline += "> /dev/null 2>&1"
-            self._launch_app(commandline, "megadrive")
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if not new: ini_set(CRT_UTILITY_FILE, "handheld_bezel", "false")
+            elif new: ini_set(CRT_UTILITY_FILE, "handheld_bezel", "true")
+            self.m_lLines[p_iLine].update({'value': new})
+            if new == True:
+                self.info(["Long exposure to a",
+                           "static image could",
+                           "damage your CRT"],
+                           "icon_info")
+                time.sleep(2)
+                self.info()
 
     def opt3_datas(self):
-        p_lLines = {'text': "240p Test Suite",
-                    'color_txt': "type_color_2",
-                    'icon': "icon_bin"}
+        p_lLines = {'text': "RA Handled Bezels"}
+        value = ini_get(CRT_UTILITY_FILE, "handheld_bezel")
+        if value.lower() == "true": value = True
+        else: value = False
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt11(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt11_datas()
+        if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if not new: ini_set(CRT_UTILITY_FILE, "scummvm_arc", "false")
+            elif new: ini_set(CRT_UTILITY_FILE, "scummvm_arc", "true")
+            self.m_lLines[p_iLine].update({'value': new})
+
+    def opt11_datas(self):
+        p_lLines = {'text': "ScummVM ARC"}
+        value = ini_get(CRT_UTILITY_FILE, "scummvm_arc")
+        if value.lower() == "true": value = True
+        else: value = False
+        p_lLines.update({'value': value})
         return p_lLines
 
     def input(self, p_iLine, p_iJoy):

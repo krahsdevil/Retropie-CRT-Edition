@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pygame, os, sys, logging, traceback, math
+import pygame, os, sys, logging, math
 
 sys.dont_write_bytecode = False
 
@@ -29,7 +29,7 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from launcher_module.core_paths import *
+#from launcher_module.core_paths import *
 from config_core import core
 
 C_BLACK  = pygame.Color(  0,   0,   0)
@@ -53,25 +53,25 @@ class render(core):
                 return sf
             except:
                 return None
-        
-    def _text_render(self, p_sText, p_lTextColor, p_lShadowColor = None, 
+
+    def _text_render(self, p_sText, p_lTextColor, p_lShadowColor = None,
                      p_bCropText = False, p_iShadowDrop = 1):
         p_sText = str(p_sText)
         if p_bCropText == True:
             # max length 16 chars for values
             if len(p_sText) > 16: p_sText = (p_sText[:15] + "~")
-        
+
         p_oTextColor = C_WHITE
         if p_lTextColor and "type" in p_lTextColor:
             try: p_oTextColor = self.dCFG[p_lTextColor]
             except: p_oTextColor = C_WHITE
-        elif p_lTextColor: 
+        elif p_lTextColor:
             p_oTextColor = p_lTextColor
 
         if p_lShadowColor and "type" in p_lShadowColor:
             try: p_oShadowColor = self.dCFG[p_lShadowColor]
             except: p_oShadowColor = C_WHITE
-        else: 
+        else:
             p_oShadowColor = p_lShadowColor
 
         if self.dCFG['cap']: p_sText = p_sText.upper()
@@ -90,7 +90,7 @@ class render(core):
     def _render_line_menu(self, p_lLine):
         oLineSf = pygame.Surface((self.m_iText_rgt - self.m_iText_lft,
                   self.dCFG['font_line'] + 4), pygame.SRCALPHA)
-   
+
         oTextSf = None
         oValueSf = None
 
@@ -118,7 +118,7 @@ class render(core):
         p_lLine["prev_icon"] = p_lLine["icon"]
 
         # check/append selected value in line surface
-        if p_lLine['value'] or p_lLine['value'] == False: 
+        if p_lLine['value'] or p_lLine['value'] == False:
             if type(p_lLine['value']) == type(True):
                 oValueSf = self.dCFG['icon_true_render']
                 if not p_lLine['value']: oValueSf = self.dCFG['icon_false_render']
@@ -126,7 +126,7 @@ class render(core):
                 rect1.midright = (rtoffset, oLineSf.get_height() / 2)
             else:
                 if p_lLine["value"] != p_lLine["prev_value"] or not p_lLine["value_render"]:
-                    p_lLine["value_render"] = self._text_render(p_lLine['value'], 
+                    p_lLine["value_render"] = self._text_render(p_lLine['value'],
                                               p_lLine['color_val'], 'type_color_3', True)
                     p_lLine["prev_value"] = p_lLine["value"]
                 oValueSf = p_lLine["value_render"]
@@ -149,7 +149,7 @@ class render(core):
                             rect.midright = (laoffset, oLineSf.get_height() / 2)
                             oLineSf.blit(self.dCFG['larrow_render'], rect)
             oLineSf.blit(oValueSf, rect1)
-        
+
         # check/append left text on line surface
         if p_lLine["text"] != p_lLine["prev_text"] or not p_lLine["text_render"]:
             p_lLine["text_render"] = self._text_render(p_lLine["text"], C_WHITE, 'type_color_3')
@@ -161,7 +161,7 @@ class render(core):
         TotSize += text.get_rect().width + spacer
         if oValueSf: TotSize += oValueSf.get_rect().width
         if laoffset: TotSize += self.dCFG['larrow_render'].get_rect().width + 3
-        
+
         # check if left text need scroll
         calc = TotSize - oLineSf.get_rect().width
         if calc > 4: # text needs scroll or crop
@@ -184,7 +184,7 @@ class render(core):
         rect = oTextSf.get_rect()
         rect.midleft = (ltoffset, oLineSf.get_height() / 2)
         oLineSf.blit(oTextSf, rect)
-        
+
         return oLineSf
 
     def _render_info_text(self, p_sText, p_sIcon = None):
@@ -258,24 +258,24 @@ class render(core):
         self.m_oLayer40.blit(p_oTable.img, rect)
 
         # Rotate if vertical mode
-        if self.m_iSide == 1: 
+        if self.m_iSide == 1:
             self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, -90)
-        elif self.m_iSide == 3: 
+        elif self.m_iSide == 3:
             self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, 90)
-        return 
+        return
 
     def push_info_image(self, p_oImg):
         self.m_oLayer40 = pygame.Surface(self.m_lRES, pygame.SRCALPHA)
         rect = p_oImg.get_rect()
         rect.center = (self.m_lScreenCenter[0], self.m_lScreenCenter[1])
         self.m_oLayer40.blit(p_oImg, rect)
-        
+
         # Rotate if vertical mode
-        if self.m_iSide == 1: 
+        if self.m_iSide == 1:
             self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, -90)
-        elif self.m_iSide == 3: 
+        elif self.m_iSide == 3:
             self.m_oLayer40 = pygame.transform.rotate(self.m_oLayer40, 90)
-        return 
+        return
 
 class Table(object):
     """docstring for Table."""
@@ -308,4 +308,4 @@ class Table(object):
         for y in range(0, self.height, height):
             color = map(lambda x: x - (8 * cont), p_lBaseColor)
             pygame.draw.rect(self.img, color, (0,y, self.width, height) )
-            cont += 1        
+            cont += 1
