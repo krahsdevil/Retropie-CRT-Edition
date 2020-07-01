@@ -69,6 +69,7 @@ class main_sub5(object):
     m_lLayer40 = [None, None] # text & icon label
 
     def __init__(self):
+        logging.info("INFO: Initializing %s" % __name__)
         self._load_options()
         self._load_sub_menus()
 
@@ -319,14 +320,14 @@ class main_sub5(object):
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
             if new: ini_set(RA_CFG_FILE, "menu_driver", "rgui")
-            elif not new: ini_set(RA_CFG_FILE, "menu_driver", 'nul')
+            elif not new: ini_set(RA_CFG_FILE, "menu_driver", 'Null')
             self.m_lLines[p_iLine].update({'value': new})
 
     def opt6_datas(self):
         p_lLines = {'text': "Retroarch Config Menu",
                     'color_val': "type_color_1"}
         value = ini_get(RA_CFG_FILE, "menu_driver")
-        if value == "nul": value = False
+        if value == "Null": value = False
         else: value = True
         p_lLines.update({'value': value})
         return p_lLines

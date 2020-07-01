@@ -35,9 +35,7 @@ from config_utils import explore_list, find_submenus, load_submenu, \
                          press_back
 from launcher_module.file_helpers import ini_get, ini_set
 from keyb.keyboard import keyboard
-from module_cable.controls_mapping import CTRLSMgmt
-from launcher_module.core_paths import TMP_LAUNCHER_PATH, RASP_BOOTCFG_FILE, \
-                                       CRT_UTILITY_FILE
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -48,7 +46,7 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
-class main_sub3(object):
+class main_sub3_sub1(object):
     m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
@@ -63,7 +61,7 @@ class main_sub3(object):
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = "03 Controls"
+    m_sSection = "Emulators Extra"
 
     m_lLayer40 = [None, None] # text & icon label
 
@@ -113,7 +111,7 @@ class main_sub3(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt1, self.opt2]
+        p_lAutoL = []
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -122,7 +120,7 @@ class main_sub3(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2]
+        p_lOptFn = [self.opt1]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -166,75 +164,24 @@ class main_sub3(object):
 
     def opt1(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
-        try: self.m_oKeybCTRLClass
-        except: self.m_oKeybCTRLClass = CTRLSMgmt()
         if p_iJoy == None:
             return self.opt1_datas()
         if p_iJoy & CRT_OK:
-            if self.m_lLines[p_iLine]['value'] == "[FORCED]":
-                self.info("PI2JAMMA is enabled", "icon_info")
-                time.sleep(2)
-                self.info()
-                return
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            self.info("Please wait", "icon_clock")
-            if new: 
-                self.m_oKeybCTRLClass.pi2jamma_enable_controls()
-                ini_set(CRT_UTILITY_FILE, 'keyb_ipac', 'true')
-            else: 
-                self.m_oKeybCTRLClass.pi2jamma_disable_controls()
-                ini_set(CRT_UTILITY_FILE, 'keyb_ipac', 'false')
-            value = self.m_oKeybCTRLClass.check_keyboard_enabled()
+            if new: ini_set(CRT_UTILITY_FILE, "daphne_remap", "true")
+            else: ini_set(CRT_UTILITY_FILE, "daphne_remap", "false")
+            value = ini_get(CRT_UTILITY_FILE, "daphne_remap") == "true"
             self.m_lLines[p_iLine]['value'] = value
-            if value:
-                self.info(["Enabled IPAC/Keyboard",
-                           "MAME Layout for 2 Players",
-                           "in Retroarch and ES.", " ",
-                           "Enable only if you are not",
-                           "going to use a joystick!"],
-                           "icon_info")
-                time.sleep(6)
-            self.info()
 
     def opt1_datas(self):
-        p_lLines = {'text': "IPAC/KBD Support",
+        p_lLines = {'text': "Daphne Controls Remap",
                     'color_val': "type_color_1",
                     'icon': None}
-        try: self.m_oKeybCTRLClass
-        except: self.m_oKeybCTRLClass = CTRLSMgmt()
-        if ini_get(RASP_BOOTCFG_FILE, "crt_cable_type") == "2":
-            value = "[FORCED]"
-            p_lLines.update({'color_val': "type_color_7"})
-        else:
-            value = self.m_oKeybCTRLClass.check_keyboard_enabled()
-        p_lLines.update({'value': value})
-        return p_lLines
-
-    def opt2(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
-        if p_iJoy == None:
-            return self.opt2_datas()
-        if p_iJoy & CRT_OK:
-            list = self.m_lLines[p_iLine]['options']
-            value = self.m_lLines[p_iLine]['value']
-            new = explore_list(p_iJoy, value, list)
-            self.info("Please wait", "icon_clock")
-            if new: self.m_oKeybCTRLClass.xinmo_usb_driver_enable()
-            else: self.m_oKeybCTRLClass.xinmo_usb_driver_disable()
-            value = self.m_oKeybCTRLClass.check_xinmo()
-            self.m_lLines[p_iLine]['value'] = new
-            self.info()
-
-    def opt2_datas(self):
-        p_lLines = {'text': "XIN-MO USB 2PLAYERS FIX",
-                    'color_val': "type_color_1",
-                    'sys_reboot': True,
-                    'icon': None}
-        try: self.m_oKeybCTRLClass
-        except: self.m_oKeybCTRLClass = CTRLSMgmt()
-        value = self.m_oKeybCTRLClass.check_xinmo()
+        value = False
+        if ini_get(CRT_UTILITY_FILE, "daphne_remap") == "true":
+            value = True
         p_lLines.update({'value': value})
         return p_lLines
 

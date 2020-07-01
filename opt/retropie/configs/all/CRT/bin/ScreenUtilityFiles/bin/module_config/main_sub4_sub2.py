@@ -66,6 +66,7 @@ class main_sub4_sub2(object):
     m_lLayer40 = [None, None] # text & icon label
 
     def __init__(self):
+        logging.info("INFO: Initializing %s" % __name__)
         self._load_options()
         self._load_sub_menus()
 
