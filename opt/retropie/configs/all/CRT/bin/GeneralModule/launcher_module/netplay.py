@@ -20,14 +20,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, time, commands
+import sys, os
 import logging, re
 
 sys.dont_write_bytecode = False
 
 from file_helpers import ini_get, ini_set, add_line, \
                          touch_file, modify_line, ini_getlist
-from core_paths import *
+from core_paths import CRT_NETPLAY_FILE, CRT_UTILITY_FILE
 
 class netplay(object):
     NETPLAY_CFG = ['__netplaymode="H"',
