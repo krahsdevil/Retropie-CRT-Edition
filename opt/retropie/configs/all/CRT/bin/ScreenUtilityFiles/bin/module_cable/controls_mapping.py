@@ -39,7 +39,7 @@ ADVMAMECFG_FILE = os.path.join(RETROPIE_CFG_PATH, "mame-advmame/advmame.rc")
 
 class CTRLSMgmt(object):
     """
-    This class for keyboard configuration for PI2JAMMA is based on MAME 
+    This class for keyboard configuration for PI2JAMMA is based on MAME
     KEYBOARD defaults. Whether pikeyd165.conf or rest of software (retroarch,
     EmulationStation) will be configured in the same way:
 
@@ -59,7 +59,7 @@ class CTRLSMgmt(object):
     P1 SW 4         L-shift        Y BTN            P2 SW 4         W
     P1 SW 5         Z              L BTN            P2 SW 5         I
     P1 SW 6         X              R BTN            P2 SW 6         K
-    
+
     """
     # player 1 keyboard retroarch default config
     m_lRArchKBP1DF = ({'line': 'input_player1_b', 'value': 'z'},           #P1BTN1
@@ -88,7 +88,7 @@ class CTRLSMgmt(object):
                     {'line': 'input_player1_right', 'value': 'right'},     #P1RIGHT
                     {'line': 'input_player1_up', 'value': 'up'},           #P1UP
                     {'line': 'input_player1_down', 'value': 'down'})       #P1DOWN
-                 
+
     # player 2 keyboard retroarch config for pi2jamma
     m_lRArchKBP2 = ({'line': 'input_player2_b', 'value': 'a'},             #P2BTN1
                     {'line': 'input_player2_a', 'value': 's'},             #P2BTN2
@@ -102,11 +102,11 @@ class CTRLSMgmt(object):
                     {'line': 'input_player2_right', 'value': 'g'},         #P2RIGHT
                     {'line': 'input_player2_up', 'value': 'r'},            #P2UP
                     {'line': 'input_player2_down', 'value': 'f'})          #P2DOWN
-                  
+
     """
     Variable 'm_lRarchKBDS':
     Will disable some retroarch keyboard hotkeys to avoid conflict with
-    pi2jamma keystrokes and also make sure some other needed options and 
+    pi2jamma keystrokes and also make sure some other needed options and
     are well configured:
         line  : config entry to search
         value : standard value when pi2jamma is disabled
@@ -117,19 +117,19 @@ class CTRLSMgmt(object):
                      'value': 'space', 'dis': 'nul'},
                     {'line': 'input_toggle_fullscreen',
                      'value': 'f', 'dis': 'nul'},
-                    {'line': 'input_rewind', 
+                    {'line': 'input_rewind',
                      'value': 'r', 'dis': 'nul'},
-                    {'line': 'input_netplay_flip_players', 
+                    {'line': 'input_netplay_flip_players',
                      'value': 'i', 'dis': 'nul'},
-                    {'line': 'input_frame_advance', 
+                    {'line': 'input_frame_advance',
                      'value': 'k', 'dis': 'nul'},
-                    {'line': 'input_enable_hotkey', 
+                    {'line': 'input_enable_hotkey',
                      'value': 'nul', 'dis': 'nul'},
-                    {'line': 'input_exit_emulator', 
+                    {'line': 'input_exit_emulator',
                      'value': 'escape', 'dis': 'escape'},
-                    {'line': 'input_menu_toggle', 
+                    {'line': 'input_menu_toggle',
                      'value': 'f1', 'dis': 'f1'})
-                    
+
     # emulationstation keyboard configuration xml for PI2JAMMA
     m_lESP2JInputs = ({'name': 'b', 'type': 'key', 'id': '1073742048', 'value': '1'},
                       {'name': 'a', 'type': 'key', 'id': '1073742050', 'value': '1'},
@@ -144,7 +144,7 @@ class CTRLSMgmt(object):
                       {'name': 'up', 'type': 'key', 'id': '1073741906', 'value': '1'},
                       {'name': 'x', 'type': 'key', 'id': '32', 'value': '1'},
                       {'name': 'y', 'type': 'key', 'id': '1073742049', 'value': '1'})
-                      
+
     # emulationstation keyboard configuration xml for STANTARD KEYBOARD (not for play)
     m_lESKBDInputs = ({'name': 'a', 'type': 'key', 'id': '13', 'value': '1'},
                       {'name': 'b', 'type': 'key', 'id': '27', 'value': '1'},
@@ -155,16 +155,36 @@ class CTRLSMgmt(object):
                       {'name': 'select', 'type': 'key', 'id': '53', 'value': '1'},
                       {'name': 'start', 'type': 'key', 'id': '49', 'value': '1'},
                       {'name': 'up', 'type': 'key', 'id': '1073741906', 'value': '1'})
-                      
+
     # advmame keyboard configuration User Interface
     m_lADVMAMEKBDUI = ({'line': 'input_map[ui_select]',
                         'value': 'auto', 'dis': 'keyboard[0,enter] or keyboard[0,lcontrol]'},
                        {'line': 'input_map[ui_cancel]',
                         'value': 'auto', 'dis': 'keyboard[0,esc] or keyboard[0,backspace]'})
 
-    m_bChange = False
+    m_bChange      =  False
+    m_sRAHash      =  ""    # retroach.cfg hash
+    m_sADVMAMEHash =  ""    # advmame.rc hash
+    m_sESHash      =  ""    # es_input.cfg hash
+    m_bKBDEna      =  False # if keyboard is enabled
 
     def check_keyboard_enabled(self):
+        p_bCheck = True
+        p_sHashTMP01 = md5_file(RA_CFG_FILE)
+        p_sHashTMP02 = md5_file(ADVMAMECFG_FILE)
+        p_sHashTMP03 = md5_file(ES_CONTROLS_FILE)
+
+        if self.m_sRAHash != p_sHashTMP01:
+            self.m_sRAHash = p_sHashTMP01
+            p_bCheck = False
+        if self.m_sADVMAMEHash != p_sHashTMP02:
+            self.m_sADVMAMEHash = p_sHashTMP02
+            p_bCheck = False
+        if self.m_sESHash != p_sHashTMP03:
+            self.m_sESHash = p_sHashTMP03
+            p_bCheck = False
+        if p_bCheck: return self.m_bKBDEna
+
         p_bCheck = True
         if self._inputs_retroarch_ctrls(self.m_lRArchKBP1, True, False): p_bCheck = False
         if self._inputs_retroarch_ctrls(self.m_lRArchKBP2, True, False): p_bCheck = False
@@ -172,6 +192,7 @@ class CTRLSMgmt(object):
         if self._inputs_advmame_keys(self.m_lADVMAMEKBDUI, True, False): p_bCheck = False
         if not self._inputs_emulationstation_ctrls(True, False): p_bCheck = False
         if not p_bCheck: logging.info("INFO: some MAME keyboard controls config is missing")
+        self.m_bKBDEna = p_bCheck
         return p_bCheck
 
     def pi2jamma_enable_controls(self):
@@ -193,15 +214,15 @@ class CTRLSMgmt(object):
         self._inputs_retroarch_ctrls(self.m_lRArchKBP1, True)
         self._inputs_retroarch_ctrls(self.m_lRArchKBP2, True)
         self._inputs_retroarch_hotkeys(self.m_lRarchKBDS, True)
-        
+
     def inputs_retroarch_pi2jamma_disable(self):
         """ All actions to enable pi2jamma in retroarch """
         self._inputs_retroarch_ctrls(self.m_lRArchKBP1DF, True)
         self._inputs_retroarch_ctrls(self.m_lRArchKBP2, False)
         self._inputs_retroarch_hotkeys(self.m_lRarchKBDS, False)
-    
+
     def _inputs_retroarch_ctrls(self, p_lInputs, p_bEnable, p_bEdit = True):
-        """ 
+        """
         This function enable or disable keyboard controls for pi2jamma in
         main retroarch.cfg. If input are not defined will be created.
         For disable line will be commented.
@@ -216,26 +237,23 @@ class CTRLSMgmt(object):
             line = '%s = "%s"' % (key['line'], key['value'])
             if not p_bEnable:
                 line = '# ' + line
-
             if not p_Return[1]:
-                logging.info("INFO: miss line in ra cfg: %s" % line)
-                if p_bEdit: 
+                if p_bEdit:
                     add_line(RA_CFG_FILE, line)
-                    logging.info("INFO: line added")
+                    logging.info("INFO: added missed line in ra cfg: %s" % line)
                 p_bCheck = True
             elif not p_bEnable and p_Return[1][0] == '#': pass
             elif p_Return[1] != line:
-                logging.info("INFO: wrong line in ra cfg: %s" % p_Return[1])
-                logging.info("INFO: should be: %s" % line)
-                if p_bEdit: 
+                if p_bEdit:
                     modify_line(RA_CFG_FILE, key['line'] + ' ', line)
-                    logging.info("INFO: line modified")
-                p_bCheck = True            
+                    logging.info("INFO: changed line in ra cfg: %s" % p_Return[1])
+                    logging.info("INFO: to -> %s" % line)
+                p_bCheck = True
 
         return p_bCheck
-    
+
     def _inputs_retroarch_hotkeys(self, p_lInputs, p_bEnable, p_bEdit = True):
-        """ 
+        """
         This function enable or disable some retroarch hotkey controls
         to avoid keyboard keystrokes conflicts.
         p_bEnable = True    Disable default ra hotkeys (pi2jamma enabled)
@@ -249,33 +267,31 @@ class CTRLSMgmt(object):
             line = key['line'] + " = \""
             if not p_bEnable: line += key['value'] + "\""
             else: line += key['dis'] + "\""
-            
+
             if not p_Return[1]:
-                logging.info("INFO: miss line in ra cfg: %s" % line)
-                if p_bEdit: 
+                if p_bEdit:
                     add_line(RA_CFG_FILE, line)
-                    logging.info("INFO: line added")
+                    logging.info("INFO: added missed line in ra cfg: %s" % line)
                 p_bCheck = True
             elif p_Return[1] != line:
-                logging.info("INFO: wrong line in ra cfg: %s" % p_Return[1])
-                logging.info("INFO: should be: %s" % line)
-                if p_bEdit: 
+                if p_bEdit:
                     modify_line(RA_CFG_FILE, key['line'] + ' ', line)
-                    logging.info("INFO: line modified")
+                    logging.info("INFO: changed line in ra cfg: %s" % p_Return[1])
+                    logging.info("INFO: to -> %s" % line)
                 p_bCheck = True
-                
+
         return p_bCheck
 
     def inputs_advmame_pi2jamma_enable(self):
         """ All actions to enable pi2jamma in advmame """
         self._inputs_advmame_keys(self.m_lADVMAMEKBDUI, True)
-        
+
     def inputs_advmame_pi2jamma_disable(self):
         """ All actions to enable pi2jamma in advmame """
         self._inputs_advmame_keys(self.m_lADVMAMEKBDUI, False)
 
     def _inputs_advmame_keys(self, p_lInputs, p_bEnable, p_bEdit = True):
-        """ 
+        """
         This function some advmame hotkey controls like UI select.
         p_bEnable = True    Enable for pi2jamma keyboard inputs
         p_bEnable = False   Disable for pi2jamma keyboard inputs
@@ -290,25 +306,23 @@ class CTRLSMgmt(object):
             else: line += key['value']
 
             if not p_Return[1]:
-                logging.info("INFO: miss line in advmame cfg: %s" % line)
-                if p_bEdit: 
+                if p_bEdit:
                     add_line(ADVMAMECFG_FILE, line)
-                    logging.info("INFO: line added")
+                    logging.info("INFO: added missed line in advmame cfg: %s" % line)
                 p_bCheck = True
             elif p_Return[1] != line:
-                logging.info("INFO: wrong line in advmame cfg: %s" % p_Return[1])
-                logging.info("INFO: should be: %s" % line)
                 if p_bEdit:
                     modify_line(ADVMAMECFG_FILE, key['line'] + ' ', line)
-                    logging.info("INFO: line modified")
-                p_bCheck = True            
+                    logging.info("INFO: changed line in advmame cfg: %s" % p_Return[1])
+                    logging.info("INFO: to -> %s" % line)
+                p_bCheck = True
 
         return p_bCheck
-   
+
     def inputs_emulationstation_pi2jamma_enable(self):
         """ All actions to enable pi2jamma in emulationstation """
         self._inputs_emulationstation_ctrls(True)
-        
+
     def inputs_emulationstation_pi2jamma_disable(self):
         """ All actions to disable pi2jamma in emulationstation """
         self._inputs_emulationstation_ctrls(False)
@@ -317,19 +331,19 @@ class CTRLSMgmt(object):
         """
         This function clean or install keyboard config for pi2jamma
         in es_input.cfg. Also will try to backup and/or restore any user's
-        custom keyboard configuration 
+        custom keyboard configuration
         p_bEnable = True    Enable pi2jamma keyboard inputs and backup
                             any pre-existent custom keyboard config.
         p_bEnable = False   Remove any pi2jamma keyboard inputs and restore
-                            any pre-existent custom keyboard config. 
+                            any pre-existent custom keyboard config.
         """
         p_bCheck = False
         p_bXMLSave = False
         p_lCtmDev = []
         p_lBckDev = []
         p_lP2JDev = []
-        
-        # create emulationstation 'es_input.cfg' file if doesn't exist 
+
+        # create emulationstation 'es_input.cfg' file if doesn't exist
         if not os.path.exists(ES_CONTROLS_FILE):
             self._emulationstation_create_inputs_file()
         # analize xml configurations
@@ -377,7 +391,7 @@ class CTRLSMgmt(object):
                         p_bXMLSave = True
                     for device in p_lCtmDev:
                         root.remove(device)
-                        p_bXMLSave = True                    
+                        p_bXMLSave = True
                 elif len(p_lBckDev) == 1:
                     for device in p_lCtmDev:
                         root.remove(device)
@@ -431,7 +445,7 @@ class CTRLSMgmt(object):
             p_sNewAtb = ET.SubElement(p_sNewDevice, "input")
             for attrib in input:
                 p_sNewAtb.set(attrib, input[attrib])
-                p_sNewAtb.tail = "\n    " 
+                p_sNewAtb.tail = "\n    "
         p_sNewDevice[-1].tail = "\n  "  # change last atb tab
         if len(root) > 0:               # at least one element under root
             root[-1].tail = "\n  "      # Edit the previous element's tail
@@ -444,7 +458,7 @@ class CTRLSMgmt(object):
         p_lCheck = [value0, value1, value2]:
             value0 = True or False; True if ini value was found
             value1 = True or False; True if line is commented with '#'
-            value2 = String; Value of requested ini 
+            value2 = String; Value of requested ini
         """
         p_lCheck = [False, False, None]
         if not os.path.isfile(p_sFile):
@@ -498,7 +512,7 @@ class CTRLSMgmt(object):
 
     def check_xinmo(self):
         """ Check status of USB Xin-Mo Controller fix for 2 players """
-        sXinMoCfg = "usbhid.quirks=0x16c0:0x05e1:0x040"    
+        sXinMoCfg = "usbhid.quirks=0x16c0:0x05e1:0x040"
         with open(RASP_CMDLINE_FILE, "r") as f:
             new_file = f.read().replace('\n', ' ').strip()
             f.close()
@@ -538,7 +552,7 @@ class CTRLSMgmt(object):
             f.close()
         os.system('sudo cp %s %s' %(sTempFile, RASP_CMDLINE_FILE))
         os.system('rm %s' % sTempFile)
-        
+
     def OLD_xinmo_usb_driver_enable(self):
         sXinMoCfg = "usbhid.quirks=0x16c0:0x05e1:0x040"
         sTempFile = generate_random_temp_filename(RASP_CMDLINE_FILE)

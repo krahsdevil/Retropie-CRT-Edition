@@ -4,8 +4,8 @@ Description=This service will enable jamma controls software and other boot vide
 [Service]
 ExecStart=/usr/bin/python -u rgb_cable.py
 WorkingDirectory=/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_cable
-StandardOutput=inherit
-StandardError=inherit
+StandardOutput=null
+StandardError=null
 Restart=no
 User=pi
 
