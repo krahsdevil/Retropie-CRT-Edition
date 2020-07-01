@@ -7,7 +7,7 @@ ROTATION_CFG_PATH+="/CRT/bin/ScreenUtilityFiles/resources"
 ROTATION_CFG_PATH+="/assets/screen_emulationstation/crt_modes_change/configs"
 CABLE_SELECTOR_FILE="/opt/retropie/configs/all"
 CABLE_SELECTOR_FILE+="/CRT/bin/ScreenUtilityFiles/bin"
-CABLE_SELECTOR_FILE+="/module_cable/cable_selector.py"
+CABLE_SELECTOR_FILE+="/module_cable/cable_manager.py"
 
 
 RES_X=0
