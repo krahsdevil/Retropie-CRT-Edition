@@ -1,97 +1,39 @@
 hdmi_timings=320 1 10 30 40 240 1 6 5 12 0 0 0 60 0 6400000 1
 
-# For more options and information see
-# http://rpf.io/configtxt
-# Some settings may impact device functionality. See link above for details
+[pi4]
+# Enable DRM VC4 V3D driver on top of the dispmanx display stack
+dtoverlay=vc4-fkms-v3d
+max_framebuffers=2
 
-# uncomment if you get no picture on HDMI for a default "safe" mode
-#hdmi_safe=1
-
-# uncomment this if your display has a black border of unused pixels visible
-# and your display can output without overscan
-disable_overscan=1
-
-# uncomment the following to adjust overscan. Use positive numbers if console
-# goes off screen, and negative if there is too much border
-#overscan_left=16
-#overscan_right=16
-#overscan_top=16
-#overscan_bottom=16
-
-# uncomment to force a console size. By default it will be display's size minus
-# overscan.
-#framebuffer_width=1280
-#framebuffer_height=720
-
-# uncomment if hdmi display is not detected and composite is being output
-#hdmi_force_hotplug=1
-
-# uncomment to force a specific HDMI mode (this will force VGA)
-#hdmi_group=1
-#hdmi_mode=1
-
-# uncomment to force a HDMI mode rather than DVI. This can make audio work in
-# DMT (computer monitor) modes
-#hdmi_drive=2
-
-# uncomment to increase signal to HDMI, if you have interference, blanking, or
-# no display
-#config_hdmi_boost=4
-
-# uncomment for composite PAL
-#sdtv_mode=2
-
-#uncomment to overclock the arm. 700 MHz is the default.
-#arm_freq=800
-
-# force all optional hardware interfaces off
-dtparam=i2c_arm=off
-dtparam=i2s=off
-dtparam=spi=off
-enable_uart=0
-
-# Uncomment this to enable the lirc-rpi module
-#dtoverlay=lirc-rpi
-
-# Additional overlays and parameters are documented /boot/overlays/README
-
-# Memory configuration
+[all]
+#dtoverlay=vc4-fkms-v3d
 gpu_mem_256=128
 gpu_mem_512=256
 gpu_mem_1024=256
 
-# Enable audio (loads snd_bcm2835)
-dtparam=audio=on
-#Set disable_audio_dither to 1 and uncomment line if you experience issues with white noise on the audio jack.
-#disable_audio_dither=1
-#Set audio_pwm_mode to 0/2/3/; 2 enables the sigma-delta oversampled PWM with ~16-bit resolution
-audio_pwm_mode=3
-
-# 15Khz using GPIO
-overscan_scale=1
-framebuffer_depth=32
-enable_dpi_lcd=1
+[CRT-BASE]
+disable_overscan=1
 display_default_lcd=1
 dpi_group=2
 dpi_mode=87
+enable_dpi_lcd=1
+framebuffer_depth=32
+overscan_scale=1
 
-# RGB-Pi
-#dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2
-#dpi_output_format=6
+[CRT-SOUND]
+dtparam=audio=on
+audio_pwm_mode=3
+disable_audio_dither=1
 
-# JAMMA RGB-PI
-#dtparam=i2c_vc=on
-#dtoverlay=i2c-gpio,i2c_gpio_sda=10,i2c_gpio_scl=11
+[CRT-CABLE]
+crt_cable_type=0
 
-#Set dtoverlay to vga666 or rgb-pi; vga666 for generic adapters and pi2scart
+[CRT-I2C0]
+
+[CRT-VGA666-MODE]
 dtoverlay=vga666
 
-# CRT Video Recovery MODES; 0=disabled; 1=enabled
-crt_recovery_enabled=0
-# MODE to apply: DEFAULT/MODE1/MODE2/MODE3 (modes.cfg)
-crt_recovery_mode=DEFAULT
-
-# CRT DAEMON; 0=disabled; 1=enabled
+[CRT-RECOVERY]
 crt_daemon_enabled=1
-# Set if you have a jamma cable; 0=none; 1=pi2jamma; 2=jamma-rgb-pi
-jamma_cable=0
+crt_recovery_enabled=0
+crt_recovery_mode=DEFAULT
