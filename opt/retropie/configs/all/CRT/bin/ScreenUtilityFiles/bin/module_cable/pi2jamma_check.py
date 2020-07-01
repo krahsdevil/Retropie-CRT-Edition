@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
 """
 PI2JAMMA hardware detection
 
@@ -21,46 +20,15 @@ You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import os, sys
-import logging, traceback, keyboard
-import time
+import sys, keyboard
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
-from main_paths import MODULES_PATH
-sys.path.append(MODULES_PATH)
+iPressed = 0
+for i in range(0, 900):
+    try:
+        if keyboard.is_pressed('&'):
+            iPressed += 1
+    except:
+        sys.exit(50)
 
-from launcher_module.core_paths import TMP_LAUNCHER_PATH
-from launcher_module.utils import check_process
-
-__DEBUG__ = logging.INFO # logging.ERROR
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_RGB_Cable.log")
-logging.basicConfig(filename=LOG_PATH, level=__DEBUG__,
-format='[%(asctime)s] %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
-
-def detect():
-    sError = ""
-    ctr = 0
-    ctr_check = 0
-    while True:
-        try:
-            if keyboard.is_pressed('&'):
-                ctr += 1
-        except Exception as e:
-            if str(e) != sError:
-                logging.info('ERROR: pi2jamma detection: %s' % str(e))
-                sError = str(e)
-        ctr_check += 1
-        if ctr_check >= 1000:
-            if ctr > 1: 
-                logging.info("INFO: hardware pi2jamma found")
-                logging.info("INFO: char '&' detected %s times" % ctr)
-                return True
-            else: 
-                logging.info("WARNING: hardware pi2jamma not found")
-                logging.info("WARNING: char '&' detected %s times" % ctr)
-                return False
-                
-value = detect()
-if value: sys.exit(100)
+if iPressed > 0: sys.exit(100)
 sys.exit(0)

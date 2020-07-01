@@ -70,7 +70,7 @@ class CRTDaemon(object):
     def run(self):
         self._loop()
 
-    def _loop(self, p_iTime = 10, p_iLoops = 10):
+    def _loop(self, p_iTime = 20, p_iLoops = 4):
         """ 
         MAIN PROGRAM.
         Will be checking during x loops and y seconds per loop if any
@@ -246,32 +246,20 @@ class pi2jammaMNGR(object):
         logging.info("WARNING: couldn't load pi2jamma cable")
         return False
 
-    def old_detect(self):
-        ctr = 0
-        ctr_check = 0
-        while True:
-            try:
-                if keyboard.is_pressed('&'):
-                    ctr += 1
-            except Exception as e:
-                logging.info('ERROR: pi2jamma detection: %s' % str(e))
-            ctr_check += 1
-            if ctr_check >= 1000:
-                if ctr > 1: 
-                    logging.info("INFO: hardware pi2jamma found")
-                    return True
-                else: 
-                    logging.info("WARNING: hardware pi2jamma not found")
-                    logging.info("         detected &:%s times" % ctr)
-                    return False
-
     def detect(self):
         commandline = 'sudo python pi2jamma_check.py'
         p = subprocess.Popen(commandline, shell=True)
         iTime = time.time()
         while p.poll() == None:
             if time.time() - iTime > 3: break
-        if p.returncode == 100: return True
+        code = p.returncode
+        if code == 100: 
+            logging.info("INFO: hardware pi2jamma found")
+            return True
+        elif code == 50: 
+            logging.info("INFO: error detecting pi2jamma")
+            return False
+        logging.info("WARNING: hardware pi2jamma not found")
         return False
 
     def kill(self):
