@@ -154,6 +154,20 @@ def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
         time.sleep(p_iWaitScs)
     logging.info("INFO: wait finished")
 
+def module_loaded(p_sModule):
+    """ Return True if module is loaded """
+    sOutput = commands.getoutput('lsmod | grep %s' % p_sModule)
+    if p_sModule in sOutput:
+        return True
+    return False
+
+def module_exists(p_sModule):
+    """ Return True if module exists/installed """
+    sOutput = commands.getoutput('modinfo %s' % p_sModule)
+    if not 'error' or not 'ERROR' in sOutput:
+        return True
+    return False
+
 def get_side():
     """ Check current side of EmulatioStation """
     iCurSide = 0
