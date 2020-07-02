@@ -115,10 +115,10 @@ class frontend_rotation():
         """ If theme was not found then apply by default """
         # by default vertical theme
         if self.iToMode != 0 and not p_sTheme:
-            p_sTheme = "VCRT-UniFlyered-Dark"
+            p_sTheme = "UniFlyered-Dark"
         # by default horizontal theme
         elif self.iToMode == 0 and not p_sTheme:
-            p_sTheme = "CRT-UniFlyered-Color"
+            p_sTheme = "UniFlyered-Color"
         # no change if current configuration is the same
         if p_sTheme != get_xml_value_esconfig("ThemeSet"):
             set_xml_value_esconfig("ThemeSet", p_sTheme)
