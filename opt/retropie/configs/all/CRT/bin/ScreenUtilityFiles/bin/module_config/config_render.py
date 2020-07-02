@@ -59,7 +59,10 @@ class render(core):
         p_sText = str(p_sText)
         if p_bCropText == True:
             # max length 16 chars for values
-            if len(p_sText) > 16: p_sText = (p_sText[:15] + "~")
+            if len(p_sText) > 16 and self.m_iSide != 0:
+                p_sText = (p_sText[:15] + "~")
+            elif len(p_sText) > 21 and self.m_iSide == 0:
+                p_sText = (p_sText[:20] + "~")
 
         p_oTextColor = C_WHITE
         if p_lTextColor and "type" in p_lTextColor:

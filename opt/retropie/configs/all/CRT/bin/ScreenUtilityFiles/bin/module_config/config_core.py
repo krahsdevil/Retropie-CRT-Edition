@@ -699,8 +699,8 @@ class core(object):
         while pygame.mixer.get_busy(): pass
         pygame.display.quit()
         pygame.mixer.quit()
+        time.sleep(1)
         if self.m_lReboot['reboot']:
-            time.sleep(1)
             os.system('sudo reboot')
         elif self.m_lRestart['restart']:
             restart_ES()

@@ -40,8 +40,9 @@ from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
                                        CRT_EXTSTRG_TRIG_MNT_PATH, CRT_EXTSTRG_TRIG_UMNT_PATH, \
                                        CRT_BGM_SRV_PATH, CRT_BGM_CORE_PATH, TMP_LAUNCHER_PATH, \
                                        ES_SYSTEMS_PRI_FILE, RETROPIE_MENU, RETROPIE_HOME_PATH, \
-                                       RASP_BOOTCFG_FILE
-from launcher_module.utils import check_process, touch_file
+                                       RASP_BOOTCFG_FILE, RETROPIE_CFG_PATH, \
+                                       ES_THEMES_PRI_PATH, ES_THEMES_SEC_PATH
+from launcher_module.utils import check_process, touch_file, get_side
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set, remove_line
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
@@ -153,6 +154,18 @@ def get_modes():
             line = line.strip().replace('=',' ').split(' ')
             if line[0].lower() == "mode":
                 p_lList.append(line[1])
+    return p_lList
+
+def get_themes():
+    p_lList = []
+    path = ES_THEMES_PRI_PATH
+    if get_side() != 0: path = ES_THEMES_SEC_PATH
+    try:
+        content = os.listdir(path)
+        for item in content:
+            if os.path.isdir(os.path.join(path, item)):
+                p_lList.append(item)
+    except: pass
     return p_lList
 
 def hide_retropie_menu(p_bEnable = True):

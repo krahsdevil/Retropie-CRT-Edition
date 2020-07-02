@@ -32,7 +32,7 @@ sys.path.append(MODULES_PATH)
 
 from config_utils import find_submenus, load_submenu, explore_list, run, \
                          check_es_restart, check_sys_reboot, render_image, \
-                         press_back
+                         press_back, get_themes
 from keyb.keyboard import keyboard
 from es_rotation import frontend_rotation
 from launcher_module.file_helpers import get_xml_value_esconfig, \
@@ -114,7 +114,7 @@ class main_sub1_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt4]
+        p_lAutoL = [self.opt4, self.opt7]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -124,7 +124,7 @@ class main_sub1_sub1(object):
 
     def _load_options(self):
         p_lOptFn = [self.opt3, self.opt4, self.opt5,
-                    self.opt6]
+                    self.opt6, self.opt7]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -276,6 +276,31 @@ class main_sub1_sub1(object):
         if value.lower() == "true": value = True
         else: value = False
         p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt7(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt7_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new: 
+                self.info("Please Wait," "icon_clock")
+                set_xml_value_esconfig("ThemeSet", new)
+                value = get_xml_value_esconfig("ThemeSet")
+                self.m_lLines[p_iLine].update({'value': value})
+                self.info()
+
+    def opt7_datas(self):
+        p_lLines = {'text': "ES Theme",
+                    'color_val': "type_color_1",
+                    'es_restart': True}
+        value = get_xml_value_esconfig("ThemeSet")
+        list = get_themes()
+        p_lLines.update({'value': value})
+        p_lLines.update({'options': list})
         return p_lLines
 
     def input(self, p_iLine, p_iJoy):

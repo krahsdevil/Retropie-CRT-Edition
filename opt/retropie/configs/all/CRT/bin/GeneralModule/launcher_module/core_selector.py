@@ -42,7 +42,7 @@ class FrequencySelector(object):
     m_oFreqDB = None
     m_lOptFreq = [("60Hz / NTSC", "60"),
                   ("50Hz / PAL", "50")]
-    
+
     def __init__(self, p_sFileName = ""):
         if not p_sFileName:
             logging.info("WARNING: NO filename passed, setting " % \
@@ -61,7 +61,8 @@ class FrequencySelector(object):
                 AutoSelection = "FORCED TO 50Hz / PAL"
             elif self.m_sSelectFreq == "60":
                 AutoSelection = "FORCED TO 60Hz / NTSC"
-            show_info(AutoSelection)
+            if ini_get(CRT_UTILITY_FILE, "autosel_info").lower() != "false":
+                show_info(AutoSelection)
         elif self.m_sSelectFreq == "auto":
             logging.info("Frequency selector mode auto")
             self.m_sSelectFreq = self.frecuency_auto()
@@ -86,7 +87,8 @@ class FrequencySelector(object):
                 AutoSelection = "AUTO: 50Hz / PAL"
             elif sFrequency == "60":
                 AutoSelection = "AUTO: 60Hz / NTSC"
-            show_info(AutoSelection)
+            if ini_get(CRT_UTILITY_FILE, "autosel_info").lower() != "false":
+                show_info(AutoSelection)
         return sFrequency
 
     def frequency_manual(self):
@@ -114,7 +116,7 @@ class FrequencySelector(object):
                 return "50"
         logging.info("Frequency label not identified for: %s" % self.m_sFileName)
         return ""
-        
+
 class dbfreq(object):
     """ frequency database handler """
     def __init__(self):

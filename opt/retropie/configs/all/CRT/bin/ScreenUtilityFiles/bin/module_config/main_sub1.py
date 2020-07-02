@@ -112,7 +112,7 @@ class main_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = []
+        p_lAutoL = [self.opt2]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -121,7 +121,7 @@ class main_sub1(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2]
+        p_lOptFn = [self.opt1, self.opt2, self.opt3]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -195,6 +195,33 @@ class main_sub1(object):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
+        if p_iJoy & CRT_OK:
+            if self.m_lLines[p_iLine]['value'] == "--": return
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new != None:
+                ini_set(CRT_UTILITY_FILE, "autosel_info", new)
+                self.m_lLines[p_iLine].update({'value': new})
+
+    def opt2_datas(self):
+        p_lLines = {'text': "Selector Info",
+                    'color_val': "type_color_1"}
+        mode = ini_get(CRT_UTILITY_FILE, "freq_selector")
+        if mode.lower() == "manual":
+            value = "--"
+            p_lLines.update({'color_val': "type_color_7"})
+        else:
+            value = ini_get(CRT_UTILITY_FILE, "autosel_info")
+            if value.lower() == "true": value = True
+            else: value = False
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt3(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt3_datas()
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
@@ -213,7 +240,7 @@ class main_sub1(object):
                         self.info()
                 self.m_lLines[p_iLine].update({'value': new})
 
-    def opt2_datas(self):
+    def opt3_datas(self):
         p_lLines = {'text': "Launching Images",
                     'color_val': "type_color_1"}
         options = []
