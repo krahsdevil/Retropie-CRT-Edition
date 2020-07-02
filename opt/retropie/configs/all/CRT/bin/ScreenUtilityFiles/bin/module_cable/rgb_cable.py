@@ -346,12 +346,15 @@ class jammargbpiMNGR(object):
         except: 
             logging.info("WARNING: can't connect to i2c0")
             return p_bCheck
-        for device in range(3, 128):
+        p_lDevList = [32, 33] # 0x20/0x21 i2c address; 
+        for device in p_lDevList:
             try:
                 bus.read_byte(device)
                 p_bCheck = True
             except:
                 pass
+        bus.close()
+        bus = None
         if not p_bCheck: logging.info("WARNING: hardware jamma-rgb-pi NOT found")
         else: logging.info("INFO: hardware jamma rgb-pi found")
         return p_bCheck
