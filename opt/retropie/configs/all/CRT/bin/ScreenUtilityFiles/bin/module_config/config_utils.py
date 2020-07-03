@@ -166,6 +166,7 @@ def get_themes():
             if os.path.isdir(os.path.join(path, item)):
                 p_lList.append(item)
     except: pass
+    if p_lList: p_lList.sort()
     return p_lList
 
 def hide_retropie_menu(p_bEnable = True):
