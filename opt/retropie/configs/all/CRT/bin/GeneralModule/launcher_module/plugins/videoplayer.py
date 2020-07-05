@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys, logging, commands, subprocess
 import time, re, glob
-from launcher_module.utils import menu_options
+from launcher_module.utils import menu_options, wait_process
 from launcher_module.core import launcher
 from launcher_module.core_paths import *
 
@@ -77,39 +77,38 @@ class videoplayer(launcher):
 
     def runcommand_start(self):
         """ launch_videoplayer!"""
-        commandline = self.m_sOMXPCommand % \
-                      self.m_lVideoLST[self.m_nVideoPOS]
         logging.info("Launching Joy2Key")
         self._launch_joy2key('kcub1', 'kcuf1', 'kcuu1', 'kcud1', '0x20', '0x71',
                             '0x6b', '0x6a', '0x6d', '0x6e')
         logging.info("Playing video: %s" % \
                      self.m_lVideoLST[self.m_nVideoPOS])
-        self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
-        logging.info("Subprocess running: %s" % commandline)
 
     def wait(self):
+        commandline = self.m_sOMXPCommand % \
+                      self.m_lVideoLST[self.m_nVideoPOS]
+        self.m_oRunProcess = os.system(commandline)
+        logging.info("Subprocess running: %s" % commandline)
         logging.info("wait omxplayer to finish")
         while True:
-            poll = self.m_oRunProcess.poll()
-            if poll != None:
-                returncoded = self.m_oRunProcess.returncode
-                if returncoded == 3:
-                    break
-                else:
-                    if self.m_sPlayAll == "True":
-                        self.m_nVideoPOS += 1
-                        try:
-                            self.m_lVideoLST[self.m_nVideoPOS]
-                            logging.info("Playing video: %s" % \
-                                         self.m_lVideoLST[self.m_nVideoPOS])
-                            commandline = self.m_sOMXPCommand % \
-                                          self.m_lVideoLST[self.m_nVideoPOS]
-                            self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
-                            logging.info("Subprocess running: %s", commandline)
-                        except:
-                            break
-                    else:
+            wait_process('omxplayer.bin')
+            exit_code = os.WEXITSTATUS(self.m_oRunProcess)
+            if exit_code == 3:
+                break
+            else:
+                if self.m_sPlayAll == "True":
+                    self.m_nVideoPOS += 1
+                    try:
+                        self.m_lVideoLST[self.m_nVideoPOS]
+                        logging.info("Playing video: %s" % \
+                                     self.m_lVideoLST[self.m_nVideoPOS])
+                        commandline = self.m_sOMXPCommand % \
+                                      self.m_lVideoLST[self.m_nVideoPOS]
+                        self.m_oRunProcess = os.system(commandline)
+                        logging.info("Subprocess running: %s", commandline)
+                    except:
                         break
+                else:
+                    break
             time.sleep(0.5)
         logging.info("process end")
 
