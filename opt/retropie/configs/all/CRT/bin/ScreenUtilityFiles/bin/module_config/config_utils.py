@@ -41,7 +41,7 @@ from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
                                        CRT_BGM_SRV_PATH, CRT_BGM_CORE_PATH, TMP_LAUNCHER_PATH, \
                                        ES_SYSTEMS_PRI_FILE, RETROPIE_MENU, RETROPIE_HOME_PATH, \
                                        RASP_BOOTCFG_FILE, RETROPIE_CFG_PATH, \
-                                       ES_THEMES_PRI_PATH, ES_THEMES_SEC_PATH
+                                       ES_THEMES_PRI_PATH, ES_THEMES_SEC_PATH, CRT_DB_SYSTEMS_FILE
 from launcher_module.utils import check_process, touch_file, get_side
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set, remove_line
