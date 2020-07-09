@@ -224,9 +224,8 @@ class main_sub4_sub1(object):
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            if new:
-                self.m_oWIFIClass.mode(new)
-                self.m_lLines[p_iLine]['value'] = new
+            self.m_oWIFIClass.mode(new)
+            self.m_lLines[p_iLine]['value'] = new
 
     def opt3_datas(self):
         try: self.m_oWIFIClass
