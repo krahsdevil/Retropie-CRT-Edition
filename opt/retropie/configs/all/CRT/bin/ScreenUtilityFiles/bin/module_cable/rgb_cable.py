@@ -247,6 +247,8 @@ class pi2jammaMNGR(object):
         return False
 
     def detect(self):
+        # pi2jamma detection disabled
+        return True
         commandline = 'sudo python pi2jamma_check.py'
         p = subprocess.Popen(commandline, shell=True)
         iTime = time.time()
