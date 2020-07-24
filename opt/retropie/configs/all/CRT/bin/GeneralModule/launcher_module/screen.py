@@ -302,7 +302,7 @@ class CRT(object):
             return lValues
         logging.error("%s timing not found using default for: %s" % (self.m_sSystem, self.p_sTimingPath))
         subprocess.Popen(DEFAULT_SCREEN_BIN) # show to user default resolution used
-        return DEFAULT_RE
+        return DEFAULT_RES
 
     def _calculated_adjustement(self):
         # Scaling Front and back porch horizontals according to horizontal position and horizontal zoom settings.
