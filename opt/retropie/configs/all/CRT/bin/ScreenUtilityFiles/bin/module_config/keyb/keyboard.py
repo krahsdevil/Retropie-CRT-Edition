@@ -71,7 +71,8 @@ class keyboard(object):
     m_lKeyb += ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm']
     m_lKeyb += ['n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     m_lKeyb += ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '#', '/', ' ']
-    m_lKeyb += ['-', '_', '.', ',', ':', ';', '\'', '!', '?', '(', ')', 'del', False]
+    m_lKeyb += ['-', '_', '.', ',', ':', ';', '\'', '!', '?', '(', ')', '@', '$']
+    m_lKeyb += ['%', 'del', False]
 
     def __init__(self):
         pygame.font.init()
@@ -167,7 +168,11 @@ class keyboard(object):
             self.m_iChar = self.m_iChar - self.m_iCharsLine
         else:
             pos = self._get_coord(True)
-            self.m_iChar = len(self.m_lKeyb) - (self.m_iCharsLine - pos)
+            lines = int(math.ceil(((len(self.m_lKeyb) * 1.0)/ self.m_iCharsLine)))
+            diff = self.m_iCharsLine - pos
+            if ((lines * self.m_iCharsLine) - diff) > len(self.m_lKeyb):
+                lines -= 1
+            self.m_iChar = (lines * self.m_iCharsLine) - diff
 
     def _move_down(self):
         if (self.m_iChar + self.m_iCharsLine) <= len(self.m_lKeyb):
