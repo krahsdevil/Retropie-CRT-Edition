@@ -153,8 +153,9 @@ class keyboard(object):
 
     def _move_right(self):
         pos = self._get_coord(True)
-        if (pos + 1) > self.m_iCharsLine:
-            self.m_iChar -= (self.m_iCharsLine - 1)
+        line = int(math.ceil(((self.m_iChar * 1.0)/ self.m_iCharsLine)))
+        if (self.m_iChar + 1) > len(self.m_lKeyb) or (pos + 1) > self.m_iCharsLine:
+            self.m_iChar = ((line - 1) * self.m_iCharsLine) + 1
         else: self.m_iChar +=1
 
     def _move_left(self):
