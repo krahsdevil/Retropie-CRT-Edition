@@ -167,9 +167,9 @@ class render(core):
 
         # check if left text need scroll
         calc = TotSize - oLineSf.get_rect().width
-        if calc > 4: # text needs scroll or crop
-            crop = text.get_rect().width - calc
-            if self.m_lLines.index(p_lLine) == self.m_iLine:
+        crop = text.get_rect().width - calc
+        if self.m_lLines.index(p_lLine) == self.m_iLine:
+            if calc > 4: # text needs scroll or crop
                 self.m_iScroll_dif = calc
                 oTextSf = pygame.Surface((crop, self.dCFG['font_line'] + 4),
                                          pygame.SRCALPHA)
@@ -180,9 +180,11 @@ class render(core):
             else:
                 self.m_iScroll_dif = 0
                 self.m_iScroll_mov = 0
-                oTextSf = text.subsurface(0, 0, crop, text.get_rect().height)
+                oTextSf = text
         else:
-            oTextSf = text
+            if calc > 4:
+                oTextSf = text.subsurface(0, 0, crop, text.get_rect().height)
+            else: oTextSf = text
 
         rect = oTextSf.get_rect()
         rect.midleft = (ltoffset, oLineSf.get_height() / 2)
