@@ -36,12 +36,14 @@ VDATA = { "megadrive": {
             "picodrive": {"width": 1920, "height": 240, "x": 9,  "y": 27},
           },
           "mastersystem": {
-            "default": {"width": 1900, "height": 240, "x": 8, "y": 0},
+            "default": {"width": 1920, "height": 240, "x": 0, "y": -1},
             "picodrive": {"width": 1920, "height": 240, "x": 0,  "y": -1},
+            "smsplus-gx": {"width": 1920, "height": 192, "x": 0, "y": 23},
           },
           "mastersystem50": {
-            "default": {"width": 1872, "height": 288, "x": 34, "y": 3},
-            "picodrive": {"width": 1880, "height": 240, "x": 29, "y": 27},
+            "default": {"width": 1874, "height": 288, "x": 40, "y": 3},
+            "picodrive": {"width": 1874, "height": 240, "x": 40, "y": 27},
+            "smsplus-gx": {"width": 1874, "height": 192, "x": 40, "y": 52},
           }
         }
 
@@ -67,6 +69,8 @@ class sega(selector):
             self.m_sViewPortType = "default"
             if "picodrive" in self.m_sSelCore:
                 self.m_sViewPortType = "picodrive"
+            elif "smsplus-gx" in self.m_sSelCore:
+                self.m_sViewPortType = "smsplus-gx"
             self.segacfg_write(dCFG[self.m_sViewPortType])
             self.m_sRndCore = self.m_sSelCore
         except:
