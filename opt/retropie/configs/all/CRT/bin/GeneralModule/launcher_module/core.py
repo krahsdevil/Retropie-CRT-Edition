@@ -129,7 +129,11 @@ class launcher(object):
         # check if %BASENAME% is used instead of %ROM%
         if '%BASENAME%' in p_sCMD:
             self.m_sFileNameVar = '%BASENAME%'
-        p_sCMD = p_sCMD.replace(self.m_sFileNameVar, '')
+        elif '%ROM%' in p_sCMD:
+            self.m_sFileNameVar = '%ROM%'
+        else:
+            self.m_sFileNameVar = None
+        if self.m_sFileNameVar: p_sCMD = p_sCMD.replace(self.m_sFileNameVar, '')
         # "touch /path/lchtmp && sleep 1 && /path/retroarch ...
         # "/path/retroarch ...
         if "&&" in p_sCMD:
@@ -143,7 +147,7 @@ class launcher(object):
         if RA_BIN_FILE in p_sCMD:
             if self.m_sCustomRACFG:
                 p_sCMD += " --appendconfig %s" % self.m_sCustomRACFG
-        p_sCMD += " " + self.m_sFileNameVar
+        if self.m_sFileNameVar: p_sCMD += " " + self.m_sFileNameVar
         p_sCMD = self.runcommand_netplay(p_sCMD)
         return p_sCMD
 

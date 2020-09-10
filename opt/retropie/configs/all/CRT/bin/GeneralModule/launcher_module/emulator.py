@@ -164,7 +164,7 @@ class emulator(launcher):
             if len(self.m_lBinaries):
                 logging.info("VALID - emulators: %s" % str(self.m_lBinaries))
             else:
-                self.panic("NOT FOUND emulators masks [%s]" % str(self.m_lBinaryMasks))
+                self.panic("NOT VALID emulators bin/masks found [%s]" % str(self.m_lBinaryMasks))
 
     def emulatorcfg_check_or_die(self):
         """
@@ -202,7 +202,10 @@ class emulator(launcher):
             Emulator is invalid
         """
         # filter returns an array with valid values, we just check if has any value
-        if filter(lambda mask: mask in p_sCore, self.m_lBinaryMasks):
+        if not self.m_lBinaryMasks:
+            logging.info("Not emulator masks defined, any binary/emulator allowed")
+            return True
+        elif filter(lambda mask: mask in p_sCore, self.m_lBinaryMasks):
             return True
         else:
             return False

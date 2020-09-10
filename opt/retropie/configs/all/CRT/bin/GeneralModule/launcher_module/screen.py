@@ -300,6 +300,11 @@ class CRT(object):
         if lValues:
             logging.info("%s timing found at: %s" % (self.m_sSystem, self.p_sTimingPath))
             return lValues
+        else:
+            lValues = ini_getlist(self.p_sTimingPath, "default")
+            if lValues:
+                logging.info("%s default timing found at: %s" % (self.m_sSystem, self.p_sTimingPath))
+                return lValues
         logging.error("%s timing not found using default for: %s" % (self.m_sSystem, self.p_sTimingPath))
         subprocess.Popen(DEFAULT_SCREEN_BIN) # show to user default resolution used
         return DEFAULT_RES
