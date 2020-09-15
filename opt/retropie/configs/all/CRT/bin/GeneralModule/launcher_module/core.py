@@ -119,6 +119,7 @@ class launcher(object):
         self.m_oRunProcess.wait()
         time_elapsed = int(time.time() - time_start)
         self.statistics(time_elapsed)
+        if self.m_bFastBoot: self.change_cpu_governor("default")
         logging.info("INFO: game time: %s" % time_elapsed)
         logging.info("INFO: process end")
 
@@ -267,8 +268,24 @@ class launcher(object):
             self.m_sCleanLaunch += " >> %s 2>&1" % LOG_PATH
         commandline = self.m_sCleanLaunch
         if not os.path.exists("/tmp/retroarch"): os.system("mkdir /tmp/retroarch")
+        self.change_cpu_governor()
         self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
         logging.info("INFO: Subprocess running: %s", commandline)
+
+    def change_cpu_governor(self, p_sMode = None):
+        p_lCPUGov = ["schedutil", "conservative",
+                     "ondemand", "userspace",
+                     "powersave", "performance"]
+        if p_sMode == "default": p_sGovernor = "ondemand"
+        else:
+            value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "governor").lower()
+            if value and value in p_lCPUGov: p_sGovernor = value
+            else: p_sGovernor = "ondemand"
+        command = "echo \"%s\"" % p_sGovernor
+        command += " | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
+        command += " >> /dev/null 2>&1"
+        os.system(command)
+        logging.info("INFO: CPU scaling governor changed to {%s}" % p_sGovernor)
 
     def runcommand_kill(self, including_parent=False):
         """ kill runcommand and child processes if configuration is wrong"""
