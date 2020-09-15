@@ -1,0 +1,3 @@
+# Here you can setup video timings (resolutions) for Retropie Ports games.
+
+default 320 1 10 30 40 240 1 6 5 12 0 0 0 60 0 6400000 1
