@@ -32,18 +32,21 @@ sys.path.append(MODULES_PATH)
 
 from config_utils import find_submenus, load_submenu, explore_list, run, \
                          check_es_restart, check_sys_reboot, render_image, \
-                         press_back, get_themes
+                         press_back, get_themes, check_retropie_menu, \
+                         hide_retropie_menu
 from keyb.keyboard import keyboard
 from es_rotation import frontend_rotation
 from launcher_module.file_helpers import get_xml_value_esconfig, \
-                                         set_xml_value_esconfig
-from launcher_module.core_paths import TMP_LAUNCHER_PATH
+                                         set_xml_value_esconfig, \
+                                         ini_get, ini_set
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, RETROPIE_RUNCOMMAND_CFG_FILE, \
+                                       RA_CFG_FILE, CRT_UTILITY_FILE
 from launcher_module.utils import get_side
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
 
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "utility.log")
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Configuration_Utility.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
@@ -114,7 +117,7 @@ class main_sub1_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt4, self.opt7]
+        p_lAutoL = [self.opt4, self.opt7, self.opt9]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -124,7 +127,8 @@ class main_sub1_sub1(object):
 
     def _load_options(self):
         p_lOptFn = [self.opt3, self.opt4, self.opt5,
-                    self.opt6, self.opt7]
+                    self.opt6, self.opt7, self.opt8,
+                    self.opt9, self.opt10]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -301,6 +305,79 @@ class main_sub1_sub1(object):
         list = get_themes()
         p_lLines.update({'value': value})
         p_lLines.update({'options': list})
+        return p_lLines
+
+    def opt8(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt8_datas()
+        if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new: hide_retropie_menu(False)
+            elif not new: hide_retropie_menu(True)
+            value = check_retropie_menu()
+            self.m_lLines[p_iLine].update({'value': new})
+
+    def opt8_datas(self):
+        p_lLines = {'text': "Show Retropie ES Menu",
+                    'color_val': "type_color_1",
+                    'es_restart': True}
+        if check_retropie_menu(): value = True
+        else: value = False
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt9(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt9_datas()
+        if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            if value == "N/A":
+                self.info("FastBoot is enabled", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
+            new = explore_list(p_iJoy, value, list)
+            if new == False: ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu", "1")
+            elif new == True: ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu", "0")
+            self.m_lLines[p_iLine].update({'value': new})
+
+    def opt9_datas(self):
+        p_lLines = {'text': "Allow Runcommand Config",
+                    'color_val': "type_color_1"}
+        if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
+            value = "N/A"
+            p_lLines.update({'color_val': "type_color_7"})
+        else:
+            value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu")
+            if value == "0": value = True
+            else: value = False
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt10(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt10_datas()
+        if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new: ini_set(RA_CFG_FILE, "menu_driver", "rgui")
+            elif not new: ini_set(RA_CFG_FILE, "menu_driver", 'Null')
+            self.m_lLines[p_iLine].update({'value': new})
+
+    def opt10_datas(self):
+        p_lLines = {'text': "Allow Retroarch Config",
+                    'color_val': "type_color_1"}
+        value = ini_get(RA_CFG_FILE, "menu_driver")
+        if value == "Null": value = False
+        else: value = True
+        p_lLines.update({'value': value})
         return p_lLines
 
     def input(self, p_iLine, p_iJoy):

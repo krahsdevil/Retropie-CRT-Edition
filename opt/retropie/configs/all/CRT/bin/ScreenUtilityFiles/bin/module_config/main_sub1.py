@@ -41,7 +41,7 @@ from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
 
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "utility.log")
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Configuration_Utility.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
@@ -112,7 +112,7 @@ class main_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt2]
+        p_lAutoL = [self.opt2, self.opt3]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -196,6 +196,11 @@ class main_sub1(object):
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_OK:
+            if self.m_lLines[p_iLine]['value'] == "N/A":
+                self.info("FastBoot is enabled", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
             if self.m_lLines[p_iLine]['value'] == "--": return
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
@@ -207,14 +212,18 @@ class main_sub1(object):
     def opt2_datas(self):
         p_lLines = {'text': "Selector Info",
                     'color_val': "type_color_1"}
-        mode = ini_get(CRT_UTILITY_FILE, "freq_selector")
-        if mode.lower() == "manual":
-            value = "--"
+        if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
+            value = "N/A"
             p_lLines.update({'color_val': "type_color_7"})
         else:
-            value = ini_get(CRT_UTILITY_FILE, "autosel_info")
-            if value.lower() == "true": value = True
-            else: value = False
+            mode = ini_get(CRT_UTILITY_FILE, "freq_selector")
+            if mode.lower() == "manual":
+                value = "--"
+                p_lLines.update({'color_val': "type_color_7"})
+            else:
+                value = ini_get(CRT_UTILITY_FILE, "autosel_info")
+                if value.lower() == "true": value = True
+                else: value = False
         p_lLines.update({'value': value})
         return p_lLines
 
@@ -222,9 +231,16 @@ class main_sub1(object):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt3_datas()
-        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+        if p_iJoy & CRT_OK:
+            if self.m_lLines[p_iLine]['value'] == "N/A":
+                self.info("FastBoot is enabled", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
+        elif p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
+            if value == "N/A": return
             new = explore_list(p_iJoy, value, list)
             if new:
                 if new == "Disabled":
@@ -243,17 +259,23 @@ class main_sub1(object):
     def opt3_datas(self):
         p_lLines = {'text': "Launching Images",
                     'color_val': "type_color_1"}
-        options = []
-        value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "image_delay")
-        if value == "0":
-            value = "Disabled"
+        p_lLines.update({'options': []})
+        if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
+            value = "N/A"
+            p_lLines.update({'color_val': "type_color_7"})
         else:
-            value = value + "s"
+            options = []
+            value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "image_delay")
+            if value == "0":
+                value = "Disabled"
+            else:
+                value = value + "s"
+            #p_lLines.update({'value': value})
+            options.append("Disabled")
+            for i in range (1, 11):
+                options.append(str(i) + "s")
+            p_lLines.update({'options': options})
         p_lLines.update({'value': value})
-        options.append("Disabled")
-        for i in range (1, 11):
-            options.append(str(i) + "s")
-        p_lLines.update({'options': options})
         return p_lLines
 
     def input(self, p_iLine, p_iJoy):

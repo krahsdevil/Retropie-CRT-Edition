@@ -32,18 +32,17 @@ sys.path.append(MODULES_PATH)
 
 from config_utils import explore_list, find_submenus, load_submenu, \
                          check_es_restart, check_sys_reboot, \
-                         get_modes, check_retropie_menu, hide_retropie_menu, \
-                         saveboot, render_image, press_back
+                         get_modes, saveboot, render_image, press_back
 from keyb.keyboard import keyboard
 from module_cable.cable_manager import CableMNGR
 from launcher_module.file_helpers import ini_get, ini_set
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_FIXMODES_FILE, \
-                                       RETROPIE_RUNCOMMAND_CFG_FILE, RA_CFG_FILE
+                                       RETROPIE_RUNCOMMAND_CFG_FILE, CRT_UTILITY_FILE
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
 
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "utility.log")
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Configuration_Utility.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
@@ -124,7 +123,7 @@ class main_sub5(object):
 
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
-                    self.opt4, self.opt5, self.opt6]
+                    self.opt4]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -253,7 +252,7 @@ class main_sub5(object):
                 self.m_lLines[p_iLine].update({'value': new})
 
     def opt3_datas(self):
-        p_lLines = {'text': "CPU Governor",
+        p_lLines = {'text': "In-Game CPU MODE",
                     'options': ["Default", "Conservative",
                                 "Ondemand", "Userspace",
                                 "Powersave", "Performance",
@@ -272,63 +271,22 @@ class main_sub5(object):
         p_lLines = {}
         if p_iJoy == None:
             return self.opt4_datas()
-        if p_iJoy & CRT_OK:
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            if new == False: ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu", "1")
-            elif new == True: ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu", "0")
-            self.m_lLines[p_iLine].update({'value': new})
+            if new:
+                if new == "Runcommand": ini_set(CRT_UTILITY_FILE, "fast_boot", "False")
+                elif new == "FastBoot": ini_set(CRT_UTILITY_FILE, "fast_boot", "True")
+                self.m_lLines[p_iLine].update({'value': new})
 
     def opt4_datas(self):
-        p_lLines = {'text': "Retropie Runcommand",
+        p_lLines = {'text': "Game Launcher",
+                    'options': ["Runcommand", "FastBoot"],
                     'color_val': "type_color_1"}
-        value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu")
-        if value == "0": value = True
-        else: value = False
-        p_lLines.update({'value': value})
-        return p_lLines
-
-    def opt5(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
-        if p_iJoy == None:
-            return self.opt5_datas()
-        if p_iJoy & CRT_OK:
-            list = self.m_lLines[p_iLine]['options']
-            value = self.m_lLines[p_iLine]['value']
-            new = explore_list(p_iJoy, value, list)
-            if new: hide_retropie_menu(False)
-            elif not new: hide_retropie_menu(True)
-            value = check_retropie_menu()
-            self.m_lLines[p_iLine].update({'value': new})
-
-    def opt5_datas(self):
-        p_lLines = {'text': "Retropie ES Menu",
-                    'color_val': "type_color_1",
-                    'es_restart': True}
-        if check_retropie_menu(): value = True
-        else: value = False
-        p_lLines.update({'value': value})
-        return p_lLines
-
-    def opt6(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
-        if p_iJoy == None:
-            return self.opt6_datas()
-        if p_iJoy & CRT_OK:
-            list = self.m_lLines[p_iLine]['options']
-            value = self.m_lLines[p_iLine]['value']
-            new = explore_list(p_iJoy, value, list)
-            if new: ini_set(RA_CFG_FILE, "menu_driver", "rgui")
-            elif not new: ini_set(RA_CFG_FILE, "menu_driver", 'Null')
-            self.m_lLines[p_iLine].update({'value': new})
-
-    def opt6_datas(self):
-        p_lLines = {'text': "Retroarch Config Menu",
-                    'color_val': "type_color_1"}
-        value = ini_get(RA_CFG_FILE, "menu_driver")
-        if value == "Null": value = False
-        else: value = True
+        value = ini_get(CRT_UTILITY_FILE, "fast_boot").lower()
+        if value == "true": value = "FastBoot"
+        else: value = "Runcommand"
         p_lLines.update({'value': value})
         return p_lLines
 

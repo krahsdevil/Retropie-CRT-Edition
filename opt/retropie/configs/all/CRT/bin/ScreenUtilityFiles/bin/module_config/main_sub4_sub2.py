@@ -40,7 +40,7 @@ from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
 
-LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "utility.log")
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Configuration_Utility.log")
 EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
