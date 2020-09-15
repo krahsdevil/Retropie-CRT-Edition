@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands
+import sys, os, threading, time
 import logging, pygame
 
 sys.dont_write_bytecode = False

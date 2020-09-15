@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -25,9 +25,9 @@ import logging, re
 
 sys.dont_write_bytecode = False
 
-from file_helpers import ini_get, ini_set, add_line, \
+from launcher_module.file_helpers import ini_get, ini_set, add_line, \
                          touch_file, modify_line, ini_getlist
-from core_paths import CRT_NETPLAY_FILE, CRT_UTILITY_FILE
+from launcher_module.core_paths import CRT_NETPLAY_FILE, CRT_UTILITY_FILE
 
 class netplay(object):
     NETPLAY_CFG = ['__netplaymode="H"',

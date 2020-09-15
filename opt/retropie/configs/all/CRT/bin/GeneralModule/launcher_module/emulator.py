@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -27,8 +27,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, re, logging
 from launcher_module.core import launcher
-from launcher_module.core_paths import RETROPIE_CUSTEMU_FILE
-from launcher_module.file_helpers import remove_line, touch_file
+from launcher_module.core_paths import RETROPIE_CUSTEMU_FILE, CRT_UTILITY_FILE
+from launcher_module.file_helpers import remove_line, touch_file, ini_set
 
 class emulator(launcher):
     """
@@ -47,7 +47,7 @@ class emulator(launcher):
         We need check if retropie-menu changed something after command start
         """
         super(emulator, self).start() # command start (and set videomode)
-        self.emulatorcfg_check_or_die()
+        if not self.m_bFastBoot: self.emulatorcfg_check_or_die()
 
     # TODO: Read data from EasyNetplay
     def netplay_setup(self):
@@ -65,7 +65,12 @@ class emulator(launcher):
         try:
             self.emulatorcfg_add_systems()
             if self.emulatorcfg_default_check() == False:
-                 self.panic("No valid emulator selected", "Please, try again!")
+                if self.m_bFastBoot:
+                    ini_set(CRT_UTILITY_FILE, 'fast_boot', 'False')
+                    logging.info("INFO: Wrong emulator selected, disabling fast boot")
+                    self.panic("No valid emulator, FastBoot DISABLED.", 
+                               "Please, try again!")
+                self.panic("No valid emulator selected", "Please, try again!")
             self.emulatorcfg_per_game()
             
         except IOError as e:
@@ -205,7 +210,7 @@ class emulator(launcher):
         if not self.m_lBinaryMasks:
             logging.info("Not emulator masks defined, any binary/emulator allowed")
             return True
-        elif filter(lambda mask: mask in p_sCore, self.m_lBinaryMasks):
+        if list(filter(lambda mask: mask in p_sCore, self.m_lBinaryMasks)):
             return True
         else:
             return False

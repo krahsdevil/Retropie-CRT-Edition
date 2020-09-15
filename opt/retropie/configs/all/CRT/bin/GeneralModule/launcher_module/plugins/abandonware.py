@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -25,13 +25,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging
+import os, logging, subprocess
 from launcher_module.core_paths import *
 from launcher_module.utils import show_info
 from launcher_module.emulator import emulator
 from launcher_module.file_helpers import ini_get, modify_line, \
                                          touch_file, add_line
 
+LOG_PATH = os.path.join(TMP_LAUNCHER_PATH, "CRT_Launcher.log")
 SCUMMVMCFG_FILE = os.path.join(RETROPIE_CFG_PATH, "scummvm/scummvm.ini")
 
 class abandonware(emulator):
@@ -51,6 +52,18 @@ class abandonware(emulator):
             self.m_lBinaryMasks = ["dosbox"]
         super(abandonware, self).configure()
         #show_info("Better with keyboard and mouse")
+
+    def direct_start(self):
+        """ launch_core: run emulator without runcommand!"""
+        if "+Start " in self.m_sGameName and self.m_bFastBoot:
+            show_info("LAUNCHING %s CONFIGURATOR!" % self.m_sSystem.upper())
+            self.m_sCleanLaunch = "bash \"%s\"" % self.m_sFilePath
+            self.m_sCleanLaunch += " >> %s 2>&1" % LOG_PATH
+            commandline = self.m_sCleanLaunch
+            if not os.path.exists("/tmp/retroarch"): os.system("mkdir /tmp/retroarch")
+            self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
+            logging.info("INFO: Subprocess running: %s", commandline)
+        else: super(abandonware, self).direct_start()
 
     def _scummvm_create_cfg(self):
         """ create base ini file if not exist """

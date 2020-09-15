@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -29,9 +29,9 @@ sys.path.append(RESOURCES_PATH)
 
 from launcher_module.core_paths import CRT_LAUNCHER_FILE
 
-LAST_HASH = ""
+LAST_HASH = "d6ce2b8a6bde5a1eb7a0ef82bfa31686"
 
-LAUNCH_DEF_STR = "python " + CRT_LAUNCHER_FILE + " %ROM%"
+LAUNCH_DEF_STR = "python3 " + CRT_LAUNCHER_FILE + " %ROM%"
 LAUNCH_RET_STR = "sudo /home/pi/RetroPie-Setup/retropie_packages.sh "
 LAUNCH_RET_STR += "retropiemenu launch %ROM% "
 LAUNCH_RET_STR += "&lt;/dev/tty &gt;/dev/tty"
@@ -101,7 +101,7 @@ XML_CRT += "    <name>1CRT</name>\n"
 XML_CRT += "    <fullname>CRT Utilities</fullname>\n"
 XML_CRT += "    <path>/opt/retropie/configs/all/CRT/config</path>\n"
 XML_CRT += "    <extension>.py</extension>\n"
-XML_CRT += "    <command>python %ROM%</command>\n"
+XML_CRT += "    <command>python3 %ROM%</command>\n"
 XML_CRT += "    <platform />\n"
 XML_CRT += "    <theme>crt</theme>\n"
 XML_CRT += "  </system>\n"

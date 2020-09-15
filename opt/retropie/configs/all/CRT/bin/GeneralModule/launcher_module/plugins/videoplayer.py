@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys, logging, commands, subprocess
+import os, sys, logging, subprocess
 import time, re, glob
 from launcher_module.utils import menu_options, wait_process
 from launcher_module.core import launcher
@@ -124,11 +124,15 @@ class videoplayer(launcher):
         if not os.path.exists (JOY2KEY_FILE):
             return False
         # get the first joystick device (if not already set)
-        JOY2KEY_VAR = commands.getoutput('$__joy2key_dev')
+        command = '$__joy2key_dev'
+        try: JOY2KEY_VAR = subprocess.check_output(command, shell=True).decode("utf-8")
+        except: JOY2KEY_VAR = None
         JOY2KEY_DEV = "/dev/input/jsX"
         if os.path.exists (JOY2KEY_VAR): JOY2KEY_DEV = JOY2KEY_VAR
         # launch joy2key if not running
-        p_sOutput = commands.getoutput('ps -A')
+        command = 'ps -A'
+        try: output = subprocess.check_output(command, shell=True).decode("utf-8")
+        except: output = ""
         if not JOY2KEY_NAME in p_sOutput:
             p_sJ2KCommand = '"%s" "%s" %s %s %s %s %s %s %s %s %s %s' % \
                                (JOY2KEY_FILE, JOY2KEY_DEV, left, right, up, \

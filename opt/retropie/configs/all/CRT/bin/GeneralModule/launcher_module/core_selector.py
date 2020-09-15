@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -36,6 +36,7 @@ LABELS60HZ = ["ntsc","1","4","a","j","b","k","c","u","hk","world","usa",
 ALLOWED_FREQS = ["50", "60"]
 
 class FrequencySelector(object):
+    m_bFastBoot = False
     m_sFileName = ""
     m_sSelectFreq = ""
     m_sCompactedName = ""
@@ -51,6 +52,8 @@ class FrequencySelector(object):
         self.m_sFileName = p_sFileName
         self.m_sCompactedName = compact_rom_name(p_sFileName)
         self.m_oFreqDB = dbfreq()
+        if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
+            self.m_bFastBoot = True
 
     def get_frequency(self):
         # first i try to find an allowed freq
@@ -62,7 +65,7 @@ class FrequencySelector(object):
             elif self.m_sSelectFreq == "60":
                 AutoSelection = "FORCED TO 60Hz / NTSC"
             if ini_get(CRT_UTILITY_FILE, "autosel_info").lower() != "false":
-                show_info(AutoSelection)
+                if not self.m_bFastBoot: show_info(AutoSelection)
         elif self.m_sSelectFreq == "auto":
             logging.info("Frequency selector mode auto")
             self.m_sSelectFreq = self.frecuency_auto()
@@ -88,7 +91,7 @@ class FrequencySelector(object):
             elif sFrequency == "60":
                 AutoSelection = "AUTO: 60Hz / NTSC"
             if ini_get(CRT_UTILITY_FILE, "autosel_info").lower() != "false":
-                show_info(AutoSelection)
+                if not self.m_bFastBoot: show_info(AutoSelection)
         return sFrequency
 
     def frequency_manual(self):

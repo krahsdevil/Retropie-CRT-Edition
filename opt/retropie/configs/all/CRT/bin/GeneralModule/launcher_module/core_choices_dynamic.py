@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -128,7 +128,7 @@ class choices(object):
 
         # screen
         self.m_lResolutionXY = CRT.get_screen_resolution()
-        self.m_lScreenCenter = map(lambda x: x/2, self.m_lResolutionXY)
+        self.m_lScreenCenter = tuple(map(lambda x: int(x/2), self.m_lResolutionXY))
         self.m_oScreen = pygame.display.set_mode(self.m_lResolutionXY, pygame.FULLSCREEN)
 
     def _init_sounds(self):
@@ -386,10 +386,10 @@ class Table(object):
         if p_iType == BG_FLAT:
             self.img.fill(p_lBaseColor)
             return
-        ndeg = min(p_lBaseColor)/8
-        height = (self.height/ndeg) + 1
+        ndeg = int(min(p_lBaseColor)/8)
+        height = int(self.height/ndeg) + 1
         cont = 0
         for y in range(0, self.height, height):
-            color = map(lambda x: x - (8 * cont), p_lBaseColor)
+            color = tuple(map(lambda x: x - (8 * cont), p_lBaseColor))
             pygame.draw.rect(self.img, color, (0,y, self.width, height) )
             cont += 1

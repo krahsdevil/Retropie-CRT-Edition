@@ -3,7 +3,7 @@ Description=This service search for external USB with almost roms folder and loa
 DefaultDependencies=no
 
 [Service]
-ExecStart=/usr/bin/python -u ext_storage.py
+ExecStart=/usr/bin/python3 -u ext_storage.py
 WorkingDirectory=/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/service_extstorage
 StandardOutput=inherit
 StandardError=inherit

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -47,7 +47,10 @@ class laserdisc(emulator):
     def configure(self):
         if self.m_sSystem == "daphne":
             self.m_lBinaryMasks = ["daphne"]
-            FixDaphneControls(self.m_sSystem).fix()
+            
+            m_oCtrlFix = FixDaphneControls(self.m_sSystem)
+            m_oCtrlFix.m_bFastBoot = self.m_bFastBoot
+            m_oCtrlFix.fix()
         p_sSelectFreq = FrequencySelector(self.m_sFileName).get_frequency()
         self.m_sSystemFreq = self.m_sSystem
         if p_sSelectFreq == "50":
@@ -124,6 +127,7 @@ class FixDaphneControls(object):
     DAPHNE_CFG_FILE = ""
     m_sJoyName = ""
     m_sCfgFile = ""
+    m_bFastBoot = False
     m_lDaphneBTN = (["KEY_UP", "0", "clear"],
                     ["KEY_DOWN", "0", "clear"],
                     ["KEY_LEFT", "0", "clear"],
@@ -203,7 +207,8 @@ class FixDaphneControls(object):
                     m_lInfoRemap.append((option, "OK"))
                 except:
                     pass
-        show_info(m_lInfoRemap, self.m_sJoyName + " [js0]", 6000)
+        if not self.m_bFastBoot:
+            show_info(m_lInfoRemap, self.m_sJoyName + " [js0]", 6000)
     
     def _initialize_pygame(self):
         bCheck = False

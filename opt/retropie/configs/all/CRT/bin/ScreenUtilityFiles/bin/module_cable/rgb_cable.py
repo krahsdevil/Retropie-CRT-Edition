@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys, smbus
-import subprocess, commands
+import subprocess
 import logging, traceback
 import time
 
@@ -249,7 +249,7 @@ class pi2jammaMNGR(object):
     def detect(self):
         # pi2jamma detection disabled
         return True
-        commandline = 'sudo python pi2jamma_check.py'
+        commandline = 'sudo python3 pi2jamma_check.py'
         p = subprocess.Popen(commandline, shell=True)
         iTime = time.time()
         while p.poll() == None:

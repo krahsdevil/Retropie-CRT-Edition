@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -27,7 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os, sys, psutil
-import subprocess, commands, time
+import subprocess, time
 import logging, re, shlex
 
 from .screen import CRT
@@ -59,6 +59,8 @@ class launcher(object):
     m_oBlackScreen = None
     m_oRunProcess = None
     m_oCRT = None
+    m_sCleanLaunch = ""
+    m_bFastBoot = False
 
     def __init__(self, p_sFilePath, p_sSystem, p_sCustom):
         self.m_sSystem = p_sSystem
@@ -74,6 +76,9 @@ class launcher(object):
         logging.info("INFO: arg 1 (rom_path) = %s, (system) = %s, (sin uso) = %s"
             % (self.m_sFilePath, self.m_sSystem, self.m_sCustom))
 
+        if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
+            logging.info("INFO: fast boot is enabled")
+            self.m_bFastBoot = True
         self.pre_configure() # user virtual method get init values
         self.configure() # rom name work
         self.post_configure() # user virtual method for post configure
@@ -102,8 +107,12 @@ class launcher(object):
         self.cleanup()
 
     def start(self):
-        self.runcommand_start()
-        self.screen_set()
+        if not self.m_bFastBoot: 
+            self.runcommand_start()
+            self.screen_set()
+        else: 
+            self.screen_set()
+            self.direct_start()
 
     def wait(self):
         time_start = time.time()
@@ -207,14 +216,21 @@ class launcher(object):
                 sCMD = lValues[1].strip()
                 if len(lValues) > 2:
                     sCMD = "=".join(lValues[1:]).strip()
-                lValues = map(lambda s: s.strip(), lValues)
-                if lValues[0] == Binary:
-                    self.m_sNextValidBinary = lValues[0]
-                    cmd_cleaned = self.runcommand_clean(sCMD)
-                    cmd_current = self.runcommand_generate(cmd_cleaned)
-                    if cmd_current != line.strip(): # atm just force our cmd
-                        logging.info("changed command (%s)" % cmd_current)
-                        modify_line(self.m_sCfgSystemPath, line, cmd_current)
+                lValues = list(map(lambda s: s.strip(), lValues))
+                if not self.m_bFastBoot:
+                    if lValues[0] == Binary:
+                        self.m_sNextValidBinary = lValues[0]
+                        cmd_cleaned = self.runcommand_clean(sCMD)
+                        cmd_current = self.runcommand_generate(cmd_cleaned)
+                        if cmd_current != line.strip(): # atm just force our cmd
+                            logging.info("changed command (%s)" % cmd_current)
+                            modify_line(self.m_sCfgSystemPath, line, cmd_current)
+                else:
+                    if lValues[0].lower() == self.m_sSelCore:
+                        self.m_sCleanLaunch = self.runcommand_clean(sCMD).strip()
+                        logging.info("INFO: clean launching string on emulators.cfg: {%s}" \
+                                     % self.m_sCleanLaunch)
+                        return
 
     def runcommand_wait(self):
         """ wait_runcommand: wait for user launcher menu """
@@ -235,11 +251,24 @@ class launcher(object):
             time.sleep(0.1)
 
     def runcommand_start(self):
-        """ launch_core: run emulator!"""
+        """ launch_core: run emulator with runcommand!"""
         commandline = "%s 0 _SYS_ %s \"%s\"" % (RETROPIE_RUNCOMMAND_FILE, self.m_sSystem, self.m_sFilePath)
         self.m_oRunProcess = subprocess.Popen(shlex.split(commandline), shell=False)
         logging.info("INFO: Subprocess running: %s", commandline)
         self.runcommand_wait()
+
+    def direct_start(self):
+        """ launch_core: run emulator without runcommand!"""
+        if self.m_sFileNameVar and self.m_sFileNameVar in self.m_sCleanLaunch:
+            if self.m_sFileNameVar == "%ROM%": p_sGame = self.m_sFilePath
+            elif self.m_sFileNameVar == "%BASENAME%": p_sGame = self.m_sGameName
+            self.m_sCleanLaunch = self.m_sCleanLaunch.replace(self.m_sFileNameVar,
+                                  "\"%s\"" % p_sGame)
+            self.m_sCleanLaunch += " >> %s 2>&1" % LOG_PATH
+        commandline = self.m_sCleanLaunch
+        if not os.path.exists("/tmp/retroarch"): os.system("mkdir /tmp/retroarch")
+        self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
+        logging.info("INFO: Subprocess running: %s", commandline)
 
     def runcommand_kill(self, including_parent=False):
         """ kill runcommand and child processes if configuration is wrong"""

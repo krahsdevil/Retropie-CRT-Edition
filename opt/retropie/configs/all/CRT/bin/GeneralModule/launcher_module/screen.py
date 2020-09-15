@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, commands, subprocess
+import os, logging, subprocess
 from math import ceil, floor
 
 from launcher_module.core_paths import CRT_MEDIA_PATH, CRT_UTILITY_FILE, CRT_FIXMODES_FILE
@@ -71,7 +71,8 @@ class CRT(object):
     @staticmethod
     def get_screen_resolution():
         commandline = "cat /sys/class/graphics/fb0/virtual_size"
-        output = commands.getoutput(commandline)
+        try: output = subprocess.check_output(commandline, shell=True).decode("utf-8")
+        except: output = ""
         VirtRes = output.replace(',',' ').split(' ')
         RES_X = int(VirtRes[0])
         RES_Y = int(VirtRes[1])

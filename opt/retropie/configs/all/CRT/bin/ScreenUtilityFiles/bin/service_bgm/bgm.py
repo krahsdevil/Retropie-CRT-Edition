@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -24,7 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys, time, random, commands, subprocess, re
+import os, sys, time, random, subprocess, re
 import logging, traceback
 import rpyc
 from threading import Thread
@@ -141,7 +141,7 @@ class BGM(object):
     def _get_random_sequence(self):
         # Create random order for reproduction
         logging.info("INFO: generating random track sequence db")
-        self.m_lTrackCtrl = range(len(self.m_lTrackList))
+        self.m_lTrackCtrl = list(range(len(self.m_lTrackList)))
         random.shuffle(self.m_lTrackCtrl)        
 
     def music_start(self):

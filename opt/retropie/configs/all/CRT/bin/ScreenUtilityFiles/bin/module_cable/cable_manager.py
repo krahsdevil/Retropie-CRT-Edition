@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys, traceback
-import commands, time
+import time
 import logging
 
 sys.dont_write_bytecode = True
@@ -35,8 +35,8 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from controls_mapping import CTRLSMgmt
-from cable_utils import *
+from module_cable.controls_mapping import CTRLSMgmt
+from module_cable.cable_utils import *
 from launcher_module.core_paths import *
 from launcher_module.file_helpers import ini_getlist, generate_random_temp_filename, \
                                          add_line, remove_file, touch_file, ini_get, \

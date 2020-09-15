@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os, sys, time, math
-import subprocess, commands
+import subprocess
 import logging
 import pygame
 

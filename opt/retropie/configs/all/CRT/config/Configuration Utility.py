@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -25,4 +25,4 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os, sys, traceback
 
-os.system('python /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_config/config.py 2>&1 | tee -a /dev/shm/backtrace.log')
+os.system('python3 /opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_config/config.py 2>&1 | tee -a /dev/shm/backtrace.log')

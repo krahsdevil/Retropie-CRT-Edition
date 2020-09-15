@@ -3,7 +3,7 @@ Description=This service play background music with emulationstionation
 DefaultDependencies=no
 
 [Service]
-ExecStart=/usr/bin/python -u bgm.py
+ExecStart=/usr/bin/python3 -u bgm.py
 WorkingDirectory=/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/service_bgm
 StandardOutput=inherit
 StandardError=inherit

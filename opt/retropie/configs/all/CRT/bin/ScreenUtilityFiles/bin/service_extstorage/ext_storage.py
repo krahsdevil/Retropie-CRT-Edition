@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import os, sys
-import subprocess, commands, re
+import subprocess, re
 import logging, traceback
 import time
 
@@ -107,17 +107,19 @@ class USBAutoService(object):
         try: self.prev_scan
         except: self.prev_scan = None
 
-        scan = commands.getoutput("lsblk")
+        command = "lsblk"
+        try: scan = subprocess.check_output(command, shell=True).decode("utf-8")
+        except: scan = None
         if scan != self.prev_scan:
             self.m_bChanges = True
             p_sCMDString = "find /dev/disk -ls | grep /%s"
             p_sOutputMNT = [(item.split()[0].replace("├─", "").replace("└─", ""),
                              item[item.find("/"):]) for item in subprocess.check_output(
-                             ["lsblk"]).split("\n") if "/" in item]
+                             ["lsblk"]).decode("utf-8").split("\n") if "/" in item]
             
             for item in p_sOutputMNT:
                 try:
-                    p_sOutputUSB = subprocess.check_output(["/bin/bash", "-c", p_sCMDString % item[0]])
+                    p_sOutputUSB = subprocess.check_output(["/bin/bash", "-c", p_sCMDString % item[0]]).decode("utf-8")
                 except:
                     p_sOutputUSB = ""
                 if 'usb' in p_sOutputUSB:
@@ -364,11 +366,14 @@ class USBAutoService(object):
 
     def _get_es_uptime(self):
         commandline = 'ps -Ao comm,etime | grep -i emulationstatio'
-        output = commands.getoutput(commandline)
-        output = re.sub(r' +', " ", output).split('\n')
+        try:
+            output = subprocess.check_output(commandline, shell=True).decode("utf-8")
+            output = re.sub(r' +', " ", output).split('\n')
+        except: output = None
         uptime = []
         for line in output:
-            uptime.append(self._get_seconds(line.strip().split(' ')[1]))
+            if "emulationstatio" in line and ":" in line:
+                uptime.append(self._get_seconds(line.strip().split(' ')[1]))
         return min(uptime)
 
     def _get_seconds(self, p_sTime):

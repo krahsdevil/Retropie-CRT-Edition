@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -26,7 +26,7 @@ import os, logging
 import hashlib, shutil, random, re
 import xml.etree.ElementTree as ET
 
-from .core_paths import TMP_LAUNCHER_PATH, CRT_ROOT_PATH, ES_CFG_FILE
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_ROOT_PATH, ES_CFG_FILE
 
 def remove_line(p_sFile, p_sRemoveMask):
     if not os.path.isfile(p_sFile):
@@ -123,7 +123,7 @@ def get_xml_value_esconfig(p_sFindMask, p_sFile = ES_CFG_FILE):
         pass
     # create root to parse as regular xml
     if not p_bParsed:
-        file = filter(None, open(p_sFile, "r").read().splitlines())
+        file = list(filter(None, open(p_sFile, "r").read().splitlines()))
         for line in file:        
             if "xml" in line and "version" in line:
                 file.remove(line)
@@ -162,7 +162,7 @@ def set_xml_value_esconfig(p_sFindMask, p_sValue, p_sFile = ES_CFG_FILE):
         pass
     # create root to parse as regular xml
     if not p_bParsed:
-        file = filter(None, open(p_sFile, "r").read().splitlines())
+        file = list(filter(None, open(p_sFile, "r").read().splitlines()))
         for line in file:        
             if "xml" in line and "version" in line:
                 file.remove(line)
@@ -175,7 +175,7 @@ def set_xml_value_esconfig(p_sFindMask, p_sValue, p_sFile = ES_CFG_FILE):
         try:
             if child.attrib["name"] == p_sFindMask:
                 p_sValueToChange = child.attrib["value"]
-                p_sLineToFind = ET.tostring(child).strip()
+                p_sLineToFind = ET.tostring(child).decode("utf-8").strip()
                 break
         except:
             pass

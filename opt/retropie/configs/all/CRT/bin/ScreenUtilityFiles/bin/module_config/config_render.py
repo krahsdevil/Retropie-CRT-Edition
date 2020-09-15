@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -311,6 +311,6 @@ class Table(object):
         height = (self.height/ndeg) + 1
         cont = 0
         for y in range(0, self.height, height):
-            color = map(lambda x: x - (8 * cont), p_lBaseColor)
+            color = tuple(map(lambda x: x - (8 * cont), p_lBaseColor))
             pygame.draw.rect(self.img, color, (0,y, self.width, height) )
             cont += 1

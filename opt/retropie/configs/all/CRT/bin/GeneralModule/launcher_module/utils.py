@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import os, subprocess, commands
+import os, subprocess, shlex
 import time, imp, re, logging
 import pygame
 
@@ -64,7 +64,8 @@ def something_is_bad(infos,infos2):
 def get_screen_resolution():
     """ main function to get screen resolution """
     commandline = "cat /sys/class/graphics/fb0/virtual_size"
-    output = commands.getoutput(commandline)
+    try: output = subprocess.check_output(commandline, shell=True).decode("utf-8")
+    except: output = ""
     VirtRes = output.replace(',',' ').split(' ')
     RES_X = int(VirtRes[0])
     RES_Y = int(VirtRes[1])
@@ -122,14 +123,20 @@ def check_process(p_sProcess, p_iTimes = 1):
     if type(p_sProcess) is list:
         for proc in p_sProcess:
             line = commandline + proc
-            output = commands.getoutput(line)
-            output = re.sub(r' +', " ", output).strip().split('\n')
-            if proc in output and len(output) >= p_iTimes: return True
+            try:
+                output = subprocess.check_output(line, shell=True).decode("utf-8")
+                output = re.sub(r' +', " ", output).strip().split('\n')
+                if proc in output and len(output) >= p_iTimes: return True
+            except Exception as e:
+                pass
     elif type(p_sProcess) is str:
         line = commandline + p_sProcess
-        output = commands.getoutput(line)
-        output = re.sub(r' +', " ", output).strip().split('\n')
-        if p_sProcess in output and len(output) >= p_iTimes: return True
+        try:
+            output = subprocess.check_output(line, shell=True).decode("utf-8")
+            output = re.sub(r' +', " ", output).strip().split('\n')
+            if p_sProcess in output and len(output) >= p_iTimes: return True
+        except Exception as e:
+            pass
     return False
    
 def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
@@ -156,14 +163,18 @@ def wait_process(p_sProcess, p_sState = 'stop', p_iTimes = 1, p_iWaitScs = 1):
 
 def module_loaded(p_sModule):
     """ Return True if module is loaded """
-    sOutput = commands.getoutput('lsmod | grep %s' % p_sModule)
+    command = 'lsmod | grep %s' % p_sModule
+    try: sOutput = subprocess.check_output(command, shell=True).decode("utf-8")
+    except: sOutput = ""
     if p_sModule in sOutput:
         return True
     return False
 
 def module_exists(p_sModule):
     """ Return True if module exists/installed """
-    sOutput = commands.getoutput('modinfo %s' % p_sModule)
+    command = 'modinfo %s' % p_sModule
+    try: sOutput = subprocess.check_output(command, shell=True).decode("utf-8")
+    except: sOutput = ""
     if not 'error' or not 'ERROR' in sOutput:
         return True
     return False
@@ -179,10 +190,12 @@ def get_side():
 
 def set_procname(p_sProcName):
 	from ctypes import cdll, byref, create_string_buffer
-	libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
+	libc = cdll.LoadLibrary('libc.so.6')            #Loading a 3rd party library C
 	buff = create_string_buffer(len(p_sProcName)+1) #Note: One larger than the name (man prctl says that)
-	buff.value = p_sProcName                 #Null terminated string as it should be
-	libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious value 16 & arg[3..5] are zero as the man page says.
+	buff.value = p_sProcName.encode('utf-8')        #Null terminated string as it should be
+	libc.prctl(15, byref(buff), 0, 0, 0)            #Refer to "#define" of "/usr/include/linux/prctl.h" 
+                                                    #for the misterious value 16 & arg[3..5] are zero as
+                                                    #the man page says.
     
 class HideScreen(object):
     """ Class for hide the screen filling with a color """
@@ -289,7 +302,8 @@ class ra_version_fixes():
                     logging.info("INFO: found hash in db: {%s} {%s}" % \
                                 (self.m_sRAHash, self.m_sRAVersion))
                     break
-            except: pass
+            except Exception as e:
+                logging.info("ERROR: %s" % str(e))
         if not self.m_sRAVersion:
             self._add_ra_version_to_db()
 
@@ -302,11 +316,18 @@ class ra_version_fixes():
                      "{%s} {%s}" % (self.m_sRAHash, self.m_sRAVersion))
 
     def get_ra_version(self):
-        output = commands.getoutput("%s --version" % RA_BIN_FILE)
-        for line in output.splitlines():
-            lValues = line.strip().split(' ')
-            if 'RetroArch' in lValues[0]:
-                return lValues[5]
+        OUTPUT_FILE = "/dev/shm/rav.log"
+        command = RA_BIN_FILE + " --version"
+        command += " > %s 2>&1" % OUTPUT_FILE
+        command += " && cat %s" % OUTPUT_FILE
+        os.system('rm "%s" > /dev/null 2>&1' % OUTPUT_FILE)
+        output = subprocess.check_output(command, shell=True).decode("utf-8")
+        output = re.sub(r' +', " ", output).strip()
+        output = output.replace('-', '').replace('\n', '')
+        if 'retroarch' in output.lower():
+            lValues = output.strip().split(' ')
+            for value in lValues:
+                if "." in value and "v" in value: return value
 
     def _apply_fixes(self):
         self._ra_aspect_ratio()

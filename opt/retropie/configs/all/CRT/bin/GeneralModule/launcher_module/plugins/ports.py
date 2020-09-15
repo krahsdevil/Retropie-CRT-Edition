@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -47,16 +47,34 @@ class ports(emulator):
         with open(self.m_sFilePath, "r") as f:
             for line in f:
                 if "_PORT_" in line:
-                    self.p_sPort = line.split("_PORT_")[1].strip()
-                    self.p_sPort = re.sub(r' +', " ", self.p_sPort).split(' ')[0].strip()
+                    string = line.split("_PORT_")[1].strip()
+                    self.p_sPort = re.sub(r' +', " ", string).split(' ')[0].strip()
                     self.p_sPort = self.p_sPort.replace('"', '')
-                    self.p_sPort = self.p_sPort.replace('=',' ')
+                    self.p_sPort = self.p_sPort.replace("'",'')
+                    # try to get if rom is needed on bash batch launcher
+                    try: 
+                        self.p_sPortROM = re.sub(r' +', " ", string).split(' ')[1:]
+                        self.p_sPortROM = " ".join(self.p_sPortROM)
+                        self.p_sPortROM = self.p_sPortROM.replace('"', '')
+                        self.p_sPortROM = self.p_sPortROM.replace("'",'')
+                    except Exception as e: 
+                        self.p_sPortROM = ""
                     logging.info("INFO: Port ID: {%s}" % self.p_sPort)
+                    logging.info("INFO: Port ROM: {%s}" % self.p_sPortROM)
                     break
         if not self.p_sPort: self.panic("Don't valid port game")
         p_sPortPath = os.path.join(self.m_sSystem, self.p_sPort, "emulators.cfg")
         self.m_sCfgSystemPath = os.path.join(RETROPIE_CFG_PATH, p_sPortPath)
         logging.info("INFO: emulators.cfg for this port: {%s}" % self.m_sCfgSystemPath)
+
+    def direct_start(self):
+        """ launch_core: run emulator without runcommand!"""
+        if self.m_sFileNameVar and self.m_sFileNameVar in self.m_sCleanLaunch:
+            self.m_sCleanLaunch = self.m_sCleanLaunch.replace(self.m_sFileNameVar, "\"%s\"" % self.p_sPortROM)
+        commandline = self.m_sCleanLaunch
+        if not os.path.exists("/tmp/retroarch"): os.system("mkdir /tmp/retroarch")
+        self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
+        logging.info("INFO: Subprocess running: %s", commandline)
 
     def screen_set(self):
         self.m_oCRT = CRT(self.p_sPort)

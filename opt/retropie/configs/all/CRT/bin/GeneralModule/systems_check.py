@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -78,7 +78,7 @@ def check_xml_file(p_sFile):
                              sSystem, "OK"))
                     bCheck = True
         if sCore:
-            sExecLine = "python %s " % CRT_LAUNCHER_FILE
+            sExecLine = "python3 %s " % CRT_LAUNCHER_FILE
             sExecLine += "%%ROM%% %s " % sCore
             sExecLine += "dummy"
             if sExecLine != sCommand and not "force" in sCommand :
@@ -95,7 +95,7 @@ def check_miss_systems(p_sFile):
     global bReboot
     global lSysInfo
     bCheck = False
-    lCheckedSys = [val['check'] for key, val in SYSTEMS.iteritems()]
+    lCheckedSys = [val['check'] for key, val in SYSTEMS.items()]
     sNewFile = ""
     if False in lCheckedSys:
         with open(p_sFile, "r+") as file:
@@ -103,7 +103,7 @@ def check_miss_systems(p_sFile):
             file.seek(0)
             for line in sFile:
                 if "</systemList>" in line:  # ending tag in CFG
-                    for key, val in SYSTEMS.iteritems():
+                    for key, val in SYSTEMS.items():
                         if not val['check'] and val['xml']:
                             sNewFile += val['xml']
                             lSysInfo.append(("-- APPEND config for %s" % \

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, commands, shutil
+import os, logging, shutil
 from launcher_module.core_paths import CRT_RA_MAIN_CFG_PATH, TMP_LAUNCHER_PATH
 from launcher_module.emulator import emulator
 from launcher_module.utils import ra_version_fixes

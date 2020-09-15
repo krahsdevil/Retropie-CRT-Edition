@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -177,7 +177,7 @@ class main_sub1_sub2(object):
         if p_iJoy == None:
             return self.opt1_datas()
         if p_iJoy & CRT_OK:
-            commandline = "/usr/bin/python %s system60" % PATTERN_LAUNCHER_FILE
+            commandline = "/usr/bin/python3 %s system60" % PATTERN_LAUNCHER_FILE
             self._launch_app(commandline)
 
     def opt1_datas(self):
@@ -191,7 +191,7 @@ class main_sub1_sub2(object):
         if p_iJoy == None:
             return self.opt2_datas()
         if p_iJoy & CRT_OK:
-            commandline = "/usr/bin/python %s test60" % PATTERN_LAUNCHER_FILE
+            commandline = "/usr/bin/python3 %s test60" % PATTERN_LAUNCHER_FILE
             self._launch_app(commandline)
 
     def opt2_datas(self):

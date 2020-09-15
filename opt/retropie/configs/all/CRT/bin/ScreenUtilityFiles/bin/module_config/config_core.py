@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -285,7 +285,7 @@ class core(object):
             self.m_iInfo_rgt = 219
             self.m_iMax_Lines = 15
 
-        self.m_lScreenCenter = map(lambda x: x/2, self.m_lRES)
+        self.m_lScreenCenter = tuple(map(lambda x: x/2, self.m_lRES))
         self.m_iSide = p_iSide
 
     def _init_sounds(self):

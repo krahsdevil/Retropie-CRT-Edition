@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, math, commands
+import os, logging, math
 from distutils.version import LooseVersion
 from launcher_module.core_paths import RETROPIE_CFG_PATH, TMP_LAUNCHER_PATH, \
                                        CRT_RA_MAIN_CFG_PATH, CRT_DB_PATH
@@ -66,14 +66,17 @@ class arcade(emulator):
     m_lOptEnc = [("Play CROPPED", "CROPPED"),
                  ("Play FORCED", "FORCED")]
 
-    def start(self):
-        self.runcommand_start()
-        self.emulatorcfg_check_or_die()
-        self.screen_set()
-
     def screen_prepare(self):
         self.m_iSide = get_side()
         self.core_round_checks()
+
+    def start(self):
+        if self.m_bFastBoot: 
+            super(arcade, self).start()
+        else:
+            self.runcommand_start()
+            self.emulatorcfg_check_or_die()
+            self.screen_set()
 
     def screen_set(self):
         self.core_round_checks()

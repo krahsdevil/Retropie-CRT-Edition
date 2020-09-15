@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands
+import sys, os, threading, time, subprocess
 import logging, re, pygame
 
 sys.dont_write_bytecode = False
@@ -226,8 +226,11 @@ class main_sub5_sub1(object):
         except: self.m_oEXTSTGClass = external_storage()
         value = self.m_oEXTSTGClass.check_connected()
         if value: disk = value
-        tmp = commands.getoutput('df -h | grep %s' % disk)
-        tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+        try:
+            command = 'df -h | grep %s' % disk
+            tmp = subprocess.check_output(command, shell=True).decode("utf-8")
+            tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+        except: tmp = ""
         try:
             space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
             if not '%' in tmp[4]: space = "CALCULATING..."

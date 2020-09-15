@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, sys, re, time, logging
-import commands, filecmp
+import filecmp, subprocess
 import xml.etree.ElementTree as ET
 
 sys.dont_write_bytecode = True
@@ -282,7 +282,8 @@ class CRTdaemon(object):
         p_bLoaded = False
         p_bRunning = False
         p_sCommand = 'systemctl list-units --all | grep \"%s\"' % p_sService
-        p_sOutput = commands.getoutput(p_sCommand)
+        try: p_sOutput = subprocess.check_output(p_sCommand, shell=True).decode("utf-8")
+        except: p_sOutput = ""
         if p_sService in p_sOutput:
             p_bLoaded = True
             if 'running' in p_sOutput:

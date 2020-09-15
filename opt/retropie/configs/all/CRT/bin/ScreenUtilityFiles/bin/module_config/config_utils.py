@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, imp, math, re, time, shlex
-import logging, subprocess, commands
+import logging, subprocess
 import xml.etree.ElementTree as ET
 import socket, fcntl, struct
 import pygame
@@ -126,19 +126,26 @@ def get_ip_address(p_sIFname):
         else: return "Not Available"
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
+        # Get MAC address
+        #addr = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', p_sIFname[:15].encode('utf-8')))
+        #addr = ''.join(['%02x:' % b for b in addr[18:24]])[:-1]
+        # Get IP address
         addr = socket.inet_ntoa(fcntl.ioctl(s.fileno(),
-              0x8915,  # SIOCGIFADDR
-              struct.pack('256s', p_sIFname[:15]))[20:24])
-    except: addr = "Disconnected"
+               0x8915, # SIOCGIFADDR
+               struct.pack('256s', p_sIFname[:15].encode('utf-8')))[20:24])
+    except Exception as e:
+        addr = "Disconnected"
 
     if p_sIFname == "wlan0" and addr == "Disconnected":
         command = "iwgetid -r"
-        output = commands.getoutput(command).strip()
+        try: output = subprocess.check_output(command, shell=True).decode("utf-8").strip()
+        except: output = None
         if output: addr = "Connected"
 
     if p_sIFname == "eth0":
         command = "sudo ethtool %s | grep \"Link detected\"" % p_sIFname
-        output = commands.getoutput(command).strip()
+        try: output = subprocess.check_output(command, shell=True).decode("utf-8").strip()
+        except: output = "no"
         if addr != "Disconnected":
             if "no" in output.lower(): addr = "Disconnected"
         elif addr == "Disconnected":
@@ -165,7 +172,8 @@ def get_themes():
         for item in content:
             if os.path.isdir(os.path.join(path, item)):
                 p_lList.append(item)
-    except: pass
+    except Exception as e:
+        logging.info("ERROR: %s" % str(e))
     if p_lList: p_lList.sort()
     return p_lList
 
@@ -321,10 +329,17 @@ class wifi(object):
     def detect(self, p_sValue):
         if p_sValue != "[A:SCAN]": return
         commandline = "sudo iw wlan0 scan | egrep 'SSID:|signal:'"
-        output = commands.getoutput(commandline).split('\n')
+        try: output = subprocess.check_output(commandline, shell=True).decode("utf-8").split('\n')
+        except Exception as e:
+            logging.info("ERROR: %s" % str(e))
+            output = "command failed: Network is down (-100)"
         if "command failed: Network is down (-100)" in output:
+            logging.info("ERROR: fixing wifi, unblocking")
             os.system('sudo rfkill unblock wifi; sudo rfkill unblock all')
-            output = commands.getoutput(commandline).split('\n')
+            try: output = subprocess.check_output(commandline, shell=True).decode("utf-8").split('\n')
+            except Exception as e:
+                logging.info("ERROR: %s" % str(e))
+                output = ""
         # clean output command
         p_dSSIDs = {}
         for line in output:
@@ -339,7 +354,8 @@ class wifi(object):
                             if float(p_dSSIDs[name]) < float(sig[1]):
                                 p_dSSIDs[name] = sig[1]
                         else: p_dSSIDs[name] = sig[1]
-                except: pass
+                except Exception as e:
+                    logging.info("ERROR: %s" % str(e))
         #clean list
         p_lSSIDs = []
         for ssid in p_dSSIDs:
@@ -392,7 +408,10 @@ class wifi(object):
         p_sPWDFix = p_sPWDFix.replace(' ', '\\ ')
         p_sPWDFix = p_sPWDFix.replace("'", '\xe2\x80\x99')
         p = subprocess.Popen('wpa_passphrase ' + p_sSSIDFix + ' ' + p_sPWDFix, stdout=subprocess.PIPE, shell=True)
-        output, err = p.communicate()
+        #output, err = p.communicate()
+        #output = output.decode("utf-8")
+        #err = err.decode("utf-8")
+        output = p.communicate()[0].decode("utf-8")
         p.wait()
         if 'network={' in output:
             with open(self.TMP_FILE, 'w') as f:
@@ -409,7 +428,10 @@ class wifi(object):
         os.system('sudo cp %s %s > /dev/null 2>&1' %(self.TMP_FILE, self.WPA_FILE))
         os.system("sudo rm %s > /dev/null 2>&1" % self.TMP_FILE)
         p = subprocess.Popen('wpa_cli -i wlan0 reconfigure', stdout=subprocess.PIPE, shell=True)
-        output, err = p.communicate()
+        #output, err = p.communicate()
+        #if output: output = output.decode("utf-8")
+        #if err: err = err.decode("utf-8")
+        output = p.communicate()[0].decode("utf-8")
         p.wait()
         p_iTime = time.time()
         p_bCheck = False
@@ -437,12 +459,14 @@ class wifi(object):
         os.system('sudo cp %s %s > /dev/null 2>&1' %(self.TMP_FILE, self.WPA_FILE))
         os.system("sudo rm %s > /dev/null 2>&1" % self.TMP_FILE)
         p = subprocess.Popen('wpa_cli -i wlan0 reconfigure', stdout=subprocess.PIPE, shell=True)
-        output, err = p.communicate()
+        #output, err = p.communicate()
+        #output = p.communicate()[0].decode("utf-8")
         p.wait()
 
     def status(self):
         commandline = "iwgetid -r"
-        output = commands.getoutput(commandline).strip()
+        try: output = subprocess.check_output(commandline, shell=True).decode("utf-8")
+        except: output = None
         if output: return output
         return False
 
@@ -595,7 +619,9 @@ class sys_volume(object):
         return p_lValues
 
     def get_vol(self):
-        line = commands.getoutput('amixer -M sget PCM | grep %')
+        command = 'amixer -M sget PCM | grep %'
+        try: line = subprocess.check_output(command, shell=True).decode("utf-8")
+        except: line = None
         line = line.strip().replace('[', ''). replace(']', '')
         line = re.sub(r' +', " ", line)
         line = line.split(' ')
@@ -631,7 +657,8 @@ class external_storage(object):
         self.m_bSrvExist = False
         self.m_bSrvRun = False
         sCommand = 'systemctl list-units --all | grep \"%s\"' % CRT_EXTSTRG_SRV_FILE
-        sCheckService = commands.getoutput(sCommand)
+        try: sCheckService = subprocess.check_output(sCommand, shell=True).decode("utf-8")
+        except: sCheckService = ""
 
         if CRT_EXTSTRG_SRV_FILE in sCheckService:
             self.m_bSrvExist = True
@@ -675,7 +702,9 @@ class external_storage(object):
                     dev = line[0]
                 if os.path.exists(dev):
                     return disk
-            except: pass
+            except: 
+                raise
+                pass
         return False
 
     def eject(self):
@@ -717,7 +746,8 @@ class background_music(object):
         self.m_bSrvExist = False
         self.m_bSrvRun = False
         sCommand = 'systemctl list-units --all | grep \"%s\"' % CRT_BGM_SRV_FILE
-        sCheckService = commands.getoutput(sCommand)
+        try: sCheckService = subprocess.check_output(sCommand, shell=True).decode("utf-8")
+        except: sCheckService = ""
 
         if CRT_BGM_SRV_FILE in sCheckService:
             self.m_bSrvExist = True
@@ -779,7 +809,7 @@ class saveboot(object):
         self.m_sEnv = ini_get(CRT_UTILITY_FILE, "default")
         self.m_lBootTimings = ini_getlist(CRT_UTILITY_FILE,
                                           "%s_timings" % self.m_sEnv)
-        self.m_lBootTimings = map(int, self.m_lBootTimings)
+        self.m_lBootTimings = list(map(int, self.m_lBootTimings))
         if not self._apply_fix_tv():
             logging.info("INFO: not fix tv to apply")
         logging.info("INFO: default system resolution: %s"%self.m_sEnv)
@@ -790,7 +820,7 @@ class saveboot(object):
             return False
         DiffTimings = ini_getlist(CRT_FIXMODES_FILE,
                                   "%s_%s"%(sSelected, self.m_sEnv))
-        DiffTimings = map(int, DiffTimings)
+        DiffTimings = list(map(int, DiffTimings))
         if len(DiffTimings) != 17: #If not 17 timings, not valid
             return False
         i = 0
@@ -885,7 +915,7 @@ class saveboot(object):
 
     def _write_boot_timing(self):
         p_sBootTimings = self.m_lBootTimings
-        p_sBootTimings = map(str, p_sBootTimings)
+        p_sBootTimings = list(map(str, p_sBootTimings))
         p_sBootTimings = " ".join(p_sBootTimings)
         logging.info("INFO: calculated resolution to add in config.txt: %s"% \
                      p_sBootTimings)

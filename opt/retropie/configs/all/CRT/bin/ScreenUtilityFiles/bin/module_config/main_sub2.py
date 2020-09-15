@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -224,7 +224,7 @@ class main_sub2(object):
         p_lLines = {'text': "EQ Preset",
                     'color_val': "type_color_1"}
         m_lOpt = self.m_oSYSVOLClass.get_presets()
-        m_lOpt = map(lambda x:x.title(),m_lOpt)
+        m_lOpt = list(map(lambda x:x.title(),m_lOpt))
         p_lLines.update({'options': m_lOpt})
         value = (ini_get(CRT_UTILITY_FILE, "audio_presets")).title()
         p_lLines.update({'value': value})

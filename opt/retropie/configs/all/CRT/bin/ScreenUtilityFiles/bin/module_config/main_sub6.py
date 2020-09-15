@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -20,7 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time, commands, re
+import sys, os, threading, time, re, subprocess
 import logging, pygame
 
 sys.dont_write_bytecode = False
@@ -197,7 +197,8 @@ class main_sub6(object):
 
     def opt3_datas(self):
         p_lLines = {'color_val': "type_color_1"}
-        value = commands.getoutput('cat /proc/device-tree/model')
+        command = 'cat /proc/device-tree/model'
+        value = subprocess.check_output(command, shell=True).decode("utf-8")
         value = value.replace('Raspberry Pi', '')
         value = value.replace(' Model ', '')
         value = value.replace(' Plus', '+')
@@ -217,8 +218,11 @@ class main_sub6(object):
         p_lLines = {'text': "Storage SD",
                     'color_val': "type_color_1"}
         disk = "/dev/root"
-        tmp = commands.getoutput('df -h | grep %s' % disk)
-        tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+        try:
+            command = 'df -h | grep %s' % disk
+            tmp = subprocess.check_output(command, shell=True).decode("utf-8")
+            tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+        except: tmp = ""
         try:
             space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
             if not '%' in tmp[4]: space = "CALCULATING..."
@@ -243,8 +247,11 @@ class main_sub6(object):
                 line = new_file[0]
                 disk = line.strip().split(" ")[0]
         if disk:
-            tmp = commands.getoutput('df -h | grep %s' % disk)
-            tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+            try:
+                command = 'df -h | grep %s' % disk
+                tmp = subprocess.check_output(command, shell=True).decode("utf-8")
+                tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+            except: tmp = ""
             try:
                 space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
                 if not '%' in tmp[4]: space = "CALCULATING..."
@@ -262,7 +269,7 @@ class main_sub6(object):
 
     def opt6_datas(self):
         p_lLines = {'color_val': "type_color_1"}
-        temp = commands.getoutput('vcgencmd measure_temp')
+        temp = subprocess.check_output('vcgencmd measure_temp', shell=True).decode("utf-8")
         temp = temp.strip().split("=")[1]
         temp = temp.replace("'", "\xb0")
         p_lLines.update({'text': "Temperature"})

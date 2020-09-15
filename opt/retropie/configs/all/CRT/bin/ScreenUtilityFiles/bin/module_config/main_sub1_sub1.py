@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -253,7 +253,7 @@ class main_sub1_sub1(object):
             options.append(str(i) + "m")
         p_lLines.update({'options': options})
         value = get_xml_value_esconfig("ScreenSaverTime")
-        p_lLines.update({'value': str(int(value) / 60000) + "m"})
+        p_lLines.update({'value': str(int(int(value) / 60000)) + "m"})
         return p_lLines
 
     def opt6(self, p_iJoy = None, p_iLine = None):

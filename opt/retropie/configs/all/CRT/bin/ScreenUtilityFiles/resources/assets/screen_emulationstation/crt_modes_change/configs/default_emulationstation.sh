@@ -31,7 +31,7 @@ function rotate_screen ()
 
 	if [ -f $MODE_FBOOT_FILE ]; then
 		rm -f $MODE_FBOOT_FILE
-		python $CABLE_SELECTOR_FILE
+		python3 $CABLE_SELECTOR_FILE
 	fi
 }
 

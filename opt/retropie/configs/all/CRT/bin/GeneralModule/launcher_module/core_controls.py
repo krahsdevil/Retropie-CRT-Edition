@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -25,7 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, logging, time, threading, commands
+import os, logging, time, threading
 import pygame
 
 from .core_paths import RETROPIE_CFG_PATH
@@ -120,7 +120,8 @@ class joystick(object):
             if self.m_iNumJoys > p_iCount:
                 for joy in p_lJoyRem:
                     try: self._remove(joy)
-                    except: pass
+                    except Exception as e:
+                        logging.info("ERROR: %s" % str(e))
 
             # if there is LESS joys configured than counted            
             elif self.m_iNumJoys < p_iCount:
@@ -134,20 +135,21 @@ class joystick(object):
                 try:
                     for joy in p_lJoyAdd:
                         self._initialize(joy)
-                except: pass
+                except Exception as e: pass
 
             # detecting how many joystick are loaded in pygame
             self.m_iNumJoys = 0
             for j in range(0, p_iJoyNum):
                 try:
                     if pygame.joystick.Joystick(j).get_init(): self.m_iNumJoys += 1
-                except: pass
+                except Exception as e: pass
             self.m_oClock.tick(20)
             pygame.time.wait(0)
 
         for i in range(0, len(self.m_lJoys) + 1):
             try: pygame.joystick.Joystick.quit(i)
-            except: pass
+            except Exception as e:
+                logging.info("ERROR: %s" % str(e))
         logging.info("INFO: unloaded joystick daemon")
 
     def quit(self):
@@ -266,7 +268,7 @@ class joystick(object):
     def _get_screen_resolution(self):
         """ main function to get screen resolution """
         commandline = "cat /sys/class/graphics/fb0/virtual_size"
-        output = commands.getoutput(commandline)
+        output = subprocess.check_output(commandline, shell=True).decode("utf-8")
         VirtRes = output.replace(',',' ').split(' ')
         RES_X = int(VirtRes[0])
         RES_Y = int(VirtRes[1])
