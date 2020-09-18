@@ -36,7 +36,8 @@ from config_utils import explore_list, find_submenus, load_submenu, \
                          press_back
 from keyb.keyboard import keyboard
 from launcher_module.file_helpers import ini_get
-from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE, \
+                                       CRT_BGM_PORT
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -267,7 +268,7 @@ class main_sub2(object):
                 new = int(new.replace("%", ''))
                 try:
                     try: self.con.root
-                    except: self.con = rpyc.connect('localhost', 18861)
+                    except: self.con = rpyc.connect('localhost', CRT_BGM_PORT)
                     vol = self.con.root.change_vol(new)
                     if vol == new:
                         self.m_lLines[p_iLine]['value'] = str(new) + "%"
