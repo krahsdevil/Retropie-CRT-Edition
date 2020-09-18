@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os, sys, psutil
+import os, sys, psutil, rpyc
 import subprocess, time
 import logging, re, shlex
 
@@ -79,6 +79,7 @@ class launcher(object):
         if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
             logging.info("INFO: fast boot is enabled")
             self.m_bFastBoot = True
+        self.oled_info()
         self.pre_configure() # user virtual method get init values
         self.configure() # rom name work
         self.post_configure() # user virtual method for post configure
@@ -120,6 +121,7 @@ class launcher(object):
         time_elapsed = int(time.time() - time_start)
         self.statistics(time_elapsed)
         if self.m_bFastBoot: self.change_cpu_governor("default")
+        self.oled_info("end")
         logging.info("INFO: game time: %s" % time_elapsed)
         logging.info("INFO: process end")
 
@@ -286,6 +288,19 @@ class launcher(object):
         command += " >> /dev/null 2>&1"
         os.system(command)
         logging.info("INFO: CPU scaling governor changed to {%s}" % p_sGovernor)
+
+    def oled_info(self, p_sStatus = "init"):
+        try:
+            try: self.con.root
+            except: self.con = rpyc.connect('localhost', CRT_OLED_PORT)
+            if p_sStatus == "init":
+                self.con.root.game_mode(self.m_sFileName, self.m_sSystem, 
+                                        time.time(), "game_init")
+            elif p_sStatus == "end":
+                self.con.root.game_mode_off("game_over")
+        except Exception as e: 
+            logging.info("ERROR: %s" % e)
+            logging.info("ERROR: Can't connect with OLED display service")
 
     def runcommand_kill(self, including_parent=False):
         """ kill runcommand and child processes if configuration is wrong"""

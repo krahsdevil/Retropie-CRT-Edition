@@ -105,6 +105,7 @@ CRT_UTILITY_FILE = os.path.join(CRT_CONFIG_PATH, "utility.cfg")
 CRT_NETPLAY_FILE = os.path.join(RETROPIE_CFG_PATH, "all/retronetplay.cfg")
 CRT_AUTOFREQ_FILE = os.path.join(CRT_CONFIG_PATH, "autofreqdb.cfg")
 CRT_STATS_FILE = os.path.join(CRT_CONFIG_PATH, "statistics.cfg")
+CRT_OLED_FILE = os.path.join(CRT_CONFIG_PATH, "display.cfg")
 CRT_ES_SYSTEMDB_FILE = os.path.join(CRT_BIN_PATH, "GeneralModule/systems_check_db.py")
 
 # CRT CONFIGURATIONS FOR RETROARCH
@@ -147,6 +148,7 @@ CRT_EXTSTRG_TRIG_MNT_PATH = os.path.join(CRT_EXTSTRG_PATH, "mounted.cfg")
 CRT_EXTSTRG_TRIG_UMNT_PATH = os.path.join(CRT_EXTSTRG_PATH, "umounted.cfg")
 
 # CRT SERVICE BACKGROUND MUSIC
+CRT_BGM_PORT = 18861
 CRT_BGM_PATH = os.path.join(CRT_MODULES_PATH, "service_bgm")
 CRT_BGM_CORE_FILE = "bgm.py"
 CRT_BGM_CORE_PATH = os.path.join(CRT_BGM_PATH, CRT_BGM_CORE_FILE)
@@ -161,9 +163,13 @@ CRT_RGB_CORE_PATH = os.path.join(CRT_RGB_PATH, CRT_RGB_CORE_FILE)
 CRT_RGB_SRV_FILE = "rgb_cable.service"
 CRT_RGB_SRV_PATH = os.path.join(CRT_RGB_PATH, CRT_RGB_SRV_FILE)
 
+# CRT SERVICE OLED DISPLAY
+CRT_OLED_PORT = 18862
+
 # PYTHON SCRIPTS PROCESSES NAME
 PNAME_LAUNCHER = "CRTLauncher"
 PNAME_CONFIG = "CRTconfig"
 PNAME_EXTSTRG = "CRTautomnt"
 PNAME_BGM = "CRTbgm"
 PNAME_RGBCABLE = "CRTcable"
+PNAME_OLED = "CRTDisplay"
