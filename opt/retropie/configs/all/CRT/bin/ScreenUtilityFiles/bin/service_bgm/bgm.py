@@ -318,7 +318,7 @@ class VolBGMService(rpyc.Service):
 if __name__ == '__main__':
     try:
         oBGM = BGM()
-        server = ThreadedServer(VolBGMService, port = 18861)
+        server = ThreadedServer(VolBGMService, port = CRT_BGM_PORT)
         t = Thread(target = server.start)
         t.daemon = True
         t.start()
