@@ -120,7 +120,7 @@ class CableMNGR(object):
                                            ['dpi_output_format', '6'],
                                            ['dtoverlay', 'pwm-2chan,pin=18,func=2,pin2=19,func2=2']]}
         p_lCfg02   = {'CRT-CABLE'       : [['crt_cable_type', '1']]}
-        p_lCfg03   = {'CRT-I2C0'        : [['dtparam', 'i2c_vc=on'],
+        p_lCfg03   = {'CRT-I2C0'        : [['dtparam', 'i2c_vc=on,i2c_vc_baudrate=1000000'],
                                            ['dtoverlay', 'i2c-gpio,i2c_gpio_sda=10,i2c_gpio_scl=11']]}
         p_lCfg04   = {'CRT-VGA666-MODE' : [['dtoverlay', 'rgb-pi']]}
 
