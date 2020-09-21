@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, imp, math, re, time, shlex
-import logging, subprocess
+import logging, subprocess, rpyc
 import xml.etree.ElementTree as ET
 import socket, fcntl, struct
 import pygame
@@ -41,8 +41,10 @@ from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
                                        CRT_BGM_SRV_PATH, CRT_BGM_CORE_PATH, TMP_LAUNCHER_PATH, \
                                        ES_SYSTEMS_PRI_FILE, RETROPIE_MENU, RETROPIE_HOME_PATH, \
                                        RASP_BOOTCFG_FILE, RETROPIE_CFG_PATH, \
-                                       ES_THEMES_PRI_PATH, ES_THEMES_SEC_PATH, CRT_DB_SYSTEMS_FILE
-from launcher_module.utils import check_process, touch_file, get_side
+                                       ES_THEMES_PRI_PATH, ES_THEMES_SEC_PATH, CRT_DB_SYSTEMS_FILE, \
+                                       CRT_OLED_SRV_PATH, CRT_OLED_CORE_PATH, CRT_OLED_PORT, \
+                                       CRT_OLED_FILE, CRT_OLED_SRV_FILE
+from launcher_module.utils import check_process, touch_file, get_side, md5_file
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set, remove_line
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
@@ -728,11 +730,8 @@ class external_storage(object):
 
 class background_music(object):
     """ virtual class for Background Music enable/disable """
-    m_sService = ""
     m_bSrvExist = False
     m_bSrvRun = False
-    m_bUSBMounted = False
-    m_sMountedPath = ""
 
     def _check_files(self):
         """ Check if needed service files exists """
@@ -776,6 +775,114 @@ class background_music(object):
             os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' % \
                       CRT_BGM_SRV_FILE)
             self.__clean() # clean trigger files
+            self.check()
+
+    def __clean(self):
+        pass
+
+class oled(object):
+    """ virtual class for piCRT OLED display enable/disable """
+    m_bSrvExist = False
+    m_bSrvRun = False
+    
+    m_iScrINGAME = 0
+    m_iScrINFOCPU = 0
+    m_iScrINFOMEM = 0
+
+    m_sHash_Prev = ""
+
+    m_lOLEDScrns = [{'scr_info_ingame': True, 'time': 0},
+                    {'scr_info_cpu': True, 'time': 0},
+                    {'scr_info_mem': True, 'time': 0},
+                   ]
+
+    def __init__(self):
+        self.get_config()
+
+    def _check_files(self):
+        """ Check if needed service files exists """
+        bCheck01 = os.path.exists(CRT_OLED_SRV_PATH)
+        bCheck02 = os.path.exists(CRT_OLED_CORE_PATH)
+        if bCheck01 and bCheck02:
+            return True
+        return False
+
+    def check(self):
+        self.m_bSrvExist = False
+        self.m_bSrvRun = False
+        sCommand = 'systemctl list-units --all | grep \"%s\"' % CRT_OLED_SRV_FILE
+        try: sCheckService = subprocess.check_output(sCommand, shell=True).decode("utf-8")
+        except: sCheckService = ""
+
+        if CRT_OLED_SRV_FILE in sCheckService:
+            self.m_bSrvExist = True
+        if 'running' in sCheckService:
+            if self.service_connection(): self.m_bSrvRun = True
+        return self.m_bSrvRun
+
+    def get_config(self, m_sScreen = ""):
+        if not os.path.exists(CRT_OLED_FILE): touch_file(CRT_OLED_FILE)
+        p_sHash = md5_file(CRT_OLED_FILE)
+        if p_sHash != self.m_sHash_Prev:
+            for screen in self.m_lOLEDScrns:
+                for item in screen:
+                    if 'scr_' in item:
+                        value = ini_get(CRT_OLED_FILE, item)
+                        if value == False:
+                            value = 0
+                            remove_line(CRT_OLED_FILE, item)
+                            add_line(CRT_OLED_FILE, "%s = 0" % item)
+                        else: value = int(value)
+                        if value > 0: 
+                            screen[item] = True
+                            screen['time'] = value
+                        elif value <= 0: 
+                            screen[item] = False
+                            screen['time'] = 0
+            self.m_sHash_Prev = md5_file(CRT_OLED_FILE)
+        if m_sScreen:
+            for screen in self.m_lOLEDScrns:
+                for item in screen:
+                    if item == m_sScreen:
+                        return screen['time']
+            return 0
+    def service_connection(self):
+        try: 
+            if self.con.root.status(): return True
+        except: 
+            try: 
+                self.con = rpyc.connect('localhost', CRT_OLED_PORT)
+                if self.con.root.status(): return True
+            except: return False
+        return False
+
+    def init(self):
+        self.stop()
+        if self._check_files and not self.check():
+            os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' % \
+                     (CRT_OLED_SRV_PATH, CRT_OLED_SRV_FILE))
+            os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1' % \
+                      CRT_OLED_SRV_FILE)
+            os.system('sudo systemctl enable %s > /dev/null 2>&1' % \
+                      CRT_OLED_SRV_FILE)
+            os.system('sudo systemctl start %s > /dev/null 2>&1' % \
+                      CRT_OLED_SRV_FILE)
+            self.check()
+
+    def stop(self):
+        if self.service_connection(): 
+            self.con.root.quit()
+            while self.service_connection():
+                logging.info("ENBUCLE")
+                time.sleep(0.2)
+        if self._check_files and self.check():
+            os.system('sudo systemctl disable %s > /dev/null 2>&1' % \
+                      CRT_OLED_SRV_FILE)
+            os.system('sudo systemctl stop %s > /dev/null 2>&1' % \
+                      CRT_OLED_SRV_FILE)
+            os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' % \
+                      CRT_OLED_SRV_FILE)
+            self.__clean() 
             self.check()
 
     def __clean(self):

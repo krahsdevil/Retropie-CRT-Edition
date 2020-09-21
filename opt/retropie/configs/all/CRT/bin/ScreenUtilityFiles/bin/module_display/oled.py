@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import os, sys, math, subprocess, time, re, threading
+import os, sys, math, subprocess, time, re, threading, shlex
 import logging, traceback
 import smbus, socket, busio, rpyc
 from rpyc.utils.server import ThreadedServer
@@ -182,6 +182,7 @@ class OLED_Display(object):
                 for item in screen:
                     if 'scr_' in item and screen[item]:
                         if not STOP_SCREEN and not STOP_SERVICE:
+                            logging.info("INFO: show %s screen" % item)
                             try:
                                 if screen['function'](screen['time']): p_bPrevScrMain = False 
                             except Exception as e:
@@ -388,7 +389,7 @@ class OLED_Display(object):
 
         while not STOP_SCREEN and not STOP_SERVICE:
             """ Get CPU current usage """
-            p_sCMD = "top -n1 | awk '/Cpu\(s\):/ {print 100-$8}'"
+            p_sCMD = "top -bn1 | awk '/Cpu\(s\):/ {print 100-$8}'"
             p_sCPU = subprocess.check_output(p_sCMD, shell=True).decode("utf-8")
             p_fCPU = float(p_sCPU.strip())
             """ Get CPU Temperature """
@@ -555,6 +556,7 @@ class OLEDService(rpyc.Service):
                         "wonderswan": "WonderSwan", "wonderswancolor": "WonderSwan Color",
                         "zx81": "Sinclair ZX81", "zxspectrum": "ZX Espectrum",
                        }
+        p_sSystem = p_sSystem.title()
         if p_sSystem.lower() in SYSTEMSDB:
             p_sSystem = SYSTEMSDB[p_sSystem.lower()]
         oLaunch.m_sGM_Game = p_sGame
@@ -568,6 +570,13 @@ class OLEDService(rpyc.Service):
         global INFO_IMG
         STOP_SCREEN = True
         INFO_IMG = "game_over"
+
+    def exposed_status(self):
+        return True
+        
+    def exposed_quit(self):
+        global STOP_SERVICE
+        STOP_SERVICE = True
 
 if __name__ == '__main__':
     STOP_SCREEN = False
