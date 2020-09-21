@@ -112,7 +112,7 @@ class CableMNGR(object):
         """ Create profile for RGB-PI, JAMMA RGB-PI, PICRT and JAMMA PICRT """
         p_lProfile = {'id'   : 1,
                       'label': 'Type 1',
-                      'desc' : 'RGB-Pi/PiCRT',
+                      'desc' : 'RGB-Pi/\u220fCRT',
                       'kbd'   : False,
                       'config': {}}
         p_lCfg01   = {'CRT-SOUND'       : [['dtparam', 'audio=on'],
