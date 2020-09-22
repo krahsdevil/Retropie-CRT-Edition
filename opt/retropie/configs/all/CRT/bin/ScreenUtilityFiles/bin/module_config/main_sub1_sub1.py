@@ -303,8 +303,15 @@ class main_sub1_sub1(object):
                     'es_restart': True}
         value = get_xml_value_esconfig("ThemeSet")
         list = get_themes()
-        p_lLines.update({'value': value})
-        p_lLines.update({'options': list})
+        if not list: 
+            p_lLines.update({'options': None})
+            p_lLines.update({'value': "Updating..."})
+        else: 
+            if not value in list: 
+                value = list[0]
+                set_xml_value_esconfig("ThemeSet", value)
+            p_lLines.update({'options': list})
+            p_lLines.update({'value': value})
         return p_lLines
 
     def opt8(self, p_iJoy = None, p_iLine = None):
