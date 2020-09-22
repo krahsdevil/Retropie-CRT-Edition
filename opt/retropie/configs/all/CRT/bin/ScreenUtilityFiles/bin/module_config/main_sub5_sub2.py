@@ -110,7 +110,8 @@ class main_sub5_sub2(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt1]
+        p_lAutoL = [self.opt1, self.opt2, self.opt3,
+                    self.opt4]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -119,7 +120,8 @@ class main_sub5_sub2(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt1]
+        p_lOptFn = [self.opt1, self.opt2, self.opt3,
+                    self.opt4]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -191,6 +193,105 @@ class main_sub5_sub2(object):
         try: self.m_oOLEDClass
         except: self.m_oOLEDClass = oled()
         value = self.m_oOLEDClass.check()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt2(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt2_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            if value == "--": return
+            new = explore_list(p_iJoy, value, list)
+            if new: 
+                self.m_oOLEDClass.set_config('scr_info_ingame', new)
+                value = self.m_oOLEDClass.get_config('scr_info_ingame')
+                self.m_lLines[p_iLine]['value'] = value
+
+    def opt2_datas(self):
+        p_lLines = {'text': "INFO In-Game time",
+                    'color_val': "type_color_1"}
+        p_lValues = ["Disabled"]
+        for i in range (1, 11):
+            p_lValues.append(str(i) + "m")
+        p_lLines.update({'options': p_lValues})
+
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        if not self.m_oOLEDClass.service_connection(): 
+            value = "--"
+            p_lLines.update({'color_val': 'type_color_7'})
+        else: value = self.m_oOLEDClass.get_config('scr_info_ingame')
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt3(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt3_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            if value == "--": return
+            new = explore_list(p_iJoy, value, list)
+            if new: 
+                self.m_oOLEDClass.set_config('scr_info_cpu', new)
+                value = self.m_oOLEDClass.get_config('scr_info_cpu')
+                self.m_lLines[p_iLine]['value'] = value
+
+    def opt3_datas(self):
+        p_lLines = {'text': "INFO CPU time",
+                    'color_val': "type_color_1"}
+        p_lValues = ["Disabled"]
+        for i in range (1, 11):
+            p_lValues.append(str(i) + "m")
+        p_lLines.update({'options': p_lValues})
+
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        if not self.m_oOLEDClass.service_connection(): 
+            value = "--"
+            p_lLines.update({'color_val': 'type_color_7'})
+        else: value = self.m_oOLEDClass.get_config('scr_info_cpu')
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt4(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt4_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            if value == "--": return
+            new = explore_list(p_iJoy, value, list)
+            if new: 
+                self.m_oOLEDClass.set_config('scr_info_mem', new)
+                value = self.m_oOLEDClass.get_config('scr_info_mem')
+                self.m_lLines[p_iLine]['value'] = value
+
+    def opt4_datas(self):
+        p_lLines = {'text': "INFO RAM MEMORY time",
+                    'color_val': "type_color_1"}
+        p_lValues = ["Disabled"]
+        for i in range (1, 11):
+            p_lValues.append(str(i) + "m")
+        p_lLines.update({'options': p_lValues})
+
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        if not self.m_oOLEDClass.service_connection(): 
+            value = "--"
+            p_lLines.update({'color_val': 'type_color_7'})
+        else: value = self.m_oOLEDClass.get_config('scr_info_mem')
         p_lLines.update({'value': value})
         return p_lLines
 

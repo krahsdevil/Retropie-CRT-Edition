@@ -122,6 +122,7 @@ class OLED_Display(object):
         if not os.path.exists(CRT_OLED_FILE): touch_file(CRT_OLED_FILE)
         p_sHash = md5_file(CRT_OLED_FILE)
         if p_sHash != self.m_sHash_Prev:
+            logging.info("INFO: getting configuration from file")
             for screen in self.m_lOLEDScrns:
                 for item in screen:
                     if 'scr_' in item:
@@ -182,12 +183,12 @@ class OLED_Display(object):
                 for item in screen:
                     if 'scr_' in item and screen[item]:
                         if not STOP_SCREEN and not STOP_SERVICE:
-                            logging.info("INFO: show %s screen" % item)
                             try:
                                 if screen['function'](screen['time']): p_bPrevScrMain = False 
                             except Exception as e:
                                 logging.info("ERROR: %s" % e)
                                 self.clear_screen()
+            if p_bPrevScrMain: time.sleep(0.5)
             STOP_SCREEN = False
         time.sleep(1)
         self.clear_screen()
@@ -197,12 +198,15 @@ class OLED_Display(object):
         self.m_oDisplay.show()
 
     def screen_splash_image(self, p_sImage, p_iTime = 3):
+        global STOP_SCREEN
+        STOP_SCREEN = False
         p_iStart = time.time()
         self.m_oOutput.paste(p_sImage, (0, 0))
         self.draw()
         while not STOP_SCREEN and not STOP_SERVICE:
             time.sleep(0.5)
             if time.time() - p_iStart >= p_iTime: break
+        logging.info("INFO: stopping splash screen")
 
     def get_ip_address(self, p_sIFname):
         if p_sIFname == "public":
@@ -542,7 +546,7 @@ class OLEDService(rpyc.Service):
                         "atari800": "Atari 800", "atari2600": "Atari 2600",
                         "atari7800": "Atari 7800", "atarilynx": "Atari Lynx",
                         "atarist": "Atari ST", "c64": "Commodore 64", "coleco": "ColecoVision",
-                        "daphne": "Daphne", "fba": "FinalBurn Neo", "fds": "FDS",
+                        "daphne": "Daphne", "fba": "FinalBurn Neo", "fds": "Famicom Disk Sys",
                         "gamegear": "SEGA GameGear", "gb": "Gameboy", "gba": "Gameboy Advance",
                         "gbc": "Gameboy Color", "mame-advmame": "Advance MAME",
                         "mame-libretro": "MAME", "mastersystem": "Master System",
@@ -572,6 +576,11 @@ class OLEDService(rpyc.Service):
         INFO_IMG = "game_over"
 
     def exposed_status(self):
+        return True
+
+    def exposed_refresh(self):
+        global STOP_SCREEN
+        STOP_SCREEN = True
         return True
         
     def exposed_quit(self):

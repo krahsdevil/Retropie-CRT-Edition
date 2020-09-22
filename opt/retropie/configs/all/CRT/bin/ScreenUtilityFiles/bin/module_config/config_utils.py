@@ -791,10 +791,10 @@ class oled(object):
 
     m_sHash_Prev = ""
 
-    m_lOLEDScrns = [{'scr_info_ingame': True, 'time': 0},
-                    {'scr_info_cpu': True, 'time': 0},
-                    {'scr_info_mem': True, 'time': 0},
-                   ]
+    m_lOLEDScrns = {'scr_info_ingame': "Disabled",
+                    'scr_info_cpu': "Disabled",
+                    'scr_info_mem': "Disabled",
+                   }
 
     def __init__(self):
         self.get_config()
@@ -824,36 +824,50 @@ class oled(object):
         if not os.path.exists(CRT_OLED_FILE): touch_file(CRT_OLED_FILE)
         p_sHash = md5_file(CRT_OLED_FILE)
         if p_sHash != self.m_sHash_Prev:
-            for screen in self.m_lOLEDScrns:
-                for item in screen:
-                    if 'scr_' in item:
-                        value = ini_get(CRT_OLED_FILE, item)
-                        if value == False:
-                            value = 0
-                            remove_line(CRT_OLED_FILE, item)
-                            add_line(CRT_OLED_FILE, "%s = 0" % item)
-                        else: value = int(value)
-                        if value > 0: 
-                            screen[item] = True
-                            screen['time'] = value
-                        elif value <= 0: 
-                            screen[item] = False
-                            screen['time'] = 0
+            for item in self.m_lOLEDScrns:
+                if 'scr_' in item:
+                    value = ini_get(CRT_OLED_FILE, item)
+                    if value == False:
+                        value = 0
+                        remove_line(CRT_OLED_FILE, item)
+                        add_line(CRT_OLED_FILE, "%s = 0" % item)
+                    else: value = int(value)
+                    if value > 0: 
+                        self.m_lOLEDScrns[item] = str(value) + "m"
+                    elif value <= 0: 
+                        self.m_lOLEDScrns[item] = "Disabled"
             self.m_sHash_Prev = md5_file(CRT_OLED_FILE)
         if m_sScreen:
-            for screen in self.m_lOLEDScrns:
-                for item in screen:
-                    if item == m_sScreen:
-                        return screen['time']
+            for item in self.m_lOLEDScrns:
+                if item == m_sScreen:
+                    return self.m_lOLEDScrns[item]
             return 0
+
+    def set_config(self, m_sScreen, m_sValue):
+        if m_sScreen in self.m_lOLEDScrns:
+            if m_sValue.lower() == "disabled": m_sValue = "0"
+            else: m_sValue = m_sValue.lower().replace('m', '')
+            if ini_set(CRT_OLED_FILE, m_sScreen, m_sValue): 
+                self.service_refresh()
+                return True
+        return False
+
     def service_connection(self):
         try: 
-            if self.con.root.status(): return True
+            if self.OledCon.root.status(): return True
         except: 
             try: 
-                self.con = rpyc.connect('localhost', CRT_OLED_PORT)
-                if self.con.root.status(): return True
+                self.OledCon = rpyc.connect('localhost', CRT_OLED_PORT)
+                if self.OledCon.root.status(): return True
             except: return False
+        return False
+
+    def service_refresh(self):
+        self.service_connection()
+        try: 
+            if self.OledCon.root.refresh(): return True
+        except Exception as e:
+            logging.info("%s" % e)            
         return False
 
     def init(self):
@@ -871,9 +885,8 @@ class oled(object):
 
     def stop(self):
         if self.service_connection(): 
-            self.con.root.quit()
+            self.OledCon.root.quit()
             while self.service_connection():
-                logging.info("ENBUCLE")
                 time.sleep(0.2)
         if self._check_files and self.check():
             os.system('sudo systemctl disable %s > /dev/null 2>&1' % \
