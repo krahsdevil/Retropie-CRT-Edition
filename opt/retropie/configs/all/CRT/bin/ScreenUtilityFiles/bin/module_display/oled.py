@@ -190,8 +190,10 @@ class OLED_Display(object):
                                 self.clear_screen()
             if p_bPrevScrMain: time.sleep(0.5)
             STOP_SCREEN = False
-        time.sleep(1)
+        #time.sleep(1)
         self.clear_screen()
+        logging.info("INFO: Closing service")
+        sys.exit(0)
 
     def draw(self):
         self.m_oDisplay.image(self.m_oOutput)
@@ -586,6 +588,7 @@ class OLEDService(rpyc.Service):
     def exposed_quit(self):
         global STOP_SERVICE
         STOP_SERVICE = True
+        logging.info("INFO: Service is stopping by application")
 
 if __name__ == '__main__':
     STOP_SCREEN = False

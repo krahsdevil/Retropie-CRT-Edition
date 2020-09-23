@@ -1,5 +1,5 @@
 [Unit]
-Description=This service search for external USB with almost roms folder and load it on ES
+Description=This service handles piCRT OLED display
 DefaultDependencies=no
 
 [Service]

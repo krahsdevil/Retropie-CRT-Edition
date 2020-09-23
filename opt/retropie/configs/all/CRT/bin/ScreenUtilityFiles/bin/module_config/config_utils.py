@@ -43,7 +43,9 @@ from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
                                        RASP_BOOTCFG_FILE, RETROPIE_CFG_PATH, \
                                        ES_THEMES_PRI_PATH, ES_THEMES_SEC_PATH, CRT_DB_SYSTEMS_FILE, \
                                        CRT_OLED_SRV_PATH, CRT_OLED_CORE_PATH, CRT_OLED_PORT, \
-                                       CRT_OLED_FILE, CRT_OLED_SRV_FILE
+                                       CRT_OLED_FILE, CRT_OLED_SRV_FILE, CRT_OLED_STOP_SRV_PATH, \
+                                       CRT_OLED_STOP_CORE_PATH
+                                       
 from launcher_module.utils import check_process, touch_file, get_side, md5_file
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set, remove_line
@@ -299,6 +301,56 @@ def restart_ES():
         commandline += "/supplementary/.*/emulationstation([^.]|$)\""
         os.system(commandline)
         #os.system('clear')
+
+def check_service_running(p_sFilePath):
+    """ Check if a systemd service is installed and running"""
+    p_sFileName = os.path.basename(p_sFilePath)
+    p_sCMD = 'systemctl list-units --all | grep \"%s\"' % p_sFileName
+    try: p_sOutput = subprocess.check_output(p_sCMD, shell=True).decode("utf-8")
+    except: p_sOutput = ""
+    if 'running' in p_sOutput:
+        return True
+    return False
+
+def remove_service(p_sFilePath):
+    """ Remove a systemd service """
+    p_sFileName = os.path.basename(p_sFilePath)
+    logging.info("INFO: removing service {%s} from system" % p_sFileName)
+    time.sleep(0.5)
+    if check_service_running(p_sFilePath):
+        os.system('sudo systemctl stop %s > /dev/null 2>&1' % \
+                  p_sFileName)
+        logging.info("INFO: service {%s} stopped" % p_sFileName)
+    os.system('sudo systemctl disable %s > /dev/null 2>&1' % \
+              p_sFileName)
+    logging.info("INFO: service {%s} disabled" % p_sFileName)
+    os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' % \
+              p_sFileName)
+    logging.info("INFO: service {%s} deleted" % p_sFileName)
+    return True
+
+def install_service(p_sFilePath, p_bInit = True):
+    """ Install a systemd service """
+    if not '.service' in p_sFilePath: 
+        logging.info("ERROR: No valid .service file to install")
+        return False
+    if not os.path.exists(p_sFilePath): 
+        logging.info("ERROR: .service file not found")
+        return False
+    p_sFileName = os.path.basename(p_sFilePath)
+    logging.info("INFO: installing service {%s} on system" % p_sFileName)
+    remove_service(p_sFilePath) # force systemd service removal
+    os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' % \
+             (p_sFilePath, p_sFileName))
+    os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1' % \
+              p_sFileName)
+    os.system('sudo systemctl enable %s > /dev/null 2>&1' % \
+              p_sFileName)
+    if p_bInit:
+        os.system('sudo systemctl start %s > /dev/null 2>&1' % \
+                  p_sFileName)
+    logging.info("INFO: systemd service {%s} installed" % p_sFileName)
+    return True
 
 class wifi(object):
     COUNTRY = {
@@ -647,14 +699,6 @@ class external_storage(object):
     m_bUSBMounted = False
     m_sMountedPath = ""
 
-    def _check_files(self):
-        """ Check if needed service files exists """
-        bCheck01 = os.path.exists(CRT_EXTSTRG_SRV_PATH)
-        bCheck02 = os.path.exists(CRT_EXTSTRG_CORE_PATH)
-        if bCheck01 and bCheck02:
-            return True
-        return False
-
     def check(self):
         self.m_bSrvExist = False
         self.m_bSrvRun = False
@@ -669,30 +713,16 @@ class external_storage(object):
         return self.m_bSrvRun
 
     def init(self):
-        if self._check_files and not self.check():
-            os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' % \
-                     (CRT_EXTSTRG_SRV_PATH, CRT_EXTSTRG_SRV_FILE))
-            os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1' % \
-                      CRT_EXTSTRG_SRV_FILE)
-            os.system('sudo systemctl enable %s > /dev/null 2>&1' % \
-                      CRT_EXTSTRG_SRV_FILE)
-            os.system('sudo systemctl start %s > /dev/null 2>&1' % \
-                      CRT_EXTSTRG_SRV_FILE)
-            self.check()
+        install_service(CRT_EXTSTRG_SRV_PATH)
+        self.check()
 
     def stop(self):
-        if self._check_files and self.check():
-            os.system('sudo systemctl disable %s > /dev/null 2>&1' % \
-                      CRT_EXTSTRG_SRV_FILE)
-            os.system('sudo systemctl stop %s > /dev/null 2>&1' % \
-                      CRT_EXTSTRG_SRV_FILE)
-            os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' % \
-                      CRT_EXTSTRG_SRV_FILE)
-            os.system('sudo umount -l /home/pi/RetroPie/roms > /dev/null 2>&1')
-            os.system('sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1')
-            os.system('sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1')
-            self.__clean() # clean trigger files
-            self.check()
+        remove_service(CRT_EXTSTRG_SRV_PATH)
+        os.system('sudo umount -l /home/pi/RetroPie/roms > /dev/null 2>&1')
+        os.system('sudo umount -l /home/pi/RetroPie/BIOS > /dev/null 2>&1')
+        os.system('sudo umount -l /opt/retropie/configs/all/emulationstation/gamelists > /dev/null 2>&1')
+        self.__clean() # clean trigger files
+        self.check()
 
     def check_connected(self):
         if os.path.exists(CRT_EXTSTRG_TRIG_MNT_PATH):
@@ -733,14 +763,6 @@ class background_music(object):
     m_bSrvExist = False
     m_bSrvRun = False
 
-    def _check_files(self):
-        """ Check if needed service files exists """
-        bCheck01 = os.path.exists(CRT_BGM_SRV_PATH)
-        bCheck02 = os.path.exists(CRT_BGM_CORE_PATH)
-        if bCheck01 and bCheck02:
-            return True
-        return False
-
     def check(self):
         self.m_bSrvExist = False
         self.m_bSrvRun = False
@@ -755,27 +777,13 @@ class background_music(object):
         return self.m_bSrvRun
 
     def init(self):
-        if self._check_files and not self.check():
-            os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' % \
-                     (CRT_BGM_SRV_PATH, CRT_BGM_SRV_FILE))
-            os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1' % \
-                      CRT_BGM_SRV_FILE)
-            os.system('sudo systemctl enable %s > /dev/null 2>&1' % \
-                      CRT_BGM_SRV_FILE)
-            os.system('sudo systemctl start %s > /dev/null 2>&1' % \
-                      CRT_BGM_SRV_FILE)
-            self.check()
+        install_service(CRT_BGM_SRV_PATH)
+        self.check()
 
     def stop(self):
-        if self._check_files and self.check():
-            os.system('sudo systemctl disable %s > /dev/null 2>&1' % \
-                      CRT_BGM_SRV_FILE)
-            os.system('sudo systemctl stop %s > /dev/null 2>&1' % \
-                      CRT_BGM_SRV_FILE)
-            os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' % \
-                      CRT_BGM_SRV_FILE)
-            self.__clean() # clean trigger files
-            self.check()
+        remove_service(CRT_BGM_SRV_PATH)
+        self.__clean() # clean trigger files
+        self.check()
 
     def __clean(self):
         pass
@@ -798,14 +806,6 @@ class oled(object):
 
     def __init__(self):
         self.get_config()
-
-    def _check_files(self):
-        """ Check if needed service files exists """
-        bCheck01 = os.path.exists(CRT_OLED_SRV_PATH)
-        bCheck02 = os.path.exists(CRT_OLED_CORE_PATH)
-        if bCheck01 and bCheck02:
-            return True
-        return False
 
     def check(self):
         self.m_bSrvExist = False
@@ -871,32 +871,16 @@ class oled(object):
         return False
 
     def init(self):
-        self.stop()
-        if self._check_files and not self.check():
-            os.system('sudo cp %s /etc/systemd/system/%s > /dev/null 2>&1' % \
-                     (CRT_OLED_SRV_PATH, CRT_OLED_SRV_FILE))
-            os.system('sudo chmod +x /etc/systemd/system/%s > /dev/null 2>&1' % \
-                      CRT_OLED_SRV_FILE)
-            os.system('sudo systemctl enable %s > /dev/null 2>&1' % \
-                      CRT_OLED_SRV_FILE)
-            os.system('sudo systemctl start %s > /dev/null 2>&1' % \
-                      CRT_OLED_SRV_FILE)
-            self.check()
+        install_service(CRT_OLED_STOP_SRV_PATH, False)
+        install_service(CRT_OLED_SRV_PATH)
 
     def stop(self):
         if self.service_connection(): 
             self.OledCon.root.quit()
             while self.service_connection():
                 time.sleep(0.2)
-        if self._check_files and self.check():
-            os.system('sudo systemctl disable %s > /dev/null 2>&1' % \
-                      CRT_OLED_SRV_FILE)
-            os.system('sudo systemctl stop %s > /dev/null 2>&1' % \
-                      CRT_OLED_SRV_FILE)
-            os.system('sudo rm /etc/systemd/system/%s > /dev/null 2>&1' % \
-                      CRT_OLED_SRV_FILE)
-            self.__clean() 
-            self.check()
+        remove_service(CRT_OLED_SRV_PATH)
+        remove_service(CRT_OLED_STOP_SRV_PATH)
 
     def __clean(self):
         pass

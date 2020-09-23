@@ -176,6 +176,7 @@ class main_sub5_sub2(object):
             self.info("Please Wait", "icon_clock")
             if new == False: self.m_oOLEDClass.stop()
             elif new == True: self.m_oOLEDClass.init()
+            self.info("Cheking Service", "icon_clock")
             time.sleep(1)
             value = self.m_oOLEDClass.check()
             if not value and new == True:

@@ -1,0 +1,14 @@
+[Unit]
+Description=This service stops piCRT OLED display on shutdown
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -u oled_stop.py
+WorkingDirectory=/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_display
+TimeoutStartSec=0
+User=pi
+
+[Install]
+WantedBy=shutdown.target
