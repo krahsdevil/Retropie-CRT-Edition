@@ -59,6 +59,7 @@ class videoplayer(launcher):
         return ["videoplayer"]
 
     def pre_configure(self):
+        self.m_bFastBoot = False
         if not os.path.isfile(JOY2KEY_FILE):
             logging.info("closing videoplayer: can't find file: %s" % \
                          JOY2KEY_FILE)
@@ -131,8 +132,8 @@ class videoplayer(launcher):
         if os.path.exists (JOY2KEY_VAR): JOY2KEY_DEV = JOY2KEY_VAR
         # launch joy2key if not running
         command = 'ps -A'
-        try: output = subprocess.check_output(command, shell=True).decode("utf-8")
-        except: output = ""
+        try: p_sOutput = subprocess.check_output(command, shell=True).decode("utf-8")
+        except: p_sOutput = ""
         if not JOY2KEY_NAME in p_sOutput:
             p_sJ2KCommand = '"%s" "%s" %s %s %s %s %s %s %s %s %s %s' % \
                                (JOY2KEY_FILE, JOY2KEY_DEV, left, right, up, \
