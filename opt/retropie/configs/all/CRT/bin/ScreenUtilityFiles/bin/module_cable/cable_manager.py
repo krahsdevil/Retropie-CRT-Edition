@@ -37,7 +37,8 @@ sys.path.append(MODULES_PATH)
 
 from module_cable.controls_mapping import CTRLSMgmt
 from module_cable.cable_utils import *
-from launcher_module.core_paths import *
+from launcher_module.core_paths import TMP_LAUNCHER_PATH, RASP_BOOTCFG_FILE, \
+                                       CRT_UTILITY_FILE
 from launcher_module.file_helpers import ini_getlist, generate_random_temp_filename, \
                                          add_line, remove_file, touch_file, ini_get, \
                                          md5_file
@@ -52,7 +53,7 @@ __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
 
 class CableMNGR(object):
-    """ virtual class for USB Automount enable/disable/eject """
+    """ virtual class for RGB cable managing """
     m_lCableList = {}   # list of cables and configs
     m_lCableLab  = []   # list of cable labels, ids and descriptions
     m_iCableID = None   # current id of the cable
