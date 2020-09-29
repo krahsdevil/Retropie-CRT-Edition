@@ -34,8 +34,6 @@ sys.path.append(MODULES_PATH)
 from launcher_module.core_paths import CRT_RGB_SRV_FILE, CRT_RGB_SRV_PATH, \
                                        CRT_RGB_CORE_PATH, CRT_RGB_CORE_FILE
 
-MYFILE = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_cable/config.txt"
-
 def clean_line(p_sLine):
     lValues = p_sLine.strip()
     lValues = lValues.replace('"', '')
@@ -85,8 +83,8 @@ def ini_sect_set_key(p_sFile, p_sSection, p_sKeyMask, p_sNewValue):
                 section = lValues[0].strip('[]')
                 if p_sSection == section: p_bInSection = True
             if p_bInSection:
-                if p_sKeyMask == lValues[0].strip():
-                    line = '%s=%s\n' % (p_sKeyMask, p_sNewValue)
+                if str(p_sKeyMask) == lValues[0].strip():
+                    line = '%s=%s\n' % (str(p_sKeyMask), str(p_sNewValue))
                     p_bFound = True
             f.write(line) # new line
         f.truncate() # remove everything after the last write
@@ -119,7 +117,7 @@ def ini_sect_empty_section(p_sFile, p_sSection, p_bRemove = False):
 def ini_sect_add_key(p_sFile, p_sSection, p_sNewKey, p_sNewValue):
     if not os.path.isfile(p_sFile): return None
     ini_sect_create_section(p_sFile, p_sSection)
-    p_sNewKeyLine = p_sNewKey + "=" + p_sNewValue
+    p_sNewKeyLine = str(p_sNewKey) + "=" + str(p_sNewValue)
     with open(p_sFile, "r+") as f:
         p_bInSection = False
         p_bFound = False
