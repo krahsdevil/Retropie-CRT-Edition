@@ -20,8 +20,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys, os, threading, time
-import logging, pygame
+import sys, os, threading, time, subprocess
+import logging, re, pygame
 
 sys.dont_write_bytecode = False
 
@@ -30,12 +30,11 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import find_submenus, load_submenu, explore_list, run, \
+from config_utils import explore_list, find_submenus, load_submenu, oled, \
                          check_es_restart, check_sys_reboot, render_image, \
                          press_back
 from keyb.keyboard import keyboard
-from launcher_module.file_helpers import ini_get, ini_set
-from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE
+from launcher_module.core_paths import TMP_LAUNCHER_PATH
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
                                           CRT_LEFT, CRT_RIGHT, CRT_OK, \
                                           CRT_CANCEL
@@ -46,7 +45,7 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OPT_MASK = FILE_NAME + "_sub"
 
-class main_sub1_sub3(object):
+class main_sub5_sub3(object):
     m_bPause = [False]
     m_oThreads = []
     m_bThreadsStop = True
@@ -61,7 +60,7 @@ class main_sub1_sub3(object):
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = "Emulators Extra"
+    m_sSection = '\u220f' + "CRT OLED DISPLAY"
 
     m_lLayer40 = [None, None] # text & icon label
 
@@ -111,7 +110,8 @@ class main_sub1_sub3(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = []
+        p_lAutoL = [self.opt1, self.opt2, self.opt3,
+                    self.opt4]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -120,8 +120,8 @@ class main_sub1_sub3(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt2, self.opt3,
-                    self.opt11]
+        p_lOptFn = [self.opt1, self.opt2, self.opt3,
+                    self.opt4]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -163,70 +163,136 @@ class main_sub1_sub3(object):
         except:
             raise
 
-    def opt2(self, p_iJoy = None, p_iLine = None):
+    def opt1(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
         p_lLines = {}
         if p_iJoy == None:
-            return self.opt2_datas()
+            return self.opt1_datas()
         if p_iJoy & CRT_OK:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            if not new: ini_set(CRT_UTILITY_FILE, "integer_scale", "false")
-            elif new: ini_set(CRT_UTILITY_FILE, "integer_scale", "true")
-            self.m_lLines[p_iLine].update({'value': new})
+            self.info("Please Wait", "icon_clock")
+            if new == False: self.m_oOLEDClass.stop()
+            elif new == True: self.m_oOLEDClass.init()
+            self.info("Cheking Service", "icon_clock")
+            time.sleep(1)
+            value = self.m_oOLEDClass.check()
+            if not value and new == True:
+                self.m_oOLEDClass.stop()
+                self.info(["Can't load \u220fCRT",
+                           "OLED Display"],
+                           "icon_warn")
+                time.sleep(2)
+            self.info()
+            self.m_lLines[p_iLine]['value'] = value
+
+    def opt1_datas(self):
+        p_lLines = {'text': "\u220fCRT OLED Display",
+                    'color_val': "type_color_1"}
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        value = self.m_oOLEDClass.check()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt2(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt2_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            if value == "--": return
+            new = explore_list(p_iJoy, value, list)
+            if new: 
+                self.m_oOLEDClass.set_config('scr_info_ingame', new)
+                value = self.m_oOLEDClass.get_config('scr_info_ingame')
+                self.m_lLines[p_iLine]['value'] = value
 
     def opt2_datas(self):
-        p_lLines = {'text': "RA Integer Scale"}
-        value = ini_get(CRT_UTILITY_FILE, "integer_scale")
-        if value.lower() == "true": value = True
-        else: value = False
+        p_lLines = {'text': "INFO In-Game time",
+                    'color_val': "type_color_1"}
+        p_lValues = ["Disabled"]
+        for i in range (1, 11):
+            p_lValues.append(str(i) + "m")
+        p_lLines.update({'options': p_lValues})
+
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        if not self.m_oOLEDClass.service_connection(): 
+            value = "--"
+            p_lLines.update({'color_val': 'type_color_7'})
+        else: value = self.m_oOLEDClass.get_config('scr_info_ingame')
         p_lLines.update({'value': value})
         return p_lLines
 
     def opt3(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
         p_lLines = {}
         if p_iJoy == None:
             return self.opt3_datas()
-        if p_iJoy & CRT_OK:
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
+            if value == "--": return
             new = explore_list(p_iJoy, value, list)
-            if not new: ini_set(CRT_UTILITY_FILE, "handheld_bezel", "false")
-            elif new: ini_set(CRT_UTILITY_FILE, "handheld_bezel", "true")
-            self.m_lLines[p_iLine].update({'value': new})
-            if new == True:
-                self.info(["Long exposure to a",
-                           "static image could",
-                           "damage your CRT"],
-                           "icon_info")
-                time.sleep(2)
-                self.info()
+            if new: 
+                self.m_oOLEDClass.set_config('scr_info_cpu', new)
+                value = self.m_oOLEDClass.get_config('scr_info_cpu')
+                self.m_lLines[p_iLine]['value'] = value
 
     def opt3_datas(self):
-        p_lLines = {'text': "RA Handled Bezels"}
-        value = ini_get(CRT_UTILITY_FILE, "handheld_bezel")
-        if value.lower() == "true": value = True
-        else: value = False
+        p_lLines = {'text': "INFO CPU time",
+                    'color_val': "type_color_1"}
+        p_lValues = ["Disabled"]
+        for i in range (1, 11):
+            p_lValues.append(str(i) + "m")
+        p_lLines.update({'options': p_lValues})
+
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        if not self.m_oOLEDClass.service_connection(): 
+            value = "--"
+            p_lLines.update({'color_val': 'type_color_7'})
+        else: value = self.m_oOLEDClass.get_config('scr_info_cpu')
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt11(self, p_iJoy = None, p_iLine = None):
+    def opt4(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
         p_lLines = {}
         if p_iJoy == None:
-            return self.opt11_datas()
-        if p_iJoy & CRT_OK:
+            return self.opt4_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
+            if value == "--": return
             new = explore_list(p_iJoy, value, list)
-            if not new: ini_set(CRT_UTILITY_FILE, "scummvm_arc", "false")
-            elif new: ini_set(CRT_UTILITY_FILE, "scummvm_arc", "true")
-            self.m_lLines[p_iLine].update({'value': new})
+            if new: 
+                self.m_oOLEDClass.set_config('scr_info_mem', new)
+                value = self.m_oOLEDClass.get_config('scr_info_mem')
+                self.m_lLines[p_iLine]['value'] = value
 
-    def opt11_datas(self):
-        p_lLines = {'text': "ScummVM ARC"}
-        value = ini_get(CRT_UTILITY_FILE, "scummvm_arc")
-        if value.lower() == "true": value = True
-        else: value = False
+    def opt4_datas(self):
+        p_lLines = {'text': "INFO RAM MEMORY time",
+                    'color_val': "type_color_1"}
+        p_lValues = ["Disabled"]
+        for i in range (1, 11):
+            p_lValues.append(str(i) + "m")
+        p_lLines.update({'options': p_lValues})
+
+        try: self.m_oOLEDClass
+        except: self.m_oOLEDClass = oled()
+        if not self.m_oOLEDClass.service_connection(): 
+            value = "--"
+            p_lLines.update({'color_val': 'type_color_7'})
+        else: value = self.m_oOLEDClass.get_config('scr_info_mem')
         p_lLines.update({'value': value})
         return p_lLines
 

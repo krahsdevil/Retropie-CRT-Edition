@@ -30,7 +30,7 @@ sys.path.append(os.path.abspath(SCRIPT_DIR + "/../"))
 from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
-from config_utils import explore_list, find_submenus, load_submenu, oled, \
+from config_utils import explore_list, find_submenus, load_submenu, external_storage, \
                          check_es_restart, check_sys_reboot, render_image, \
                          press_back
 from keyb.keyboard import keyboard
@@ -60,7 +60,7 @@ class main_sub5_sub2(object):
     m_lReboot = [__name__, False]
 
     m_lIcon = {'icon': 'icon_folder'}
-    m_sSection = '\u220f' + "CRT OLED DISPLAY"
+    m_sSection = "External Storage"
 
     m_lLayer40 = [None, None] # text & icon label
 
@@ -110,8 +110,8 @@ class main_sub5_sub2(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt1, self.opt2, self.opt3,
-                    self.opt4]
+        p_lAutoL = [self.opt1, self.opt2,
+                    self.opt3, self.opt4]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -120,8 +120,8 @@ class main_sub5_sub2(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2, self.opt3,
-                    self.opt4]
+        p_lOptFn = [self.opt1, self.opt2,
+                    self.opt3, self.opt4]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -164,8 +164,8 @@ class main_sub5_sub2(object):
             raise
 
     def opt1(self, p_iJoy = None, p_iLine = None):
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
+        try: self.m_oEXTSTGClass
+        except: self.m_oEXTSTGClass = external_storage()
         p_lLines = {}
         if p_iJoy == None:
             return self.opt1_datas()
@@ -173,128 +173,109 @@ class main_sub5_sub2(object):
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
+
+            if value and not new:
+                self.m_lCtrl[p_iLine].update({'es_restart': True})
+            else:
+                self.m_lCtrl[p_iLine].update({'es_restart': False})
+
             self.info("Please Wait", "icon_clock")
-            if new == False: self.m_oOLEDClass.stop()
-            elif new == True: self.m_oOLEDClass.init()
-            self.info("Cheking Service", "icon_clock")
-            time.sleep(1)
-            value = self.m_oOLEDClass.check()
-            if not value and new == True:
-                self.m_oOLEDClass.stop()
-                self.info(["Can't load \u220fCRT",
-                           "OLED Display"],
-                           "icon_warn")
-                time.sleep(2)
+            if new == False: self.m_oEXTSTGClass.stop()
+            elif new == True: self.m_oEXTSTGClass.init()
             self.info()
-            self.m_lLines[p_iLine]['value'] = value
+            self.m_lLines[p_iLine]['value'] = new
 
     def opt1_datas(self):
-        p_lLines = {'text': "\u220fCRT OLED Display",
-                    'color_val': "type_color_1"}
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
-        value = self.m_oOLEDClass.check()
+        p_lLines = {'text': "Enable External USB",
+                    'color_val': "type_color_1",
+                    'es_restart': False}
+        try: self.m_oEXTSTGClass
+        except: self.m_oEXTSTGClass = external_storage()
+
+        value = self.m_oEXTSTGClass.check()
+        if value: p_lLines.update({'es_restart': True})
         p_lLines.update({'value': value})
         return p_lLines
 
     def opt2(self, p_iJoy = None, p_iLine = None):
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
         p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
-        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
-            list = self.m_lLines[p_iLine]['options']
-            value = self.m_lLines[p_iLine]['value']
-            if value == "--": return
-            new = explore_list(p_iJoy, value, list)
-            if new: 
-                self.m_oOLEDClass.set_config('scr_info_ingame', new)
-                value = self.m_oOLEDClass.get_config('scr_info_ingame')
-                self.m_lLines[p_iLine]['value'] = value
 
     def opt2_datas(self):
-        p_lLines = {'text': "INFO In-Game time",
+        p_lLines = {'text': "ROMs Storage",
                     'color_val': "type_color_1"}
-        p_lValues = ["Disabled"]
-        for i in range (1, 11):
-            p_lValues.append(str(i) + "m")
-        p_lLines.update({'options': p_lValues})
-
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
-        if not self.m_oOLEDClass.service_connection(): 
-            value = "--"
-            p_lLines.update({'color_val': 'type_color_7'})
-        else: value = self.m_oOLEDClass.get_config('scr_info_ingame')
-        p_lLines.update({'value': value})
+        try: self.m_oEXTSTGClass
+        except: self.m_oEXTSTGClass = external_storage()
+        disk = "SD"
+        value = self.m_oEXTSTGClass.check_connected()
+        if value and "usb" in value: disk = "USB"
+        p_lLines.update({'value': disk})
         return p_lLines
 
     def opt3(self, p_iJoy = None, p_iLine = None):
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
         p_lLines = {}
         if p_iJoy == None:
             return self.opt3_datas()
-        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
-            list = self.m_lLines[p_iLine]['options']
-            value = self.m_lLines[p_iLine]['value']
-            if value == "--": return
-            new = explore_list(p_iJoy, value, list)
-            if new: 
-                self.m_oOLEDClass.set_config('scr_info_cpu', new)
-                value = self.m_oOLEDClass.get_config('scr_info_cpu')
-                self.m_lLines[p_iLine]['value'] = value
 
     def opt3_datas(self):
-        p_lLines = {'text': "INFO CPU time",
+        p_lLines = {'text': "Available",
                     'color_val': "type_color_1"}
-        p_lValues = ["Disabled"]
-        for i in range (1, 11):
-            p_lValues.append(str(i) + "m")
-        p_lLines.update({'options': p_lValues})
-
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
-        if not self.m_oOLEDClass.service_connection(): 
-            value = "--"
-            p_lLines.update({'color_val': 'type_color_7'})
-        else: value = self.m_oOLEDClass.get_config('scr_info_cpu')
-        p_lLines.update({'value': value})
+        disk = "/dev/root"
+        try: self.m_oEXTSTGClass
+        except: self.m_oEXTSTGClass = external_storage()
+        value = self.m_oEXTSTGClass.check_connected()
+        if value: disk = value
+        try:
+            command = 'df -h | grep %s' % disk
+            tmp = subprocess.check_output(command, shell=True).decode("utf-8")
+            tmp = re.sub(r' +', " ", tmp).strip().split(" ")
+        except: tmp = ""
+        try:
+            space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
+            if not '%' in tmp[4]: space = "CALCULATING..."
+        except: space = "CALCULATING..."
+        if space == "CALCULATING...":
+            p_lLines.update({'color_val': "type_color_7"})
+        p_lLines.update({'value': space})
         return p_lLines
 
     def opt4(self, p_iJoy = None, p_iLine = None):
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
         p_lLines = {}
+        try: self.m_oEXTSTGClass
+        except: self.m_oEXTSTGClass = external_storage()
         if p_iJoy == None:
             return self.opt4_datas()
-        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
-            list = self.m_lLines[p_iLine]['options']
-            value = self.m_lLines[p_iLine]['value']
-            if value == "--": return
-            new = explore_list(p_iJoy, value, list)
-            if new: 
-                self.m_oOLEDClass.set_config('scr_info_mem', new)
-                value = self.m_oOLEDClass.get_config('scr_info_mem')
-                self.m_lLines[p_iLine]['value'] = value
+        if p_iJoy & CRT_OK:
+            if self.m_oEXTSTGClass.check_connected():
+                self.info("Please Wait", 'icon_clock')
+                self.m_oEXTSTGClass.eject()
+                time.sleep(2)
+                self.info()
 
     def opt4_datas(self):
-        p_lLines = {'text': "INFO RAM MEMORY time",
+        p_lLines = {'text': "Device",
+                    'icon': None,
                     'color_val': "type_color_1"}
-        p_lValues = ["Disabled"]
-        for i in range (1, 11):
-            p_lValues.append(str(i) + "m")
-        p_lLines.update({'options': p_lValues})
+        try: self.m_oEXTSTGClass
+        except: self.m_oEXTSTGClass = external_storage()
 
-        try: self.m_oOLEDClass
-        except: self.m_oOLEDClass = oled()
-        if not self.m_oOLEDClass.service_connection(): 
+        if self.m_oEXTSTGClass.check():
+            value = self.m_oEXTSTGClass.check_connected()
+            logging.info("estado usb %s" % value)
+            if not value:
+                value = "Waiting..."
+                p_lLines.update({'color_val': "type_color_7"})
+            else:
+                p_lLines.update({'text': "Eject"})
+                p_lLines.update({'icon': "icon_eject"})
+        else:
             value = "--"
-            p_lLines.update({'color_val': 'type_color_7'})
-        else: value = self.m_oOLEDClass.get_config('scr_info_mem')
+            p_lLines.update({'color_val': "type_color_7"})
         p_lLines.update({'value': value})
+
         return p_lLines
+
 
     def input(self, p_iLine, p_iJoy):
         if p_iJoy & CRT_CANCEL:

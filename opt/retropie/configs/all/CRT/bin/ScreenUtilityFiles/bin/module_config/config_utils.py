@@ -564,15 +564,19 @@ class change_watcher(object):
     m_lPrevIconList = []
     m_lPrevTextList = []
     m_lPrevValueList = []
+    m_lPrevColor = []
+
     m_lCurIconList = []
     m_lCurTextList = []
     m_lCurValueList = []
+    m_lCurColor = []
 
     def __init__(self, p_lInitList, p_iInitLine):
         self._get_values(p_lInitList)
-        self.m_lPrevIconList = self.m_lCurIconList[:]
-        self.m_lPrevTextList = self.m_lCurTextList[:]
-        self.m_lPrevValueList = self.m_lCurValueList[:]
+        self.m_lPrevIconList = self.m_lCurIconList.copy()
+        self.m_lPrevTextList = self.m_lCurTextList.copy()
+        self.m_lPrevValueList = self.m_lCurValueList.copy()
+        self.m_lPrevColor = self.m_lCurColor.copy()
         self.m_iPrevLine = p_iInitLine
 
     def check(self, p_lCurList, p_iCurLine, p_MaxLines):
@@ -587,19 +591,21 @@ class change_watcher(object):
         elif len(self.m_lPrevTextList) != len(self.m_lCurTextList):
             p_bCheck = True
         # if any icon, value, text change
-        elif not self._comp_list(p_iCurLine):
+        elif self._changes_in_page(p_iCurLine):
             p_bCheck = True
 
         self.m_iPrevLine = p_iCurLine
-        self.m_lPrevIconList = self.m_lCurIconList[:]
-        self.m_lPrevTextList = self.m_lCurTextList[:]
-        self.m_lPrevValueList = self.m_lCurValueList[:]
+        self.m_lPrevIconList = self.m_lCurIconList.copy()
+        self.m_lPrevTextList = self.m_lCurTextList.copy()
+        self.m_lPrevValueList = self.m_lCurValueList.copy()
+        self.m_lPrevColor = self.m_lCurColor.copy()
         return p_bCheck
 
     def _get_values(self, p_lList):
         self.m_lCurIconList = []
         self.m_lCurTextList = []
         self.m_lCurValueList = []
+        self.m_lCurColor = []
         for item in p_lList:
             try: self.m_lCurIconList.append(item['icon'])
             except: self.m_lCurIconList.append(None)
@@ -607,31 +613,39 @@ class change_watcher(object):
             except: self.m_lCurTextList.append(None)
             try: self.m_lCurValueList.append(item['value'])
             except: self.m_lCurValueList.append(None)
+            try: self.m_lCurColor.append(item['color_val'])
+            except: self.m_lCurColor.append(None)
 
-    def _comp_list(self, p_iCurLine):
+    def _changes_in_page(self, p_iCurLine):
         """
         Compare icons, values and texts from previous and current lists
-        Return True if are equal, False if are different
+        Return True if change is detected on the same page, False if not
         """
-        for a, b in zip(self.m_lPrevValueList, self.m_lCurValueList):
-            if a != b:
-                # only set as a change if changed value is in the current page
-                if self._is_same_page(self.m_lCurValueList.index(b), p_iCurLine):
-                    return False
+        size = len(self.m_lCurValueList)
+        for i in range(0, size):
+            if self.m_lPrevValueList[i] != self.m_lCurValueList[i]:
+                if self._is_same_page(i, p_iCurLine):
+                    return True
 
-        for a, b in zip(self.m_lPrevTextList, self.m_lCurTextList):
-            if a != b:
-                # only set as a change if changed text is in the current page
-                if self._is_same_page(self.m_lCurTextList.index(b), p_iCurLine):
-                    return False
+        size = len(self.m_lCurTextList)
+        for i in range(0, size):
+            if self.m_lPrevTextList[i] != self.m_lCurTextList[i]:
+                if self._is_same_page(i, p_iCurLine):
+                    return True
 
-        for a, b in zip(self.m_lPrevIconList, self.m_lCurIconList):
-            if a != b:
-                # only set as a change if changed icon is in the current page
-                if self._is_same_page(self.m_lCurIconList.index(b), p_iCurLine):
-                    return False
+        size = len(self.m_lCurIconList)
+        for i in range(0, size):
+            if self.m_lPrevIconList[i] != self.m_lCurIconList[i]:
+                if self._is_same_page(i, p_iCurLine):
+                    return True
 
-        return True
+        size = len(self.m_lCurColor)
+        for i in range(0, size):
+            if self.m_lPrevColor[i] != self.m_lCurColor[i]:
+                if self._is_same_page(i, p_iCurLine):
+                    return True
+
+        return False
 
     def _is_same_page(self, p_iChangedLine, p_iCurLine):
         p_iPageCur = int(math.ceil((p_iCurLine + 1) \

@@ -63,6 +63,7 @@ DEFAULT_CFG = {
     'icon_false': "icon_false.png",
     'icon_clock': "icon_clock.png",
     'icon_warn': "icon_warn.png",
+    'icon_warn2': "icon_warn2.png",
     'icon_edit': "icon_edit.png",
     'icon_eject': "icon_eject.png",
     'icon_es': "icon_es.png",
@@ -80,8 +81,9 @@ DEFAULT_CFG = {
     'type_color_3': pygame.Color( 19, 14, 56), # text shadow
     'type_color_4': pygame.Color( 62, 50,162), # text color selected line
     'type_color_5': pygame.Color(124,113,218), # frame color
-    'type_color_6': pygame.Color(255,180,  0), # for high vol
+    'type_color_6': pygame.Color(255,180,  0), # critical values
     'type_color_7': pygame.Color(202,199,219), # disabled color
+    'type_color_8': pygame.Color( 80,234, 80), # safe values
 }
 
 C_BLACK  = pygame.Color(  0,   0,   0)
@@ -301,7 +303,7 @@ class core(object):
                     'options', 'color_txt', 'color_val',
                     'icon_prev', 'text', 'text_render',
                     'prev_text', 'value_render',
-                    'prev_value')
+                    'prev_value', 'prev_color_val')
         p_lTheme = ('background_render', 'top_render',
                     'bottom_render', 'selector_render',
                     'icon_true_render', 'icon_false_render',

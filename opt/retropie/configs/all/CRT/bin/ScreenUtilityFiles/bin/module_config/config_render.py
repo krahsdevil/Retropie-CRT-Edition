@@ -128,10 +128,13 @@ class render(core):
                 rect1 = oValueSf.get_rect()
                 rect1.midright = (rtoffset, oLineSf.get_height() / 2)
             else:
-                if p_lLine["value"] != p_lLine["prev_value"] or not p_lLine["value_render"]:
+                if p_lLine["value"] != p_lLine["prev_value"] or \
+                   p_lLine["color_val"] != p_lLine["prev_color_val"] or \
+                   not p_lLine["value_render"]:
                     p_lLine["value_render"] = self._text_render(p_lLine['value'],
                                               p_lLine['color_val'], 'type_color_3', True)
                     p_lLine["prev_value"] = p_lLine["value"]
+                    p_lLine["prev_color_val"] = p_lLine["color_val"]
                 oValueSf = p_lLine["value_render"]
 
                 rect1 = oValueSf.get_rect()

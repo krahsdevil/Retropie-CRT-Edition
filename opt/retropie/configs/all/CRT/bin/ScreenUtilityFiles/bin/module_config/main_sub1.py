@@ -31,8 +31,8 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from config_utils import find_submenus, load_submenu, explore_list, run, \
-                         check_es_restart, check_sys_reboot, launching_images, \
-                         render_image, press_back
+                         check_es_restart, check_sys_reboot, render_image, \
+                         press_back
 from keyb.keyboard import keyboard
 from launcher_module.file_helpers import ini_get, ini_set
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE, \
@@ -112,7 +112,7 @@ class main_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt2, self.opt3]
+        p_lAutoL = [self.opt2]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -121,7 +121,7 @@ class main_sub1(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2, self.opt3]
+        p_lOptFn = [self.opt1, self.opt2]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -224,57 +224,6 @@ class main_sub1(object):
                 value = ini_get(CRT_UTILITY_FILE, "autosel_info")
                 if value.lower() == "true": value = True
                 else: value = False
-        p_lLines.update({'value': value})
-        return p_lLines
-
-    def opt3(self, p_iJoy = None, p_iLine = None):
-        p_lLines = {}
-        if p_iJoy == None:
-            return self.opt3_datas()
-        if p_iJoy & CRT_OK:
-            if self.m_lLines[p_iLine]['value'] == "N/A":
-                self.info("FastBoot is enabled", "icon_info")
-                time.sleep(2)
-                self.info()
-                return
-        elif p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
-            list = self.m_lLines[p_iLine]['options']
-            value = self.m_lLines[p_iLine]['value']
-            if value == "N/A": return
-            new = explore_list(p_iJoy, value, list)
-            if new:
-                if new == "Disabled":
-                    ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "image_delay", "0")
-                    self.info("Please Wait", "icon_clock")
-                    launching_images(False)
-                    self.info()
-                else:
-                    ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "image_delay", new.replace('s',''))
-                    if new == "1s" and value == "Disabled":
-                        self.info("Please Wait", "icon_clock")
-                        launching_images(True)
-                        self.info()
-                self.m_lLines[p_iLine].update({'value': new})
-
-    def opt3_datas(self):
-        p_lLines = {'text': "Launching Images",
-                    'color_val': "type_color_1"}
-        p_lLines.update({'options': []})
-        if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
-            value = "N/A"
-            p_lLines.update({'color_val': "type_color_7"})
-        else:
-            options = []
-            value = ini_get(RETROPIE_RUNCOMMAND_CFG_FILE, "image_delay")
-            if value == "0":
-                value = "Disabled"
-            else:
-                value = value + "s"
-            #p_lLines.update({'value': value})
-            options.append("Disabled")
-            for i in range (1, 11):
-                options.append(str(i) + "s")
-            p_lLines.update({'options': options})
         p_lLines.update({'value': value})
         return p_lLines
 
