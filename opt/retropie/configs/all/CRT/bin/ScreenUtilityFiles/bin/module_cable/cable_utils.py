@@ -40,6 +40,23 @@ def clean_line(p_sLine):
     lValues = re.sub(r' +', " ", lValues).split('=')
     return lValues
 
+def ini_get_any(p_sFile, p_sKeyMask):
+    """ Return ini values on any section allways assigned with '=' 
+        if multiple = are found return value from the last
+    """
+    if not os.path.isfile(p_sFile): return None
+    with open(p_sFile, "r") as f:
+        for line in f:
+            lValues = clean_line(line)
+            if lValues[0] == p_sKeyMask:
+                value = "=".join(lValues[1:])
+                return value
+            elif len(lValues) > 2:
+                if "=".join(lValues[:-1]) == p_sKeyMask:
+                    value = lValues[-1]
+                    return value
+    return False # section not found
+        
 def ini_sect_clean_file(p_sFile):
     if not os.path.isfile(p_sFile): return None
     with open(p_sFile, "r+") as f:
@@ -52,6 +69,29 @@ def ini_sect_clean_file(p_sFile):
                     f.write('\n')
             if line.strip(): f.write(line)
         f.truncate() # remove everything after the last write
+
+def ini_outofsect_get_key(p_sFile, p_sSection, p_sKeyMask):
+    if not os.path.isfile(p_sFile): return None
+    with open(p_sFile, "r") as f:
+        p_bOutOfSection = False
+        for line in f:
+            lValues = clean_line(line)
+            if lValues[0].startswith('[') and lValues[0].endswith(']'):
+                #if p_bOutOfSection: return None # value not found
+                p_bHeader = True
+                section = lValues[0].strip('[]')
+                if p_sSection == section: p_bOutOfSection = False
+                else: p_bOutOfSection = True
+            else: p_bHeader = False
+            if p_bOutOfSection and not p_bHeader:
+                if lValues[0] == p_sKeyMask:
+                    value = "=".join(lValues[1:])
+                    return value
+                elif len(lValues) > 2:
+                    if "=".join(lValues[:-1]) == p_sKeyMask:
+                        value = lValues[-1]
+                        return value
+    return False # section not found
 
 def ini_sect_get_key(p_sFile, p_sSection, p_sKeyMask):
     if not os.path.isfile(p_sFile): return None
@@ -67,6 +107,10 @@ def ini_sect_get_key(p_sFile, p_sSection, p_sKeyMask):
                 if lValues[0] == p_sKeyMask:
                     value = "=".join(lValues[1:])
                     return value
+                elif len(lValues) > 2:
+                    if "=".join(lValues[:-1]) == p_sKeyMask:
+                        value = lValues[-1]
+                        return value
     return False # section not found
 
 def ini_sect_set_key(p_sFile, p_sSection, p_sKeyMask, p_sNewValue):
@@ -86,6 +130,10 @@ def ini_sect_set_key(p_sFile, p_sSection, p_sKeyMask, p_sNewValue):
                 if str(p_sKeyMask) == lValues[0].strip():
                     line = '%s=%s\n' % (str(p_sKeyMask), str(p_sNewValue))
                     p_bFound = True
+                elif len(lValues) > 2:
+                    if "=".join(lValues[:-1]) == str(p_sKeyMask):
+                        line = '%s=%s\n' % (str(p_sKeyMask), str(p_sNewValue))
+                        p_bFound = True
             f.write(line) # new line
         f.truncate() # remove everything after the last write
     ini_sect_clean_file(p_sFile)
@@ -183,7 +231,7 @@ def ini_sect_get_keys(p_sFile, p_sSection):
             if p_bInSection:
                 if not line.startswith(('#', '[')) and line.strip() and '=' in line: 
                     key = lValues[0]
-                    value = value = "=".join(lValues[1:])
+                    value = "=".join(lValues[1:])
                     p_lList.append([key, value])
     p_lList.sort()
     return p_lList
