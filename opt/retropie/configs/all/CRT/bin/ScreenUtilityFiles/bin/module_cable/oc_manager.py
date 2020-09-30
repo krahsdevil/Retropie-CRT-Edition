@@ -39,7 +39,8 @@ from launcher_module.core_paths import TMP_LAUNCHER_PATH, RASP_BOOTCFG_FILE
 from module_cable.cable_utils import ini_sect_clean_file, ini_sect_get_key, \
                                      ini_sect_set_key, ini_sect_empty_section, \
                                      ini_sect_add_key, ini_set_check_section, \
-                                     ini_sect_create_section, ini_sect_get_keys
+                                     ini_sect_create_section, ini_sect_get_keys, \
+                                     ini_outofsect_get_key
 from launcher_module.file_helpers import ini_getlist, generate_random_temp_filename, \
                                          remove_line, remove_file, touch_file, ini_get, \
                                          md5_file
@@ -50,8 +51,6 @@ EXCEPTION_LOG = os.path.join(TMP_LAUNCHER_PATH, "backtrace.log")
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
 CLEAN_LOG_ONSTART = True
-
-RASP_BOOTCFG_FILE = "/opt/retropie/configs/all/CRT/bin/ScreenUtilityFiles/bin/module_cable/config.txt"
 
 class OCMNGR(object):
     """ virtual class for overclocking management """
@@ -74,8 +73,8 @@ class OCMNGR(object):
     def __init__(self):
         self.__temp()
         logging.info("INFO: Launching overclock manager")
-        self.clean_oc_options()
         self.create_rpi_config()
+        self.clean_oc_options()
         
     def create_rpi_config(self):
         p_lProfiles = [self.load_profile_0, self.load_profile_1,
@@ -108,8 +107,8 @@ class OCMNGR(object):
         p_dOptToMove = []
         p_lSection   = []
         p_bSectFound = False
-        if ini_set_check_section(RASP_BOOTCFG_FILE, self.p_mProfile['section']):
-            p_lSection = ini_sect_get_keys(RASP_BOOTCFG_FILE, self.p_mProfile['section'])
+        if ini_set_check_section(RASP_BOOTCFG_FILE, self.m_dOCConfig['section']):
+            p_lSection = ini_sect_get_keys(RASP_BOOTCFG_FILE, self.m_dOCConfig['section'])
             p_bSectFound = True
         for opt in p_lOCFullOpt:
             value = ini_get(RASP_BOOTCFG_FILE, opt)
@@ -117,39 +116,60 @@ class OCMNGR(object):
                 p_bFound = False
                 for item in p_lSection:
                     if opt == item[0]: p_bFound = True
-                if not p_bFound: p_dOptToMove.append([opt, value])
+                if not p_bFound: 
+                    try: value = int(value)
+                    except: pass
+                    p_dOptToMove.append([opt, value])
+        valueOut = ini_outofsect_get_key(RASP_BOOTCFG_FILE, self.m_dOCConfig['section'],
+                                         'dtparam=sd_overclock')
+        valueIn = ini_sect_get_key(RASP_BOOTCFG_FILE, self.m_dOCConfig['section'],
+                                         'dtparam=sd_overclock')
+        if valueOut:
+            if valueIn: 
+                try: valueIn = int(valueIn)
+                except: pass
+                p_dOptToMove.append(['dtparam=sd_overclock', valueIn])
+            else:
+                try: valueOut = int(valueOut)
+                except: pass            
+                p_dOptToMove.append(['dtparam=sd_overclock', valueOut])
+
         if p_dOptToMove:
             self.__clone_cfg()
             if not p_bSectFound: 
-                ini_sect_create_section(self.m_sTemp, self.p_mProfile['section'])
+                ini_sect_create_section(self.m_sTemp, self.m_dOCConfig['section'])
             for opt in p_dOptToMove:
                 remove_line(self.m_sTemp, opt[0])
-                ini_sect_add_key(self.m_sTemp, self.p_mProfile['section'],
+                if opt[1] not in self.m_dOCConfig['values'][opt[0]][3]:
+                    opt[1] = self.m_dOCConfig['values'][opt[0]][0]
+                ini_sect_add_key(self.m_sTemp, self.m_dOCConfig['section'],
                                  opt[0], opt[1])
-            self.__upload_cfg(False)
+            self.__upload_cfg()
         
     def load_profile_0(self):
         """ Create profile for Raspberry Pi 3A+/3B+ """
         p_lProfile = {'id'      : ['a020d3', '9020e0'],
                       'section' : 'CRT-OC',
                       'desc'    : 'Pi3A+/Pi3B+',
-                      'values'  : {'arm_freq'          : [1400, 1600, 10, []],
-                                   'gpu_freq'          : [ 400,  550, 10, []],
-                                   'core_freq'         : [ 400,  550, 10, []],
-                                   'sdram_freq'        : [ 500,  600, 10, []],
-                                   'sdram_schmoo'      : ['none', 1,  1, 
-                                                         ['none', '0x02000020']],
-                                   'over_voltage'      : [   0,    6,  1, []],
-                                   'over_voltage_sdram': [   0,    6,  1, []],
+                      'values'  : {'arm_freq'            : [1400, 1600, 10, []],
+                                   'gpu_freq'            : [ 400,  550, 10, []],
+                                   'core_freq'           : [ 400,  550, 10, []],
+                                   'sdram_freq'          : [ 500,  600, 10, []],
+                                   'sdram_schmoo'        : ['none', 1,  1, 
+                                                           ['none', '0x02000020']],
+                                   'over_voltage'        : [   0,    6,  1, []],
+                                   'over_voltage_sdram'  : [   0,    6,  1, []],
+                                   'dtparam=sd_overclock': [  50,  100, 10, []],
                                   },
                       'recval'  : {},
-                      'config'  : {'arm_freq'          : 0,
-                                   'gpu_freq'          : 0,
-                                   'core_freq'         : 0,
-                                   'sdram_freq'        : 0,
-                                   'sdram_schmoo'      : 0,
-                                   'over_voltage'      : 0,
-                                   'over_voltage_sdram': 0,
+                      'config'  : {'arm_freq'            : 0,
+                                   'gpu_freq'            : 0,
+                                   'core_freq'           : 0,
+                                   'sdram_freq'          : 0,
+                                   'sdram_schmoo'        : 0,
+                                   'over_voltage'        : 0,
+                                   'over_voltage_sdram'  : 0,
+                                   'dtparam=sd_overclock': 0,
                                   },
                      }
         for item in p_lProfile['values']:
@@ -166,23 +186,25 @@ class OCMNGR(object):
         p_lProfile = {'id'      : ['a02082', 'a22082', 'a32082'],
                       'section' : 'CRT-OC',
                       'desc'    : 'Pi3B',
-                      'values'  : {'arm_freq'          : [1200, 1400, 10, []],
-                                   'gpu_freq'          : [ 400,  550, 10, []],
-                                   'core_freq'         : [ 400,  550, 10, []],
-                                   'sdram_freq'        : [ 450,  550, 10, []],
-                                   'sdram_schmoo'      : ['none', 1,  1, 
-                                                         ['none', '0x02000020']],
-                                   'over_voltage'      : [   0,    6,  1, []],
-                                   'over_voltage_sdram': [   0,    6,  1, []],
+                      'values'  : {'arm_freq'            : [1200, 1400, 10, []],
+                                   'gpu_freq'            : [ 400,  550, 10, []],
+                                   'core_freq'           : [ 400,  550, 10, []],
+                                   'sdram_freq'          : [ 450,  550, 10, []],
+                                   'sdram_schmoo'        : ['none', 1,  1, 
+                                                           ['none', '0x02000020']],
+                                   'over_voltage'        : [   0,    6,  1, []],
+                                   'over_voltage_sdram'  : [   0,    6,  1, []],
+                                   'dtparam=sd_overclock': [  50,  100, 10, []],
                                   },
                       'recval'  : {},
-                      'config'  : {'arm_freq'          : 0,
-                                   'gpu_freq'          : 0,
-                                   'core_freq'         : 0,
-                                   'sdram_freq'        : 0,
-                                   'sdram_schmoo'      : 0,
-                                   'over_voltage'      : 0,
-                                   'over_voltage_sdram': 0,
+                      'config'  : {'arm_freq'            : 0,
+                                   'gpu_freq'            : 0,
+                                   'core_freq'           : 0,
+                                   'sdram_freq'          : 0,
+                                   'sdram_schmoo'        : 0,
+                                   'over_voltage'        : 0,
+                                   'over_voltage_sdram'  : 0,
+                                   'dtparam=sd_overclock': 0,
                                   },
                      }
         for item in p_lProfile['values']:
@@ -199,23 +221,25 @@ class OCMNGR(object):
         p_lProfile = {'id'      : ['a01040', 'a01041', 'a21041'],
                       'section' : 'CRT-OC',
                       'desc'    : 'Pi2B',
-                      'values'  : {'arm_freq'          : [ 900, 1100, 10, []],
-                                   'gpu_freq'          : [ 250,  350, 10, []],
-                                   'core_freq'         : [ 250,  350, 10, []],
-                                   'sdram_freq'        : [ 400,  500, 10, []],
-                                   'sdram_schmoo'      : ['none', 1,  1, 
-                                                         ['none', '0x02000020']],
-                                   'over_voltage'      : [   0,    6,  1, []],
-                                   'over_voltage_sdram': [   0,    6,  1, []],
+                      'values'  : {'arm_freq'            : [ 900, 1100, 10, []],
+                                   'gpu_freq'            : [ 250,  350, 10, []],
+                                   'core_freq'           : [ 250,  350, 10, []],
+                                   'sdram_freq'          : [ 400,  500, 10, []],
+                                   'sdram_schmoo'        : ['none', 1,  1, 
+                                                           ['none', '0x02000020']],
+                                   'over_voltage'        : [   0,    6,  1, []],
+                                   'over_voltage_sdram'  : [   0,    6,  1, []],
+                                   'dtparam=sd_overclock': [  50,  100, 10, []],
                                   },
                       'recval'  : {},
-                      'config'  : {'arm_freq'          : 0,
-                                   'gpu_freq'          : 0,
-                                   'core_freq'         : 0,
-                                   'sdram_freq'        : 0,
-                                   'sdram_schmoo'      : 0,
-                                   'over_voltage'      : 0,
-                                   'over_voltage_sdram': 0,
+                      'config'  : {'arm_freq'            : 0,
+                                   'gpu_freq'            : 0,
+                                   'core_freq'           : 0,
+                                   'sdram_freq'          : 0,
+                                   'sdram_schmoo'        : 0,
+                                   'over_voltage'        : 0,
+                                   'over_voltage_sdram'  : 0,
+                                   'dtparam=sd_overclock': 0,
                                   },
                      }
         for item in p_lProfile['values']:
@@ -274,7 +298,6 @@ class OCMNGR(object):
 
     def load_rpi_config(self, p_dConfig):
         if self.m_sMD5_Prev != md5_file(RASP_BOOTCFG_FILE):
-            logging.info("INFO: %s" % p_dConfig)
             if ini_set_check_section(RASP_BOOTCFG_FILE, p_dConfig['section']):
                 self.m_bOCEnabled = True
                 for ini in p_dConfig['config']:

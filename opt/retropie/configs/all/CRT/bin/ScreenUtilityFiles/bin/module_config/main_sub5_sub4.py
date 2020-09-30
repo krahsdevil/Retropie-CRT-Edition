@@ -114,7 +114,8 @@ class main_sub5_sub4(object):
     def _auto_load_datas(self, p_bOnce = False):
         p_lAutoL = [self.opt1, self.opt4, self.opt5,
                     self.opt6, self.opt7, self.opt8,
-                    self.opt9, self.opt10, self.opt11]
+                    self.opt9, self.opt10, self.opt11,
+                    self.opt12]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -127,7 +128,7 @@ class main_sub5_sub4(object):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
                     self.opt4, self.opt5, self.opt6,
                     self.opt7, self.opt8, self.opt9,
-                    self.opt10, self.opt11]
+                    self.opt10, self.opt11, self.opt12]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -180,8 +181,8 @@ class main_sub5_sub4(object):
             value = self.m_lLines[p_iLine]['value']
             if not self.m_oOCClass.compatible(): return
             new = explore_list(p_iJoy, value, list)
-            self.info("Please Wait", "icon_clock")
             if new == False: 
+                self.info("Please Wait", "icon_clock")
                 self.m_oOCClass.disable()
                 self._auto_load_datas(True)
             elif new == True: 
@@ -191,8 +192,8 @@ class main_sub5_sub4(object):
                            "  You may experience",
                            " instability, hungs or",
                            "  system overheating."], 'icon_warn')
-                time.sleep(10)
-                self.info()
+                time.sleep(7)
+                self.info("Please Wait", "icon_clock")
                 self.m_oOCClass.enable()
             value = self.m_oOCClass.status()
             self.info()
@@ -579,6 +580,59 @@ class main_sub5_sub4(object):
 
     def opt11_datas(self):
         p_sINI = 'over_voltage_sdram' # overclock value to get
+        p_lLines = {'text': p_sINI.lower(),
+                    'sys_reboot': True,
+                    'icon': None,
+                    'color_val': "type_color_1"}
+        try: self.m_oOCClass
+        except: self.m_oOCClass = OCMNGR()
+        value = self.m_oOCClass.get_ini(p_sINI)
+        if not self.m_oOCClass.status():
+            p_lLines.update({'color_val': "type_color_7"})
+            p_lValues = []
+        else: 
+            p_lValues = self.m_oOCClass.get_ini_values_list(p_sINI)
+            if not self.m_oOCClass.is_base_value(p_sINI, value): 
+                p_lLines.update({'icon': "icon_warn2"})
+                p_lLines.update({'color_val': "type_color_6"})
+        p_lLines.update({'value': value})
+        p_lLines.update({'options': p_lValues})
+        return p_lLines
+
+    def opt12(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oOCClass
+        except: self.m_oOCClass = OCMNGR()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt12_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            if not self.m_oOCClass.status(): return
+            p_sINI = 'dtparam=sd_overclock' # overclock value to get
+            new = explore_list(p_iJoy, value, list)
+            if new != None:
+                self.info("Please Wait", "icon_clock")
+                self.m_oOCClass.set_oc_value(p_sINI, new)
+                value2 = self.m_oOCClass.get_ini(p_sINI)
+                if self.m_oOCClass.is_base_value(p_sINI, value2): 
+                    p_lLines.update({'icon': None})
+                    self.m_lLines[p_iLine]['color_val'] = "type_color_1"
+                else:
+                    p_lLines.update({'icon': "icon_warn2"})
+                    self.m_lLines[p_iLine]['color_val'] = "type_color_6"
+                    if self.m_oOCClass.is_base_value(p_sINI, value):
+                        self.info(["SD Card Overclocking",
+                                   "  Only for UHD SDCARDs.",
+                                   "     Don't try with",
+                                   "   non-UHD SDCH Cards!"],
+                                   'icon_warn')
+                        time.sleep(6)
+                self.m_lLines[p_iLine]['value'] = value2
+                self.info()
+
+    def opt12_datas(self):
+        p_sINI = 'dtparam=sd_overclock' # overclock value to get
         p_lLines = {'text': p_sINI.lower(),
                     'sys_reboot': True,
                     'icon': None,
