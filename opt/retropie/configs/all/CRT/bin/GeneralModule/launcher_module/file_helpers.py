@@ -29,6 +29,7 @@ import xml.etree.ElementTree as ET
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_ROOT_PATH, ES_CFG_FILE
 
 def remove_line(p_sFile, p_sRemoveMask):
+    p_bCheck = False
     if not os.path.isfile(p_sFile):
         return None
     with open(p_sFile,"r+") as f:
@@ -37,8 +38,21 @@ def remove_line(p_sFile, p_sRemoveMask):
         for line in new_file:
             if p_sRemoveMask not in line:
                 f.write(line) # valid line
+            else: p_bCheck = True
         f.truncate() # remove everything after the last write
-        return True
+        return p_bCheck
+
+def find_string(p_sFile, p_sString):
+    p_bCheck = False
+    if not os.path.isfile(p_sFile):
+        return None
+    with open(p_sFile,"r") as f:
+        new_file = f.readlines()
+        f.seek(0) # rewind
+        for line in new_file:
+            if p_sString in line:
+                p_bCheck = True # found string
+        return p_bCheck
 
 def modify_line(p_sFile, p_sLineToFind, p_sNewLine, p_bEndLine = True):
     if not os.path.isfile(p_sFile):
