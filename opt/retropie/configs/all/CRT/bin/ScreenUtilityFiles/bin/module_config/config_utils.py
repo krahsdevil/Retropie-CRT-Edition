@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys, os, imp, math, re, time, shlex
-import logging, subprocess, rpyc
+import logging, subprocess, rpyc, filecmp
 import xml.etree.ElementTree as ET
 import socket, fcntl, struct
 import pygame
@@ -44,7 +44,8 @@ from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
                                        ES_THEMES_PRI_PATH, ES_THEMES_SEC_PATH, CRT_DB_SYSTEMS_FILE, \
                                        CRT_OLED_SRV_PATH, CRT_OLED_CORE_PATH, CRT_OLED_PORT, \
                                        CRT_OLED_FILE, CRT_OLED_SRV_FILE, CRT_OLED_STOP_SRV_PATH, \
-                                       CRT_OLED_STOP_CORE_PATH
+                                       CRT_OLED_STOP_CORE_PATH, CRT_ES_FONT, ES_MENU_FONT1, \
+                                       ES_MENU_FONT2
                                        
 from launcher_module.utils import check_process, touch_file, get_side, md5_file
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
@@ -351,6 +352,36 @@ def install_service(p_sFilePath, p_bInit = True):
                   p_sFileName)
     logging.info("INFO: systemd service {%s} installed" % p_sFileName)
     return True
+
+def check_es_menu_font():
+    p_bCheck01 = True
+    p_bCheck02 = True
+    p_sNewFont = CRT_ES_FONT
+    try:
+        if not filecmp.cmp(ES_MENU_FONT1, p_sNewFont): p_bCheck01 = False
+        if not filecmp.cmp(ES_MENU_FONT2, p_sNewFont): p_bCheck02 = False
+    except: raise
+    if p_bCheck01 and p_bCheck02: return True
+    return False
+
+def fix_es_menu_font():
+    if check_es_menu_font(): return
+    p_lFonts = [ES_MENU_FONT1, ES_MENU_FONT2]
+    p_sNewFont = CRT_ES_FONT
+    for font in p_lFonts:
+        p_sFontBck = font + ".backup"
+        os.system('sudo cp \"%s\" \"%s\"' % (font, p_sFontBck))
+        os.system('sudo cp \"%s\" \"%s\"' % (p_sNewFont, font))
+
+def restore_es_menu_font():
+    if not check_es_menu_font(): return
+    p_lFonts = [ES_MENU_FONT1, ES_MENU_FONT2]
+    p_sNewFont = CRT_ES_FONT
+    for font in p_lFonts:
+        p_sFontBck = font + ".backup"
+        os.system('sudo cp \"%s\" \"%s\"' % (p_sFontBck, font))
+        os.system('sudo rm \"%s\"' % (p_sFontBck))
+
 
 class wifi(object):
     COUNTRY = {

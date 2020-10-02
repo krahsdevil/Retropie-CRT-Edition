@@ -33,7 +33,8 @@ sys.path.append(MODULES_PATH)
 from config_utils import find_submenus, load_submenu, explore_list, run, \
                          check_es_restart, check_sys_reboot, render_image, \
                          press_back, get_themes, check_retropie_menu, \
-                         hide_retropie_menu, launching_images
+                         hide_retropie_menu, launching_images, check_es_menu_font, \
+                         fix_es_menu_font, restore_es_menu_font
 from keyb.keyboard import keyboard
 from es_rotation import frontend_rotation
 from launcher_module.file_helpers import get_xml_value_esconfig, \
@@ -117,8 +118,8 @@ class main_sub5_sub1(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt4, self.opt7, self.opt9,
-                    self.opt10]
+        p_lAutoL = [self.opt4, self.opt7, self.opt10,
+                    self.opt11]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -129,7 +130,8 @@ class main_sub5_sub1(object):
     def _load_options(self):
         p_lOptFn = [self.opt3, self.opt4, self.opt5,
                     self.opt6, self.opt7, self.opt8,
-                    self.opt9, self.opt10, self.opt11]
+                    self.opt9, self.opt10, self.opt11,
+                    self.opt12]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -341,6 +343,27 @@ class main_sub5_sub1(object):
         if p_iJoy == None:
             return self.opt9_datas()
         if p_iJoy & CRT_OK:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new: fix_es_menu_font()
+            elif not new: restore_es_menu_font()
+            value = check_es_menu_font()
+            self.m_lLines[p_iLine].update({'value': value})
+
+    def opt9_datas(self):
+        p_lLines = {'text': "ES Fix Menu Font",
+                    'color_val': "type_color_1",
+                    'es_restart': True}
+        value = check_es_menu_font()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt10(self, p_iJoy = None, p_iLine = None):
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt10_datas()
+        if p_iJoy & CRT_OK:
             if self.m_lLines[p_iLine]['value'] == "N/A":
                 self.info("FastBoot is enabled", "icon_info")
                 time.sleep(2)
@@ -365,7 +388,7 @@ class main_sub5_sub1(object):
                         self.info()
                 self.m_lLines[p_iLine].update({'value': new})
 
-    def opt9_datas(self):
+    def opt10_datas(self):
         p_lLines = {'text': "Runcommand Splash Images",
                     'color_val': "type_color_1"}
         p_lLines.update({'options': []})
@@ -387,10 +410,10 @@ class main_sub5_sub1(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt10(self, p_iJoy = None, p_iLine = None):
+    def opt11(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
-            return self.opt10_datas()
+            return self.opt11_datas()
         if p_iJoy & CRT_OK:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
@@ -404,7 +427,7 @@ class main_sub5_sub1(object):
             elif new == True: ini_set(RETROPIE_RUNCOMMAND_CFG_FILE, "disable_menu", "0")
             self.m_lLines[p_iLine].update({'value': new})
 
-    def opt10_datas(self):
+    def opt11_datas(self):
         p_lLines = {'text': "Runcommand Allow Config",
                     'color_val': "type_color_1"}
         if ini_get(CRT_UTILITY_FILE, "fast_boot").lower() == "true":
@@ -417,10 +440,10 @@ class main_sub5_sub1(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt11(self, p_iJoy = None, p_iLine = None):
+    def opt12(self, p_iJoy = None, p_iLine = None):
         p_lLines = {}
         if p_iJoy == None:
-            return self.opt11_datas()
+            return self.opt12_datas()
         if p_iJoy & CRT_OK:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
@@ -429,7 +452,7 @@ class main_sub5_sub1(object):
             elif not new: ini_set(RA_CFG_FILE, "menu_driver", 'Null')
             self.m_lLines[p_iLine].update({'value': new})
 
-    def opt11_datas(self):
+    def opt12_datas(self):
         p_lLines = {'text': "Retroarch Allow Config",
                     'color_val': "type_color_1"}
         value = ini_get(RA_CFG_FILE, "menu_driver")

@@ -73,6 +73,10 @@ ES_SYSTEMS_PRI_FILE = os.path.join(ES_PATH, "es_systems.cfg")
 ES_CONTROLS_FILE = os.path.join(ES_CFG_PATH, "es_input.cfg")
 ES_CFG_FILE = os.path.join(ES_CFG_PATH, "es_settings.cfg")
 
+ES_ASSETS = os.path.join(RETROPIE_PATH, "supplementary/emulationstation/resources")
+ES_MENU_FONT1 = os.path.join(ES_ASSETS, "opensans_hebrew_condensed_regular.ttf")
+ES_MENU_FONT2 = os.path.join(ES_ASSETS, "opensans_hebrew_condensed_light.ttf")
+
 # RETROPIE CONTENT
 RETROPIE_HOME_PATH = "/home/pi/RetroPie"
 RETROPIE_MENU = os.path.join(RETROPIE_HOME_PATH, "retropiemenu")
@@ -132,6 +136,8 @@ ROTMODES_TATE3_FILE = os.path.join(CRT_ES_CONFIGS_PATH, "es-tate3")
 
 CRT_FONTS_PATH = os.path.join(CRT_ASST_PATH, "screen_fonts")
 CRT_SOUNDS_PATH = os.path.join(CRT_ASST_PATH, "screen_sounds")
+
+CRT_ES_FONT = os.path.join(CRT_FONTS_PATH, "ESMenu.ttf")
 
 # RASPBIAN SETUP
 RASP_BOOTCFG_FILE = "/boot/config.txt"
