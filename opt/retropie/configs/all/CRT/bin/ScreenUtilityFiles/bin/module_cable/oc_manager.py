@@ -159,7 +159,7 @@ class OCMNGR(object):
                                                            ['none', '0x02000020']],
                                    'over_voltage'        : [   0,    6,  1, []],
                                    'over_voltage_sdram'  : [   0,    6,  1, []],
-                                   'dtparam=sd_overclock': [  50,  100, 10, []],
+                                   'dtparam=sd_overclock': [  50,  100, 50, []],
                                   },
                       'recval'  : {},
                       'config'  : {'arm_freq'            : 0,
@@ -194,7 +194,7 @@ class OCMNGR(object):
                                                            ['none', '0x02000020']],
                                    'over_voltage'        : [   0,    6,  1, []],
                                    'over_voltage_sdram'  : [   0,    6,  1, []],
-                                   'dtparam=sd_overclock': [  50,  100, 10, []],
+                                   'dtparam=sd_overclock': [  50,  100, 50, []],
                                   },
                       'recval'  : {},
                       'config'  : {'arm_freq'            : 0,
@@ -229,9 +229,13 @@ class OCMNGR(object):
                                                            ['none', '0x02000020']],
                                    'over_voltage'        : [   0,    6,  1, []],
                                    'over_voltage_sdram'  : [   0,    6,  1, []],
-                                   'dtparam=sd_overclock': [  50,  100, 10, []],
+                                   'dtparam=sd_overclock': [  50,  100, 50, []],
                                   },
-                      'recval'  : {},
+                      'recval'  : {'arm_freq'            : 1000,
+                                   'core_freq'           :  500,
+                                   'sdram_freq'          :  500,
+                                   'over_voltage'        :    2,
+                                  },
                       'config'  : {'arm_freq'            : 0,
                                    'gpu_freq'            : 0,
                                    'core_freq'           : 0,
@@ -278,10 +282,11 @@ class OCMNGR(object):
         return False
 
     def apply_rec_values(self):
-        for ini in self.m_dOCConfig['recval']:
-            value = self.m_dOCConfig['recval'][ini]
-            self.set_oc_value(ini, value)
-            #self.m_dOCConfig['config'][ini] = self.m_dOCConfig['recval'][ini]
+        for p_sINI in self.m_dOCConfig['config']:
+            if p_sINI in self.m_dOCConfig['recval']:
+                value = self.m_dOCConfig['recval'][p_sINI]
+            else: value = self.m_dOCConfig['values'][p_sINI][3][0]
+            self.set_oc_value(p_sINI, value)
 
     def enable(self):
         if self.m_bOCEnabled: return False
@@ -318,7 +323,6 @@ class OCMNGR(object):
         self.m_dOCConfig = p_dConfig.copy()
 
     def set_oc_value(self, p_sINI, p_sValue):
-        #p_sValue = str(p_sValue)
         if not self.m_bOCEnabled: return
         if not p_sINI in self.m_dOCConfig['config']: return False
         self.__clone_cfg()
