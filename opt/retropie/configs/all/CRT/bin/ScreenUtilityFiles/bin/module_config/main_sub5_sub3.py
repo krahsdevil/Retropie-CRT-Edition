@@ -182,7 +182,7 @@ class main_sub5_sub3(object):
             if not value and new == True:
                 self.m_oOLEDClass.stop()
                 self.info(["Can't load \u220fCRT",
-                           "OLED Display"],
+                           "   OLED Display"],
                            "icon_warn")
                 time.sleep(2)
             self.info()
