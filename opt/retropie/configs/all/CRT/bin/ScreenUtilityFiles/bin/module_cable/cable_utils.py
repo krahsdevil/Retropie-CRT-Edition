@@ -21,7 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os, sys, re, time, logging
-import filecmp, subprocess
+import filecmp, subprocess, smbus
 import xml.etree.ElementTree as ET
 
 sys.dont_write_bytecode = True
@@ -250,6 +250,27 @@ def compare_section(p_sFile, p_sSection, p_lList1):
                         (p_sSection, a[0], a[1], b[0], b[1]))
             p_bCheck = False
     if p_bCheck: logging.info("Configuration is OK for %s" % p_sSection)
+    return p_bCheck
+
+def i2c_detect(p_lList):
+    """ 
+    This function try to detect in i2c bus 0 if any i2c device is 
+    connected looking for addreses.
+    """
+    p_bCheck = False
+    try: bus = smbus.SMBus(0)
+    except: 
+        logging.info("WARNING: can't connect to i2c0")
+        return p_bCheck
+    for device in p_lList:
+        try:
+            bus.read_byte(device)
+            p_bCheck = True
+            break
+        except:
+            pass
+    bus.close()
+    bus = None
     return p_bCheck
 
 def sync_files(p_sFile1, p_sFile2, p_schmod = None):

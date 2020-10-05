@@ -47,7 +47,8 @@ from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
                                        CRT_OLED_STOP_CORE_PATH, CRT_ES_FONT, ES_MENU_FONT1, \
                                        ES_MENU_FONT2
                                        
-from launcher_module.utils import check_process, touch_file, get_side, md5_file
+from launcher_module.utils import check_process, touch_file, get_side, md5_file, \
+                                  module_loaded
 from launcher_module.file_helpers import ini_get, ini_getlist, modify_line, \
                                          ini_set, remove_line
 from launcher_module.core_controls import joystick, CRT_UP, CRT_DOWN, \
@@ -855,6 +856,9 @@ class oled(object):
     def check(self):
         self.m_bSrvExist = False
         self.m_bSrvRun = False
+        JAMMARGBPI_MODULE = 'mk_arcade_joystick_rpi'
+        if module_loaded(JAMMARGBPI_MODULE): 
+            return None
         sCommand = 'systemctl list-units --all | grep \"%s\"' % CRT_OLED_SRV_FILE
         try: sCheckService = subprocess.check_output(sCommand, shell=True).decode("utf-8")
         except: sCheckService = ""

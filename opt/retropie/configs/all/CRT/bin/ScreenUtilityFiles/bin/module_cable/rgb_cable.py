@@ -22,7 +22,7 @@ You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import os, sys, smbus
+import os, sys
 import subprocess
 import logging, traceback
 import time
@@ -343,23 +343,12 @@ class jammargbpiMNGR(object):
         This function try to detect in i2c bus 0 if any i2c device is 
         connected looking for addreses.
         """
-        p_bCheck = False
-        try: bus = smbus.SMBus(0)
-        except: 
-            logging.info("WARNING: can't connect to i2c0")
-            return p_bCheck
-        p_lDevList = [32, 33] # 0x20/0x21 i2c address; 
-        for device in p_lDevList:
-            try:
-                bus.read_byte(device)
-                p_bCheck = True
-            except:
-                pass
-        bus.close()
-        bus = None
-        if not p_bCheck: logging.info("WARNING: hardware jamma-rgb-pi NOT found")
-        else: logging.info("INFO: hardware jamma rgb-pi found")
-        return p_bCheck
+        if i2c_detect([32, 33]): # 0x20/0x21 i2c address;
+            logging.info("INFO: hardware jamma rgb-pi found")
+            return True
+        else:
+            logging.info("WARNING: hardware jamma-rgb-pi NOT found")
+            return False
 
     def kill(self):
         """ This function will close JAMMA RGB-PI software """

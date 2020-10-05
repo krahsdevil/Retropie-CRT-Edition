@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys, math, subprocess, time, re, threading, shlex
 import logging, traceback
-import smbus, socket, busio, rpyc
+import socket, busio, rpyc
 from rpyc.utils.server import ThreadedServer
 from PIL import Image, ImageDraw, ImageFont
 from board import D0, D1
@@ -40,9 +40,10 @@ from launcher_module.core_paths import PNAME_OLED, TMP_LAUNCHER_PATH, \
                                        PNAME_LAUNCHER, CRT_UTILITY_FILE, \
                                        CRT_NETPLAY_FILE, RETROPIE_RUNCOMMAND_LOG, \
                                        CRT_OLED_FILE, CRT_OLED_PORT
-from launcher_module.utils import check_process, set_procname
+from launcher_module.utils import check_process, set_procname, module_loaded
 from launcher_module.file_helpers import md5_file, ini_get, ini_set, touch_file, \
                                          remove_line, add_line
+from module_cable.cable_utils import i2c_detect
 
 __VERSION__ = '0.1'
 __DEBUG__ = logging.INFO # logging.ERROR
@@ -97,6 +98,7 @@ class OLED_Display(object):
             self.get_assets()
             self.clear_screen()
         else:
+            logging.info("Exiting piCRT display module")
             sys.exit()
 
     def get_assets(self):
@@ -146,23 +148,19 @@ class OLED_Display(object):
 
     def detect(self):
         """ OLED display detection in i2c bus 0, address 3C """
-        p_bCheck = False
-        try: bus = smbus.SMBus(0)
-        except: 
-            logging.info("WARNING: can't connect to i2c0")
-            return p_bCheck
-        p_lDevList = [60] # 0x3c display address; 
-        for device in p_lDevList:
-            try:
-                bus.read_byte(device)
-                p_bCheck = True
-            except:
-                pass
-        bus.close()
-        bus = None
-        if not p_bCheck: logging.info("WARNING: OLED display NOT found")
-        else: logging.info("INFO: OLED display found")
-        return p_bCheck
+        JAMMARGBPI_MODULE = 'mk_arcade_joystick_rpi'
+        if module_loaded(JAMMARGBPI_MODULE): 
+            logging.info("WARNING: %s is loaded, disabling display" % \
+            JAMMARGBPI_MODULE)
+            return False
+        elif i2c_detect([32, 33]): # 0x20/0x21 i2c address;
+            logging.info("WARNING: I2C Controls found, disabling display")
+            return False
+        if i2c_detect([60]): #0x3c display address;
+            logging.info("INFO: OLED display found")
+            return True
+        logging.info("INFO: OLED display found")
+        return False
 
     def loop(self):
         global STOP_SCREEN

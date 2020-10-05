@@ -172,6 +172,13 @@ class main_sub5_sub3(object):
         if p_iJoy & CRT_OK:
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
+            if value == "N/A":
+                self.info(["I2C JAMMA controls",
+                          "found, can't enable",
+                          "\u220fCRT Display."], "icon_info")
+                time.sleep(4)
+                self.info()
+                return            
             new = explore_list(p_iJoy, value, list)
             self.info("Please Wait", "icon_clock")
             if new == False: self.m_oOLEDClass.stop()
@@ -194,6 +201,9 @@ class main_sub5_sub3(object):
         try: self.m_oOLEDClass
         except: self.m_oOLEDClass = oled()
         value = self.m_oOLEDClass.check()
+        if value == None: 
+            p_lLines.update({'color_val': "type_color_7"})
+            value = "N/A"
         p_lLines.update({'value': value})
         return p_lLines
 
