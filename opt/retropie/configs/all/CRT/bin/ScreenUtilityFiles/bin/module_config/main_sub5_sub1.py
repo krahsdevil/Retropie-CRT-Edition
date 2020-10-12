@@ -352,7 +352,7 @@ class main_sub5_sub1(object):
             self.m_lLines[p_iLine].update({'value': value})
 
     def opt9_datas(self):
-        p_lLines = {'text': "ES Fix Menu Font",
+        p_lLines = {'text': "ES Change Menu Font",
                     'color_val': "type_color_1",
                     'es_restart': True}
         value = check_es_menu_font()
