@@ -89,7 +89,7 @@ class CableMNGR(object):
             self.m_lCableList.update({CableID: p_lList})
 
     def load_profile_0(self):
-        """ Create profile for RGB-PI, JAMMA RGB-PI, PICRT and JAMMA PICRT """
+        """ Create profile for VGA666/PI2SCART """
         p_lProfile = {'id'    : 0,
                       'label' : 'Type 0',
                       'desc'  : 'VGA666/PI2SCART',
@@ -99,7 +99,8 @@ class CableMNGR(object):
                                            ['audio_pwm_mode', '3'],
                                            ['disable_audio_dither', '1']]}
         p_lCfg02   = {'CRT-CABLE'       : [['crt_cable_type', '0']]}
-        p_lCfg03   = {'CRT-I2C0'        : []}
+        p_lCfg03   = {'CRT-I2C0'        : [['dtparam', 'i2c_vc=on,i2c_vc_baudrate=1000000'],
+                                           ['dtoverlay', 'i2c-gpio,i2c_gpio_sda=10,i2c_gpio_scl=11']]}
         p_lCfg04   = {'CRT-VGA666-MODE' : [['dtoverlay', 'vga666']]}
 
         p_lProfile['config'].update(self.m_lBaseCfg)

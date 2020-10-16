@@ -29,6 +29,8 @@ disable_audio_dither=1
 crt_cable_type=0
 
 [CRT-I2C0]
+dtparam=i2c_vc=on,i2c_vc_baudrate=1000000
+dtoverlay=i2c-gpio,i2c_gpio_sda=10,i2c_gpio_scl=11
 
 [CRT-VGA666-MODE]
 dtoverlay=vga666
