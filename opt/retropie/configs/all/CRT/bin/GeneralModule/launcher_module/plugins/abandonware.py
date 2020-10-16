@@ -61,7 +61,7 @@ class abandonware(emulator):
             self.m_sCleanLaunch += " >> %s 2>&1" % LOG_PATH
             commandline = self.m_sCleanLaunch
             if not os.path.exists("/tmp/retroarch"): os.system("mkdir /tmp/retroarch")
-            self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
+            self.m_oRunProcess = subprocess.Popen(commandline, shell=True, executable='/bin/bash')
             logging.info("INFO: Subprocess running: %s", commandline)
         else: super(abandonware, self).direct_start()
 

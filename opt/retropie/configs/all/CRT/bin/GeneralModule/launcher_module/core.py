@@ -271,7 +271,7 @@ class launcher(object):
         commandline = self.m_sCleanLaunch
         if not os.path.exists("/tmp/retroarch"): os.system("mkdir /tmp/retroarch")
         self.change_cpu_governor()
-        self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
+        self.m_oRunProcess = subprocess.Popen(commandline, shell=True, executable='/bin/bash')
         logging.info("INFO: Subprocess running: %s", commandline)
 
     def change_cpu_governor(self, p_sMode = None):

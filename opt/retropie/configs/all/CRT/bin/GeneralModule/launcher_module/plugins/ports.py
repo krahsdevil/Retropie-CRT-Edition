@@ -73,7 +73,7 @@ class ports(emulator):
             self.m_sCleanLaunch = self.m_sCleanLaunch.replace(self.m_sFileNameVar, "\"%s\"" % self.p_sPortROM)
         commandline = self.m_sCleanLaunch
         if not os.path.exists("/tmp/retroarch"): os.system("mkdir /tmp/retroarch")
-        self.m_oRunProcess = subprocess.Popen(commandline, shell=True)
+        self.m_oRunProcess = subprocess.Popen(commandline, shell=True, executable='/bin/bash')
         logging.info("INFO: Subprocess running: %s", commandline)
 
     def screen_set(self):
@@ -86,6 +86,6 @@ class ports(emulator):
     def runcommand_start(self):
         """ launch_core: run emulator!"""
         commandline = "bash \"%s\"" % self.m_sFilePath
-        self.m_oRunProcess = subprocess.Popen(shlex.split(commandline), shell=False)
+        self.m_oRunProcess = subprocess.Popen(shlex.split(commandline), shell=False, executable='/bin/bash')
         logging.info("INFO: Subprocess running: %s", commandline)
         self.runcommand_wait()
