@@ -232,7 +232,8 @@ class main_sub5_sub2(object):
             tmp = re.sub(r' +', " ", tmp).strip().split(" ")
         except: tmp = ""
         try:
-            space = tmp[3] + '/' + tmp[1] + '(' + tmp[4] + ')'
+            p_iFree = str(100 - int(tmp[4].replace('%', ''))) + '%'
+            space = tmp[3] + '/' + tmp[1] + '(' + p_iFree + ')'
             if not '%' in tmp[4]: space = "CALCULATING..."
         except: space = "CALCULATING..."
         if space == "CALCULATING...":
