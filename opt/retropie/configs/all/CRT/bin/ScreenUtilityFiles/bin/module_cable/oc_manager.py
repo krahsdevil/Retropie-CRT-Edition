@@ -84,7 +84,8 @@ class OCMNGR(object):
         for pf in p_lProfiles:
             p_lList = {}
             p_lList = pf()
-            if self.m_sRPIModel in p_lList['id']:
+            p_sRPIModWB = '2' + self.m_sRPIModel # Hardware model with warranty bit 2
+            if self.m_sRPIModel in p_lList['id'] or p_sRPIModWB in p_lList['id']:
                 p_bProfFound = True
                 self.m_bRPIComp = True
                 self.load_rpi_config(p_lList)
