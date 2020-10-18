@@ -84,7 +84,10 @@ class OCMNGR(object):
         for pf in p_lProfiles:
             p_lList = {}
             p_lList = pf()
-            if self.m_sRPIModel in p_lList['id']:
+            hwd = self.m_sRPIModel
+            if len(self.m_sRPIModel) > 6:
+                hwd = self.m_sRPIModel[-6:]
+            if hwd in p_lList['id']:
                 p_bProfFound = True
                 self.m_bRPIComp = True
                 self.load_rpi_config(p_lList)
