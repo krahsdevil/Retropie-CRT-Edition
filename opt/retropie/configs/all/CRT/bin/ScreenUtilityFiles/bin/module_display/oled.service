@@ -1,5 +1,6 @@
 [Unit]
 Description=This service handles piCRT OLED display
+After=basic.target
 DefaultDependencies=no
 
 [Service]
@@ -11,4 +12,4 @@ Restart=no
 User=pi
 
 [Install]
-WantedBy=sysinit.target
+WantedBy=basic.target

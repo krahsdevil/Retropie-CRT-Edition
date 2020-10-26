@@ -1,5 +1,6 @@
 [Unit]
 Description=This service search for external USB with almost roms folder and load it on ES
+After=basic.target
 DefaultDependencies=no
 
 [Service]
@@ -11,4 +12,4 @@ Restart=no
 User=pi
 
 [Install]
-WantedBy=sysinit.target
+WantedBy=basic.target

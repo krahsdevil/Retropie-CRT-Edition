@@ -1,5 +1,6 @@
 [Unit]
 Description=This service will enable jamma controls software and other boot video settings
+After=basic.target
 
 [Service]
 ExecStart=/usr/bin/python3 -u rgb_cable.py
