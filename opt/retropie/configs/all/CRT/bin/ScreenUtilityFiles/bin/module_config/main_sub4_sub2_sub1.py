@@ -181,7 +181,7 @@ class main_sub4_sub2_sub1(object):
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-            if new:
+            if new or new == 0:
                 value = self.m_oNETClass.lframes(new)
                 if value == new:
                     self.m_lLines[p_iLine]['value'] = new
@@ -198,7 +198,7 @@ class main_sub4_sub2_sub1(object):
             options = None
         else:
             p_lOpt = []
-            for i in range(1, 16): p_lOpt.append(i)
+            for i in range(0, 16): p_lOpt.append(i)
             options = p_lOpt
             value = self.m_oNETClass.get_lframes()
         p_lLines.update({'options': options})
