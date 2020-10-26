@@ -62,9 +62,10 @@ class arcade(emulator):
     cfg_iscale = "false"
     cfg_ghres = 0 #Real Horizontal Resolution of the game
     
-    m_sTitEnc = "Arcade Encapsulator"
-    m_lOptEnc = [("Play CROPPED", "CROPPED"),
-                 ("Play FORCED", "FORCED")]
+    m_sTitEnc = "ENCAPSULATOR"
+    m_lOptEnc = [("PLAY CROPPED", "CROPPED"),
+                 ("PLAY FORCED", "FORCED"),
+                 ]
 
     def screen_prepare(self):
         self.m_iSide = get_side()
