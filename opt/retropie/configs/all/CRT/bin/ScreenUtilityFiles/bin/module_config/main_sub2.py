@@ -35,7 +35,8 @@ from config_utils import explore_list, find_submenus, load_submenu, \
                          background_music, sys_volume, render_image, \
                          press_back
 from keyb.keyboard import keyboard
-from launcher_module.file_helpers import ini_get
+from launcher_module.file_helpers import ini_get, ini_getlist, ini_set, \
+                                         remove_line, add_line
 from launcher_module.core_paths import TMP_LAUNCHER_PATH, CRT_UTILITY_FILE, \
                                        CRT_BGM_PORT
 from launcher_module.core_controls import CRT_UP, CRT_DOWN, \
@@ -115,7 +116,8 @@ class main_sub2(object):
             self.m_oThreads.append(t)
 
     def _auto_load_datas(self):
-        p_lAutoL = [self.opt3, self.opt4]
+        p_lAutoL = [self.opt3, self.opt4, self.opt5,
+                    self.opt6]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -124,8 +126,8 @@ class main_sub2(object):
                 time.sleep(timer)
 
     def _load_options(self):
-        p_lOptFn = [self.opt1, self.opt2,
-                    self.opt3, self.opt4]
+        p_lOptFn = [self.opt1, self.opt2, self.opt3,
+                    self.opt4, self.opt5, self.opt6]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -239,13 +241,13 @@ class main_sub2(object):
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
-
             self.info("Please Wait", "icon_clock")
             if new == False: self.m_oBGMClass.stop()
             elif new == True: self.m_oBGMClass.init()
+            value = self.m_oBGMClass.check()
+            self.m_lLines[p_iLine]['value'] = value
+            time.sleep(0.5)
             self.info()
-            self.m_lLines[p_iLine].update({'value': new})
-            self.m_lLines[p_iLine]['value'] = new
 
     def opt3_datas(self):
         p_lLines = {'text': "Background Music",
@@ -257,6 +259,8 @@ class main_sub2(object):
         return p_lLines
 
     def opt4(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oBGMClass
+        except: self.m_oBGMClass = background_music()
         p_lLines = {}
         if p_iJoy == None:
             return self.opt4_datas()
@@ -266,14 +270,8 @@ class main_sub2(object):
             new = explore_list(p_iJoy, value, list)
             if new:
                 new = int(new.replace("%", ''))
-                try:
-                    try: self.con.root
-                    except: self.con = rpyc.connect('localhost', CRT_BGM_PORT)
-                    vol = self.con.root.change_vol(new)
-                    if vol == new:
-                        self.m_lLines[p_iLine]['value'] = str(new) + "%"
-                except:
-                    pass
+                vol = self.m_oBGMClass.change_volume(new)
+                if vol == new: self.m_lLines[p_iLine]['value'] = str(new) + "%"
 
     def opt4_datas(self):
         try: self.m_oBGMClass
@@ -290,6 +288,75 @@ class main_sub2(object):
         else:
             value = "--"
             p_lLines.update({'color_val': "type_color_7"})
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt5(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oBGMClass
+        except: self.m_oBGMClass = background_music()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt5_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new:
+                self.info("Changing Folder", "icon_clock")
+                self.m_oBGMClass.change_music(new)
+                value = self.m_oBGMClass.get_active_folder()
+                self.m_lLines[p_iLine]['value'] = value
+                self.info()
+
+    def opt5_datas(self):
+        try: self.m_oBGMClass
+        except: self.m_oBGMClass = background_music()
+        p_lLines = {'text': "Music Folder",
+                    'color_val': "type_color_1"}
+        m_lOpt = []
+        if self.m_oBGMClass.check():
+            list = self.m_oBGMClass.get_folders()
+            value = self.m_oBGMClass.get_active_folder()
+            if len(list) == 1:
+                p_lLines.update({'color_val': "type_color_7"})
+        else:
+            value = "--"
+            list = None
+            p_lLines.update({'color_val': "type_color_7"})
+        p_lLines.update({'value': value})
+        p_lLines.update({'options': list})
+        return p_lLines
+
+    def opt6(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oBGMClass
+        except: self.m_oBGMClass = background_music()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt6_datas()
+        if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
+            list = self.m_lLines[p_iLine]['options']
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value, list)
+            if new:
+                self.info("Changing Folder", "icon_clock")
+                self.m_oBGMClass.change_music(new)
+                value = self.m_oBGMClass.get_active_folder()
+                self.m_lLines[p_iLine]['value'] = value
+                self.info()
+
+    def opt6_datas(self):
+        try: self.m_oBGMClass
+        except: self.m_oBGMClass = background_music()
+        p_lLines = {'text': "Tracks",
+                    'color_val': "type_color_7"}
+        m_lOpt = []
+        if self.m_oBGMClass.check():
+            value = self.m_oBGMClass.get_tracks()
+            if not value: value = 0
+            if value == 1: value = str(value) + " File"
+            else: value = str(value) + " Files"
+        else:
+            value = "--"
         p_lLines.update({'value': value})
         return p_lLines
 

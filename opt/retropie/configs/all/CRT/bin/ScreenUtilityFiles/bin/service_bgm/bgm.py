@@ -38,7 +38,7 @@ from main_paths import MODULES_PATH
 sys.path.append(MODULES_PATH)
 
 from launcher_module.core_paths import *
-from launcher_module.file_helpers import ini_get, ini_set
+from launcher_module.file_helpers import ini_get, ini_set, ini_getlist
 from launcher_module.utils import check_process, wait_process, set_procname
 
 LOG_PATH = os.path.join(TMP_LAUNCHER_PATH,"CRT_Background_Music.log")
@@ -63,8 +63,9 @@ class BGM(object):
     m_iFadeHop   = 0.02
     m_iFadeSpeed = 0.05
     m_iSongPos   = 0            # Position in miliseconds of song
+    m_iTraks     = 0            # Number of songs found in folder
 
-    m_bStop = False             # Force script to finish
+    m_bStop       = False       # Force script to finish
     
     m_bPauseMusic = True        # If true, this will cause the script to fade 
                                 # the music out and -stop- the song rather 
@@ -102,7 +103,7 @@ class BGM(object):
 
     def _init_pygame(self):
         logging.info("INFO: loading pygame mixer")
-        mixer.pre_init(44100, -16, 2, 2048)
+        mixer.pre_init(44100, -16, 2, 4096)
         mixer.init()
 
     def _quit_pygame(self):
@@ -118,14 +119,34 @@ class BGM(object):
 
     def _get_playlist(self):
         """ This will find everything that's .mp3 or .ogg """
-        self.m_lTrackList = 0
-        self.m_lTrackList = [track for track in os.listdir(CRT_BGM_MUS_PATH) \
-                            if track[-4:] == ".mp3" or track[-4:] == ".ogg"]
-        if not self.m_lTrackList:
-            logging.info("ERROR: NO music found in /config/music")
-            sys.exit(1)
-        logging.info("INFO: found %s songs in music path" %
-                     len(self.m_lTrackList))
+        # clean counters
+        self.m_iTrackCurr = -1
+        self.m_lTrackList = []
+        self.m_lTrackCtrl = []
+        self.m_iTraks     = 0
+
+        p_sMusicFolder = (" ".join(ini_getlist(CRT_UTILITY_FILE, "music_folder"))).strip()
+        p_lMusicFolders = []
+        self.m_sMusicFolder = None
+        if p_sMusicFolder and p_sMusicFolder.lower() != "root": 
+            if os.path.exists(os.path.join(CRT_BGM_MUS_PATH, p_sMusicFolder)):
+                p_lMusicFolders.append(os.path.join(CRT_BGM_MUS_PATH, p_sMusicFolder))
+            else: logging.info("ERROR: NO music folder [%s] found" % p_sMusicFolder)
+        p_lMusicFolders.append(CRT_BGM_MUS_PATH)
+        
+        for path in p_lMusicFolders:
+            self.m_lTrackList = 0
+            self.m_lTrackList = [track for track in os.listdir(path) \
+                                if track[-4:] == ".mp3" or track[-4:] == ".ogg"]
+            if not self.m_lTrackList:
+                logging.info("ERROR: NO music found in %s" % path)
+            else:
+                logging.info("INFO: found %s songs in %s" %
+                         (len(self.m_lTrackList), path))
+                self.m_iTraks = len(self.m_lTrackList)
+                self.m_sMusicFolder = path
+                break
+        if not self.m_lTrackList: sys.exit(1)
         self._get_random_sequence()
         # Try to configure if exist the starting song
         if self.m_sTrackInit:
@@ -157,7 +178,7 @@ class BGM(object):
             self._fade_in()
         self.m_sMusicState = 'play'
 
-    def music_stop(self, p_bRestart = m_bPauseMusic):
+    def music_stop(self, p_bRestart = m_bPauseMusic, p_bRealStop = True):
         """
         You can change stop mode in function, by default will take
         value from m_bPauseMusic, but you can change for stop
@@ -166,7 +187,7 @@ class BGM(object):
         """
         try:
             if mixer.music.get_busy():
-                self._fade_out()
+                if p_bRealStop: self._fade_out()
                 #we aren't going to resume the audio, so stop it outright.
                 mixer.music.stop()
                 if p_bRestart:
@@ -180,7 +201,7 @@ class BGM(object):
         except:
             self.m_iSongPos = 0
             self.m_sMusicState = 'stop'
-        self._quit_pygame()
+        if p_bRealStop: self._quit_pygame()
 
     def _seek_track(self):
         """ If music is stopped will seek for the next song """
@@ -192,9 +213,17 @@ class BGM(object):
                 self.m_iTrackCurr = self._next_song()
         logging.info("INFO: next song: file [%s] - seq [%s]" \
                      % (self.m_lTrackList[self.m_iTrackCurr], self.m_iTrackCurr))
-        p_lTrack = os.path.join(CRT_BGM_MUS_PATH, self.m_lTrackList[self.m_iTrackCurr])
-        mixer.music.load(p_lTrack)
-        mixer.music.rewind()
+        while True:
+            p_lTrack = os.path.join(self.m_sMusicFolder, self.m_lTrackList[self.m_iTrackCurr])
+            try:
+                mixer.music.load(p_lTrack)
+                mixer.music.rewind()
+                break
+            except Exception as e:
+                logging.info("ERROR: %s" % e)
+                if len(self.m_lTrackList) == 1:
+                    ini_set(CRT_UTILITY_FILE, "music_folder", "root")
+                self.m_iTrackCurr = self._next_song()
         logging.info("INFO: song loaded on mixer, ready to play")
         self.m_iTrackLast = self.m_iTrackCurr
 
@@ -302,11 +331,23 @@ class VolBGMService(rpyc.Service):
     def on_disconnect(self, conn):
         pass
 
+    def exposed_load_music(self):
+        oBGM._get_playlist()
+        oBGM.music_stop(False, False)
+        #oBGM.music_start()
+        return True
+
+    def exposed_status(self):
+        return True
+
     def exposed_stop(self):
         oBGM.m_bStop = True
 
     def exposed_get_vol(self):
         return int(round(oBGM.get_volume() * 100))
+        
+    def exposed_get_tracks(self):
+        return int(oBGM.m_iTraks)
 
     def exposed_change_vol(self, p_iVol):
         vol = p_iVol / 100.0

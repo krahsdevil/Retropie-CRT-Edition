@@ -45,7 +45,7 @@ from launcher_module.core_paths import CRT_FIXMODES_FILE, CRT_UTILITY_FILE, \
                                        CRT_OLED_SRV_PATH, CRT_OLED_CORE_PATH, CRT_OLED_PORT, \
                                        CRT_OLED_FILE, CRT_OLED_SRV_FILE, CRT_OLED_STOP_SRV_PATH, \
                                        CRT_OLED_STOP_CORE_PATH, CRT_ES_FONT, ES_MENU_FONT1, \
-                                       ES_MENU_FONT2
+                                       ES_MENU_FONT2, CRT_BGM_MUS_PATH, CRT_BGM_PORT
                                        
 from launcher_module.utils import check_process, touch_file, get_side, md5_file, \
                                   module_loaded
@@ -807,7 +807,9 @@ class external_storage(object):
 class background_music(object):
     """ virtual class for Background Music enable/disable """
     m_bSrvExist = False
-    m_bSrvRun = False
+    m_bSrvRun   = False
+    m_sFolder   = None
+    m_lFolders  = []
 
     def check(self):
         self.m_bSrvExist = False
@@ -819,17 +821,81 @@ class background_music(object):
         if CRT_BGM_SRV_FILE in sCheckService:
             self.m_bSrvExist = True
         if 'running' in sCheckService:
-            self.m_bSrvRun = True
+            #self.m_bSrvRun = True
+            if self.service_connection(): self.m_bSrvRun = True
         return self.m_bSrvRun
+
+    def service_connection(self):
+        try: 
+            if self.BGMCon.root.status(): return True
+        except Exception as e:
+            #logging.info("ERROR: %s" % e)
+            try: 
+                self.BGMCon = rpyc.connect('localhost', CRT_BGM_PORT, 
+                config={'sync_request_timeout': 4})
+                if self.BGMCon.root.status(): return True
+            except Exception as f:
+                #logging.info("ERROR: %s" % f)
+                return False
+        return False
+
+    def change_volume(self, p_iVol):
+        self.service_connection()
+        try: 
+            return self.BGMCon.root.change_vol(p_iVol)
+        except Exception as e:
+            logging.info("%s" % e)            
+        return False
+
+    def get_tracks(self):
+        self.service_connection()
+        try: 
+            return self.BGMCon.root.get_tracks()
+        except Exception as e:
+            logging.info("%s" % e)            
+        return False
 
     def init(self):
         install_service(CRT_BGM_SRV_PATH)
         self.check()
 
+    def change_music(self, p_sFolder):
+        self.service_connection()
+        try: 
+            ini_set(CRT_UTILITY_FILE, "music_folder", p_sFolder)
+            #self.m_sFolder = None
+            self.BGMCon.root.load_music()
+        except Exception as e:
+            logging.info("%s" % e)            
+        return False
+
+    def get_active_folder(self):
+        self.get_folders()
+        value = (" ".join(ini_getlist(CRT_UTILITY_FILE, "music_folder"))).strip()
+        if not value or value not in self.m_lFolders:
+            value = "root"
+            remove_line(CRT_UTILITY_FILE, "music_folder")
+            add_line(CRT_UTILITY_FILE, 'music_folder=%s' % value)
+        self.m_sFolder = value
+        return self.m_sFolder
+
     def stop(self):
         remove_service(CRT_BGM_SRV_PATH)
         self.__clean() # clean trigger files
         self.check()
+
+    def get_folders(self):
+        if not self.m_lFolders:
+            for item in os.listdir(CRT_BGM_MUS_PATH):
+                p_sPath = os.path.join(CRT_BGM_MUS_PATH, item)
+                if os.path.isdir(p_sPath):
+                    for track in os.listdir(p_sPath):
+                        if track[-4:] == ".mp3" or track[-4:] == ".ogg":
+                            self.m_lFolders.append(item)
+                            break
+            if self.m_lFolders: self.m_lFolders.sort()
+            self.m_lFolders.insert(0, "root")
+        return self.m_lFolders
 
     def __clean(self):
         pass
@@ -904,11 +970,15 @@ class oled(object):
     def service_connection(self):
         try: 
             if self.OledCon.root.status(): return True
-        except: 
+        except Exception as e:
+            #logging.info("ERROR: %s" % e)
             try: 
-                self.OledCon = rpyc.connect('localhost', CRT_OLED_PORT)
+                self.OledCon = rpyc.connect('localhost', CRT_OLED_PORT, 
+                config={'sync_request_timeout': 4})
                 if self.OledCon.root.status(): return True
-            except: return False
+            except Exception as f:
+                #logging.info("ERROR: %s" % f)
+                return False
         return False
 
     def service_refresh(self):
