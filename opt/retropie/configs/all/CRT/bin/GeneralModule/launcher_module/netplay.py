@@ -170,7 +170,7 @@ class netplay(object):
     def get_lframes(self):
         value = ini_get(CRT_UTILITY_FILE, "netplay_lframes")
         try: frame = int(value)
-        except: frame = 2
+        except: frame = 0
         return frame
 
     def spectator_enable(self):
