@@ -177,14 +177,21 @@ class main_sub4_sub2_sub1(object):
                 self.info()
             return
         if p_iJoy & CRT_LEFT or p_iJoy & CRT_RIGHT:
-            if self.m_oNETClass.get_stateless(): return
             if not self.m_oNETClass.status(): return
             list = self.m_lLines[p_iLine]['options']
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value, list)
             if new or new == 0:
-                value = self.m_oNETClass.lframes(new)
-                if value == new:
+                fr = self.m_oNETClass.lframes(new)
+                if fr == new:
+                    if value == 0:
+                        if self.m_oNETClass.get_stateless():
+                            self.info([" Stateless Mode active,",
+                                       "Increasing Latency Frames",
+                                       "  may affect emulation."],
+                                       "icon_info")
+                            time.sleep(4)
+                            self.info()
                     self.m_lLines[p_iLine]['value'] = new
 
     def opt1_datas(self):
@@ -198,17 +205,10 @@ class main_sub4_sub2_sub1(object):
             p_lLines.update({'color_val': "type_color_7"})
             options = None
         else:
-            if self.m_oNETClass.get_stateless():
-                p_lLines.update({'color_val': "type_color_7"})
-                options = None
-                value = 0
-                if self.m_oNETClass.get_lframes() != 0:
-                    self.m_oNETClass.lframes(0)
-            else:
-                p_lOpt = []
-                for i in range(0, 16): p_lOpt.append(i)
-                options = p_lOpt
-                value = self.m_oNETClass.get_lframes()
+            p_lOpt = []
+            for i in range(0, 16): p_lOpt.append(i)
+            options = p_lOpt
+            value = self.m_oNETClass.get_lframes()
         p_lLines.update({'options': options})
         p_lLines.update({'value': value})
         return p_lLines
@@ -291,7 +291,9 @@ class main_sub4_sub2_sub1(object):
                 return
             value = self.m_lLines[p_iLine]['value']
             new = explore_list(p_iJoy, value)
-            if new: cfg = self.m_oNETClass.stateless_enable()
+            if new: 
+                self.m_oNETClass.lframes(0)
+                cfg = self.m_oNETClass.stateless_enable()
             else: cfg = self.m_oNETClass.stateless_disable()
             self.m_lLines[p_iLine]['value'] = cfg
 
