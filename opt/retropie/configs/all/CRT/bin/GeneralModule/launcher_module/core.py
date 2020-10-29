@@ -63,6 +63,7 @@ class launcher(object):
     m_bFastBoot = False
 
     def __init__(self, p_sFilePath, p_sSystem, p_sCustom):
+        os.system('tput civis')
         self.m_sSystem = p_sSystem
         self.m_sCustom = p_sCustom
         self.m_sFilePath = p_sFilePath
@@ -118,6 +119,7 @@ class launcher(object):
     def wait(self):
         time_start = time.time()
         self.m_oRunProcess.wait()
+        os.system('tput civis')
         time_elapsed = int(time.time() - time_start)
         self.statistics(time_elapsed)
         if self.m_bFastBoot: self.change_cpu_governor("default")
@@ -368,6 +370,7 @@ class launcher(object):
         self.m_oBlackScreen.fill()
         logging.info("INFO: ES mode recover")
         os.system('clear')
+        os.system('tput cnorm')
         self.__clean()
         sys.exit()
 
