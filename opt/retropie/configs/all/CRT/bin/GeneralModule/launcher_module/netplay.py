@@ -153,7 +153,6 @@ class netplay(object):
     def validate_host(self):
         value1 = self.get_host()
         value2 = ini_get(CRT_NETPLAY_FILE, self.ini_host_cfile)
-        logging.info("INFO: host1 %s host2 %s" % (value1, value2))
         if self.get_mode == "client":
             if value1 == value2: 
                 if self.check_ip_format(value1): return True
