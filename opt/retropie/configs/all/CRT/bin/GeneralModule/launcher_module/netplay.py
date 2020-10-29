@@ -26,7 +26,7 @@ import logging, re
 sys.dont_write_bytecode = False
 
 from launcher_module.file_helpers import ini_get, ini_set, add_line, \
-                         touch_file, modify_line, ini_getlist
+                         touch_file, modify_line, ini_getlist, remove_line
 from launcher_module.core_paths import CRT_NETPLAY_FILE, CRT_UTILITY_FILE
 
 class netplay(object):
@@ -37,13 +37,15 @@ class netplay(object):
                    '__netplaynickname="\'RP_CRT_Edition\'"',
                    ]
 
-    ini_mode = '__netplaymode'
-    ini_port = '__netplayport'
-    ini_host = '__netplayhostip'
-    ini_nick = '__netplaynickname'
+    ini_mode       = '__netplaymode'
+    ini_port       = '__netplayport'
+    ini_host       = '__netplayhostip'
+    ini_host_cfile = '__netplayhostip_cfile'
+    ini_nick       = '__netplaynickname'
     
     def __init__(self):
         self._check_netplay_cfg()
+        self.validate_host()
         pass
         
     def _check_netplay_cfg(self):
@@ -78,7 +80,9 @@ class netplay(object):
             return False
         modify_line(CRT_NETPLAY_FILE, self.ini_mode, line)
         new = self.get_mode()
-        if new == p_sMode.lower(): return new
+        if new == p_sMode.lower(): 
+            self.validate_host()
+            return new
         logging.info("INFO: %s wrong edited" % self.ini_mode)
         return False
 
@@ -131,12 +135,29 @@ class netplay(object):
 
     def host(self, p_sHost):
         if not self.check_ip_format(p_sHost): return False
-        line = self.ini_host + '=' + '"%s"' % p_sHost
-        modify_line(CRT_NETPLAY_FILE, self.ini_host, line)
+        line1 = self.ini_host + '=' + '"%s"' % p_sHost
+        line2 = self.ini_host_cfile + '=' + '"%s"' % p_sHost
+        line3 = self.ini_host_cfile + '=' + '""'
+        # remove both config lines for host: __netplayhostipXXX
+        remove_line(CRT_NETPLAY_FILE, self.ini_host)
+        remove_line(CRT_NETPLAY_FILE, self.ini_host_cfile)
+        add_line(CRT_NETPLAY_FILE, line1)
+        if self.get_mode() == "client":
+            add_line(CRT_NETPLAY_FILE, line2)
+        else: add_line(CRT_NETPLAY_FILE, line3)
         new = self.get_host()
         if new == p_sHost: return new
         logging.info("INFO: %s wrong edited" % self.ini_host)
         return False
+
+    def validate_host(self):
+        value1 = self.get_host()
+        value2 = ini_get(CRT_NETPLAY_FILE, self.ini_host_cfile)
+        logging.info("INFO: host1 %s host2 %s" % (value1, value2))
+        if self.get_mode == "client":
+            if value1 == value2: 
+                if self.check_ip_format(value1): return True
+        self.host(value1)
         
     def get_host(self):
         value = ini_get(CRT_NETPLAY_FILE, self.ini_host)

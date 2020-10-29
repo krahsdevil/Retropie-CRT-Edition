@@ -185,7 +185,9 @@ class launcher(object):
         if p_oNetplay.status():
             logging.info("INFO: netplay enabled")
             # main netplay config
-            if p_oNetplay.get_mode().lower() == 'client': mode = '-C'
+            if p_oNetplay.get_mode().lower() == 'client': 
+                ip = p_oNetplay.get_host()
+                mode = '-C ' + ip
             else: mode = '-H'
             port = '--port %s' % p_oNetplay.get_port()
             nick = "--nick \'%s\'" % p_oNetplay.get_nick()
