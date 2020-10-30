@@ -195,7 +195,10 @@ class launcher(object):
             p_sCMD += " " + port
             p_sCMD += " " + nick
             ini = ini_get(CRT_UTILITY_FILE, 'netplay_stateless')
-            if ini.lower() == "true": p_sCMD += " --stateless"
+            if ini.lower() == "true": 
+                add_line(self.m_sCustomRACFG, 
+                    '\nnetplay_check_frames = "0"')
+                p_sCMD += " --stateless"
             # other options
             lframes = p_oNetplay.get_lframes()
             ini_set(self.m_sCustomRACFG, 
