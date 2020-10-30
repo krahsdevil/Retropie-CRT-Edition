@@ -63,7 +63,7 @@ class launcher(object):
     m_bFastBoot = False
 
     def __init__(self, p_sFilePath, p_sSystem, p_sCustom):
-        os.system('tput civis')
+        os.system('tput civis') # hide cursor
         self.m_sSystem = p_sSystem
         self.m_sCustom = p_sCustom
         self.m_sFilePath = p_sFilePath
@@ -119,7 +119,7 @@ class launcher(object):
     def wait(self):
         time_start = time.time()
         self.m_oRunProcess.wait()
-        os.system('tput civis')
+        os.system('tput civis') # hide cursor
         time_elapsed = int(time.time() - time_start)
         self.statistics(time_elapsed)
         if self.m_bFastBoot: self.change_cpu_governor("default")
@@ -372,14 +372,15 @@ class launcher(object):
         self.m_oBlackScreen.fill()
         logging.info("INFO: ES mode recover")
         os.system('clear')
-        os.system('tput cnorm')
         self.__clean()
+        os.system('tput cnorm') # show cursor
         sys.exit()
 
     # clean system
     def __clean(self):
         self.clean_videomodes()
         remove_file(TMP_SLEEPER_FILE)
+        os.system('rm -rf "/tmp/retroarch" >> /dev/null 2>&1')
 
     def clean_videomodes(self):
         try:
