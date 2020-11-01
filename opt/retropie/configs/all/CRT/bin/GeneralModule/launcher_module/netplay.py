@@ -68,6 +68,20 @@ class netplay(object):
         elif value.lower() == "false": return False
         return None
 
+    def get_ask(self):
+        value = ini_get(CRT_UTILITY_FILE, "netplay_ask")
+        if value.lower() == "true": return True
+        elif value.lower() == "false": return False
+        return None
+
+    def ask_enable(self):
+        ini_set(CRT_UTILITY_FILE, "netplay_ask", "true")
+        return self.get_ask()
+
+    def ask_disable(self):
+        ini_set(CRT_UTILITY_FILE, "netplay_ask", "false")
+        return self.get_ask()
+
     def mode(self, p_sMode):
         if p_sMode.lower() == "host": 
             line = self.ini_mode + '="H"'

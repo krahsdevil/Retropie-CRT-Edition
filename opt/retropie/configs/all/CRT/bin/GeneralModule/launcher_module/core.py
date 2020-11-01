@@ -31,7 +31,7 @@ import subprocess, time
 import logging, re, shlex
 
 from .screen import CRT
-from .utils import HideScreen, check_process, show_info
+from .utils import HideScreen, check_process, show_info, menu_options
 from .core_paths import *
 from .file_helpers import *
 from .netplay import netplay
@@ -166,47 +166,56 @@ class launcher(object):
         return p_sCMD
 
     def runcommand_netplay(self, p_sCMD):
+        """ Append netplay configuration to launching string """
         if not RA_BIN_FILE in p_sCMD: return p_sCMD
-        p_lNet = ['-C', '-H', '--port', '--nick']
-        p_lCMD = p_sCMD.split(' ')
-        count = 0
-        # clean netplay config
-        for item in p_lCMD:
-            if item == '-C' or item == '-H':
-                p_sCMD = p_sCMD.replace(item, '')
-            elif item == '--port' or item == '--nick':
-                text = p_lCMD[count] + " " + p_lCMD[count + 1]
-                p_sCMD = p_sCMD.replace(text, '')
-            count += 1
         p_sCMD = re.sub(r' +', " ", p_sCMD)
-        p_oNetplay = netplay()
-
+        # load netplay parameters
+        try: self.p_oNetplay
+        except: 
+            self.p_oNetplay = netplay()
+            self.p_bNetplay_status = self.p_oNetplay.status()
+            if self.p_bNetplay_status:
+                self.p_bNetplay_ask       = self.p_oNetplay.get_ask()
+                self.p_sNetplay_mode      = self.p_oNetplay.get_mode().lower()
+                self.p_sNetplay_host      = self.p_oNetplay.get_host()
+                self.p_sNetplay_port      = self.p_oNetplay.get_port()
+                self.p_sNetplay_nick      = self.p_oNetplay.get_nick()
+                self.p_bNetplay_stateless = self.p_oNetplay.get_stateless()
+                self.p_sNetplay_lframes   = self.p_oNetplay.get_lframes()
+                self.p_bNetplay_spectator = self.p_oNetplay.get_spectator()
+                self.p_bNetplay_lobby     = self.p_oNetplay.get_lobby()
         # append netplay if enabled
-        if p_oNetplay.status():
+        if self.p_bNetplay_status:
+            # launch selector if "ask before playing" is enabled
+            if self.p_bNetplay_ask:
+                try: self.p_sNetplay_ask_Prev
+                except:
+                    m_sTitNet = "NETPLAY"
+                    m_lOptNet = [("CONTINUE", "YES"),
+                                 ("DISABLE", "NO")]
+                    self.p_sNetplay_ask_Prev = menu_options(m_lOptNet, m_sTitNet)
+                if self.p_sNetplay_ask_Prev == "NO": return p_sCMD
             logging.info("INFO: netplay enabled")
             # main netplay config
-            if p_oNetplay.get_mode().lower() == 'client': 
-                ip = p_oNetplay.get_host()
-                mode = '-C ' + ip
+            if self.p_sNetplay_mode == 'client': 
+                mode = '-C ' + self.p_sNetplay_host
             else: mode = '-H'
-            port = '--port %s' % p_oNetplay.get_port()
-            nick = "--nick \'%s\'" % p_oNetplay.get_nick()
+            port = '--port %s' % self.p_sNetplay_port
+            nick = "--nick \'%s\'" % self.p_sNetplay_nick
             p_sCMD += " " + mode
             p_sCMD += " " + port
             p_sCMD += " " + nick
-            ini = ini_get(CRT_UTILITY_FILE, 'netplay_stateless')
-            if ini.lower() == "true": 
-                add_line(self.m_sCustomRACFG, 
-                    '\nnetplay_check_frames = "0"')
+            if self.p_bNetplay_stateless: 
                 p_sCMD += " --stateless"
+            p_sCMD += " --check-frames=0"
             # other options
-            lframes = p_oNetplay.get_lframes()
+            lframes = self.p_sNetplay_lframes
             ini_set(self.m_sCustomRACFG, 
                     'netplay_input_latency_frames_min', lframes)
-            spect = "true" if p_oNetplay.get_spectator() else "false"
+            spect = "true" if self.p_bNetplay_spectator else "false"
             ini_set(self.m_sCustomRACFG, 
                     'netplay_start_as_spectator', spect)
-            lobby = "true" if p_oNetplay.get_lobby() else "false"
+            lobby = "true" if self.p_bNetplay_lobby else "false"
             ini_set(self.m_sCustomRACFG, 
                     'netplay_public_announce', lobby)
             logging.info("INFO: netplay config: %s %s %s" % (mode, port, nick))

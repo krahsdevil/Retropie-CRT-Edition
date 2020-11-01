@@ -112,7 +112,7 @@ class main_sub4_sub2(object):
 
     def _auto_load_datas(self):
         p_lAutoL = [self.opt2, self.opt3, self.opt4,
-                    self.opt5]
+                    self.opt5, self.opt6]
         timer = 0.5 # look for datas timer
         if p_lAutoL:
             while not self.m_bThreadsStop:
@@ -122,7 +122,7 @@ class main_sub4_sub2(object):
 
     def _load_options(self):
         p_lOptFn = [self.opt1, self.opt2, self.opt3,
-                    self.opt4, self.opt5]
+                    self.opt4, self.opt5, self.opt6]
         self.m_lOptFn = p_lOptFn
         for opt in self.m_lOptFn:
             self.m_lMainOpts.append(opt)
@@ -188,9 +188,39 @@ class main_sub4_sub2(object):
     def opt2(self, p_iJoy = None, p_iLine = None):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
-        p_lLines = {}
         if p_iJoy == None:
             return self.opt2_datas()
+        if p_iJoy & CRT_OK:
+            if not self.m_oNETClass.status():
+                self.info("Enable Netplay", "icon_info")
+                time.sleep(2)
+                self.info()
+                return
+            value = self.m_lLines[p_iLine]['value']
+            new = explore_list(p_iJoy, value)
+            if new: cfg = self.m_oNETClass.ask_enable()
+            else: cfg = self.m_oNETClass.ask_disable()
+            self.m_lLines[p_iLine]['value'] = cfg
+
+    def opt2_datas(self):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {'text': "Ask before play",
+                    'icon': None}
+        if not self.m_oNETClass.status():
+            p_lLines.update({'value': "--"})
+            p_lLines.update({'color_val': "type_color_7"})
+            return p_lLines
+        value = self.m_oNETClass.get_ask()
+        p_lLines.update({'value': value})
+        return p_lLines
+
+    def opt3(self, p_iJoy = None, p_iLine = None):
+        try: self.m_oNETClass
+        except: self.m_oNETClass = netplay()
+        p_lLines = {}
+        if p_iJoy == None:
+            return self.opt3_datas()
         if p_iJoy & CRT_OK:
             if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
@@ -212,7 +242,7 @@ class main_sub4_sub2(object):
                     time.sleep(2)
                     self.info()
 
-    def opt2_datas(self):
+    def opt3_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         p_lLines = {'text': "Connect Mode",
@@ -227,11 +257,11 @@ class main_sub4_sub2(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt3(self, p_iJoy = None, p_iLine = None):
+    def opt4(self, p_iJoy = None, p_iLine = None):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         if p_iJoy == None:
-            return self.opt3_datas()
+            return self.opt4_datas()
         if p_iJoy & CRT_OK:
             if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
@@ -243,7 +273,7 @@ class main_sub4_sub2(object):
             if new and new == self.m_oNETClass.nick(new):
                 self.m_lLines[p_iLine]['value'] = new
 
-    def opt3_datas(self):
+    def opt4_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         p_lLines = {'text': "Nick",
@@ -257,11 +287,11 @@ class main_sub4_sub2(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt4(self, p_iJoy = None, p_iLine = None):
+    def opt5(self, p_iJoy = None, p_iLine = None):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         if p_iJoy == None:
-            return self.opt4_datas()
+            return self.opt5_datas()
         if p_iJoy & CRT_OK:
             if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
@@ -282,7 +312,7 @@ class main_sub4_sub2(object):
                 time.sleep(2)
                 self.info()
 
-    def opt4_datas(self):
+    def opt5_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         p_lLines = {'text': "Remote Host",
@@ -298,11 +328,11 @@ class main_sub4_sub2(object):
         p_lLines.update({'value': value})
         return p_lLines
 
-    def opt5(self, p_iJoy = None, p_iLine = None):
+    def opt6(self, p_iJoy = None, p_iLine = None):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         if p_iJoy == None:
-            return self.opt5_datas()
+            return self.opt6_datas()
         if p_iJoy & CRT_OK:
             if not self.m_oNETClass.status():
                 self.info("Enable Netplay", "icon_info")
@@ -318,7 +348,7 @@ class main_sub4_sub2(object):
                 time.sleep(2)
                 self.info()
 
-    def opt5_datas(self):
+    def opt6_datas(self):
         try: self.m_oNETClass
         except: self.m_oNETClass = netplay()
         p_lLines = {'text': "Port",
