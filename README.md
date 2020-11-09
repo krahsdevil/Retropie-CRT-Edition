@@ -7,7 +7,7 @@
 |:---:|:---:|
 | For Raspberry 2B/3B/3A+/3B+ | Released November 9, 2020 [[Changelog](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/Changelog)]| 
 
-Adding support to Retropie for custom 15khz resolutions and some cool utilities like USB Automount or easy TATE mode changing.
+Adding support to Retropie for custom 15khz resolutions and some cool utilities like external extorage for ROMS, TATE mode, an overclocking tool, OLED Display handling and background music for EmulationStation among others.
 
 This software works with some VGA666 based adapters, check compatibility [HERE](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/Adaptadores-RGB)
 
