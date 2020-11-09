@@ -17,7 +17,7 @@ Special [thanks](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/Thanks-
 
 **_'On the fly' resolutions system change_** based on the work of **Sir-Ironic** ['RPi-Hdmi_Timings' GITHUB](https://github.com/Sir-Ironic/RPi-Hdmi_Timings)
 
-_Please take a look to our [Wiki](https://github.com/krahsdevil/crt-for-retropie/wiki) (in progress)._
+_You can [START HERE](https://github.com/krahsdevil/crt-for-retropie/wiki) (Wiki in progress)._
 _You can also follow at  [EOL Forums](https://www.elotrolado.net/hilo_retropie-crt-edition-raspberry-pi-2b-3b-3b-tv-15khz-vga666-pi2scart-rgb-pi_2328132)_
 
 ***
