@@ -3,8 +3,9 @@
 
 ![img](https://github.com/krahsdevil/crt-for-retropie/blob/d398fe53a9e550c6aca72b926ea8c8a312aed028/logo.png?raw=true)
 ***
-| Current Version | EVO | FINAL 3.3 [[GET IT!]](https://github.com/krahsdevil/Retropie-CRT-Edition/releases/download/evo.3.3/RP-CRTEDT-Buster-EVOv3.3-FINAL.img.gz) | Retropie 4.6 (Buster) | RPi 2B/3B/3A+/3B+ | [Changelog](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/Changelog) |
-|:---:|:---:|:---:|:---:|:---:|:---:|
+| Retropie CRT Edition | Version EVO FINAL 3.3 [[GET IT!]](https://github.com/krahsdevil/Retropie-CRT-Edition/releases/download/evo.3.3/RP-CRTEDT-Buster-EVOv3.3-FINAL.img.gz)|
+|:---:|:---:|
+| For Raspberry 2B/3B/3A+/3B+ | Released November 9, 2020 [Changelog](https://github.com/krahsdevil/Retropie-CRT-Edition/wiki/Changelog) | 
 
 Adding support to Retropie for custom 15khz resolutions and some cool utilities like USB Automount or easy TATE mode changing.
 
